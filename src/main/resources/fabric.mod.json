@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "packages",
+  "version": "${version}",
+  "name": "Packages",
+  "description": "An opinionated storage mod. Worse Barrels descendant.",
+  "authors": [
+    "quaternary"
+  ],
+  "contact": {
+    "homepage": "https://highlysuspect.agency"
+  },
+  "license": "CC0-1.0",
+  "icon": "assets/packages/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "agency.highlysuspect.packages.Packages"
+    ]
+  },
+  "mixins": [
+    "packages.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.8.2+build.194",
+    "fabric": "*",
+    "minecraft": "1.15.2"
+  }
+}

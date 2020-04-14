@@ -1,0 +1,9 @@
+{
+  "itemGroup.packages.group": "Packages",
+  
+  "block.packages.package_maker": "Package Crafter",
+  "block.packages.package": "Package",
+  
+  "packages.frame": "%s Frame",
+  "packages.inner": "%s Core"
+}
