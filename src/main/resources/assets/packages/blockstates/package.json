@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=north": {
+      "x": 0,
+      "y": 0,
+      "model": "packages:special/package"
+    },
+    "facing=east": {
+      "x": 0,
+      "y": 90,
+      "model": "packages:special/package"
+    },
+    "facing=south": {
+      "x": 0,
+      "y": 180,
+      "model": "packages:special/package"
+    },
+    "facing=west": {
+      "x": 0,
+      "y": 270,
+      "model": "packages:special/package"
+    },
+    "facing=up_north": {
+      "x": 270,
+      "y": 0,
+      "model": "packages:special/package"
+    },
+    "facing=up_east": {
+      "x": 270,
+      "y": 90,
+      "model": "packages:special/package"
+    },
+    "facing=up_south": {
+      "x": 270,
+      "y": 180,
+      "model": "packages:special/package"
+    },
+    "facing=up_west": {
+      "x": 270,
+      "y": 270,
+      "model": "packages:special/package"
+    },
+    "facing=down_north": {
+      "x": 90,
+      "y": 0,
+      "model": "packages:special/package"
+    },
+    "facing=down_east": {
+      "x": 90,
+      "y": 90,
+      "model": "packages:special/package"
+    },
+    "facing=down_south": {
+      "x": 90,
+      "y": 180,
+      "model": "packages:special/package"
+    },
+    "facing=down_west": {
+      "x": 90,
+      "y": 270,
+      "model": "packages:special/package"
+    }
+  }
+}

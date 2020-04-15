@@ -17,6 +17,9 @@
   "entrypoints": {
     "main": [
       "agency.highlysuspect.packages.Packages"
+    ],
+    "client": [
+      "agency.highlysuspect.packages.client.ClientInit"
     ]
   },
   "mixins": [
