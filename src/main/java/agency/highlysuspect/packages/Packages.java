@@ -4,9 +4,12 @@ import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.item.PItems;
 import net.fabricmc.api.ModInitializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Packages implements ModInitializer {
 	public static final String MODID = "packages";
+	public static final Logger LOGGER = LogManager.getLogger(MODID);
 	
 	@Override
 	public void onInitialize() {
