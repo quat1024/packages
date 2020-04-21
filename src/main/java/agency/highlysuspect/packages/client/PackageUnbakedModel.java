@@ -3,9 +3,14 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.junk.BakedQuadExt;
+import com.google.common.base.Preconditions;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.minecraft.client.render.model.*;
 import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.Sprite;
@@ -14,10 +19,7 @@ import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ public class PackageUnbakedModel implements UnbakedModel {
 	
 	@Override
 	public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
+		//Remove references to the special textures, so the game doesn't try to load them
 		return basePackage.getTextureDependencies(unbakedModelGetter, unresolvedTextureReferences)
 			.stream()
 			.filter(sid -> !sid.getTextureId().equals(SPECIAL_FRAME) && !sid.getTextureId().equals(SPECIAL_INNER))
@@ -51,14 +54,13 @@ public class PackageUnbakedModel implements UnbakedModel {
 	
 	@Override
 	public BakedModel bake(ModelLoader loader, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
-		//I have a terrible plan, and it takes three steps.
+		//I have a terrible plan, and it takes four steps.
 		
 		//Phase 1.
-		//Load through vanilla JSON model loading machinery, but
-		//whenever a "placeholder" texture is requested intentionally
-		//fuck up its texture atlas coordinates. I'm trusting that
-		//the basePackage unbaked model is from vanilla but if some
-		//other mod is wrapping it for some reason it should be fine.
+		//Load through vanilla JSON model loading machinery, but whenever a "placeholder" texture is requested intentionally
+		//fuck up its texture atlas coordinates. I'm trusting that the basePackage unbaked model is from vanilla, but if some
+		//other mod is wrapping it for some reason, should be alright? Just assuming my dumb fakesprite things don't break
+		//mods too much.
 		BakedModel fromJson = basePackage.bake(
 			loader,
 			//When you ask for a "special" texture, give it one that spans (0, 0) -> (1, 1).
@@ -68,61 +70,81 @@ public class PackageUnbakedModel implements UnbakedModel {
 			//I also make sure to note which quad this sprite came from.
 			(id) -> {
 				Identifier textureId = id.getTextureId();
-				if(SPECIAL_FRAME.equals(textureId)) {
+				if (SPECIAL_FRAME.equals(textureId)) {
 					return new FakeSprite(SPECIAL_FRAME);
-				} else if(SPECIAL_INNER.equals(textureId)) {
+				} else if (SPECIAL_INNER.equals(textureId)) {
 					return new FakeSprite(SPECIAL_INNER);
 				} else return textureGetter.apply(id);
 			},
-			rotationContainer,
-			modelId
+			rotationContainer, modelId
 		);
 		
-		assert fromJson != null;
+		Preconditions.checkNotNull(fromJson, "null model when loading the barrel model?!");
 		
 		//Phase 2.
-		//Now that I'm done tricking the JSON model loader, get the fake sprites out ASAP.
-		//They're super cursed and brittle and will probably break other mods that do things with models.
-		//Instead, replace them with a valid sprite, but with a sentinel colorIndex value.
+		//Sort the quads into four buckets:
+		// * quads belonging to the frame
+		// * quads belonging to the inner bit
+		// * quads belonging to the recolored face on the front (anything with tintindex 1)
+		// * everything else
+		//For cases 1 and 2, disambiguate them from the FakeSprite's ID.
+		//For case 3, I check the tint index.
+		//Everything else goes in the 4th bucket.
+		
+		//cullFace -> quads. Note that cullFace can be null, so an EnumMap can't do.
+		Map<Direction, List<BakedQuad>> frameQuads = new HashMap<>();
+		Map<Direction, List<BakedQuad>> innerQuads = new HashMap<>();
+		Map<Direction, List<BakedQuad>> faceQuads = new HashMap<>();
+		Map<Direction, List<BakedQuad>> theRest = new HashMap<>();
+		
 		Random probablyShouldntPassNullHere = new Random();
-		for(Direction d : DIRECTIONS_AND_NULL) {
-			for(BakedQuad quad : fromJson.getQuads(PBlocks.PACKAGE.getDefaultState(), d, probablyShouldntPassNullHere)) {
+		
+		for (Direction d : DIRECTIONS_AND_NULL) {
+			for (BakedQuad quad : fromJson.getQuads(PBlocks.PACKAGE.getDefaultState(), d, probablyShouldntPassNullHere)) {
 				Sprite sprite = ((BakedQuadExt) quad).pkgs$getSprite();
+				
 				if (sprite instanceof FakeSprite) {
-					//Get rid of the FakeSprite.
-					Sprite dummySprite = textureGetter.apply(new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEX, MissingSprite.getMissingSpriteId()));
-					((BakedQuadExt) quad).pkgs$setSprite(dummySprite);
-					
-					//And choose a sentinel tintIndex.
 					Identifier type = sprite.getId();
 					
 					if (type.equals(SPECIAL_FRAME)) {
-						((BakedQuadExt) quad).pkgs$setColorIndex(100);
+						frameQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
 					} else if (type.equals(SPECIAL_INNER)) {
-						((BakedQuadExt) quad).pkgs$setColorIndex(101);
+						innerQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
+					} else {
+						Packages.LOGGER.error("Found a FakeSprite with ID " + type.toString() + " but I'm not sure what to do with that");
 					}
+					
+					continue;
 				}
+				
+				if (quad.getColorIndex() == 1) {
+					faceQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
+					continue;
+				}
+				
+				theRest.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
 			}
 		}
 		
-		//Phase 3 happens in the baked model.
-		return new PackageBakedModel(fromJson);
+		//Phase 3: cook these these into meshes, since I don't need the raw quads anymore
+		//This also, nicely, disposes of all references to the FakeSprites. Which is great since I don't want other mods seeing those ever lmao
+		MeshBuilder mb = RendererAccess.INSTANCE.getRenderer().meshBuilder();
+		Mesh frameMesh = meshFromMapThingie(mb, frameQuads);
+		Mesh innerMesh = meshFromMapThingie(mb, innerQuads);
+		Mesh faceMesh = meshFromMapThingie(mb, faceQuads);
+		Mesh theRestMesh = meshFromMapThingie(mb, theRest);
+		
+		//Phase 4 happens in the baked model
+		return new PackageBakedModel(fromJson, frameMesh, innerMesh, faceMesh, theRestMesh);
+	}
+	
+	private static Mesh meshFromMapThingie(MeshBuilder mb, Map<Direction, List<BakedQuad>> quadMap) {
+		QuadEmitter emitter = mb.getEmitter();
+		quadMap.forEach((direction, quads) -> quads.forEach(q -> {
+			emitter.fromVanilla(q.getVertexData(), 0, false);
+			emitter.cullFace(direction); //It's ok to pass null here
+			emitter.emit();
+		}));
+		return mb.build();
 	}
 }
-
-/* ************************************************************
- 
- 
- TODO TODO TODO big comment so i dont forget (This isnt crusty shut up)
- 
- - delete this whole "sentinel value" nonsense with the color indices, what was I thinking lmao
- - probably delete the whole color index usage altogether...
- - INSTEAD split into 4 sets of quads...
-   - frame quads
-   - inner part quads
-   - the recolored quad on the front?
-     - can I even use the actual tintIndex system for that
-   - "the rest" (anything people add themself as part of the model)
- - render those in four passes in the baked model (pushTransform, render a layer, pop)
- 
- */

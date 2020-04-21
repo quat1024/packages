@@ -17,13 +17,16 @@ public class ClientInit implements ClientModInitializer {
 	//where to redirect them to
 	private static final Identifier PACKAGE_BLOCK_MODEL_BASE = new Identifier(Packages.MODID, "block/package");
 	
+	//cached unbaked model!
+	private static PackageUnbakedModel packageUnbakedModel;
+	
 	@Override
 	public void onInitializeClient() {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
 			if(PACKAGE_SPECIAL.equals(id) || PACKAGE_ITEM.equals(id)) {
-				//TODO cache this and remember to dump the cache on resource reload
-				//Or dont lol it's instantiated like twice probably
-				return new PackageUnbakedModel(ctx.loadModel(PACKAGE_BLOCK_MODEL_BASE));
+				//TODO: dump this cache on resource reload
+				if(packageUnbakedModel == null) packageUnbakedModel = new PackageUnbakedModel(ctx.loadModel(PACKAGE_BLOCK_MODEL_BASE));
+				return packageUnbakedModel;
 			} else return null;
 		});
 	}

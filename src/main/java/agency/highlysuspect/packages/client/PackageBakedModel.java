@@ -3,7 +3,11 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
@@ -13,6 +17,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DyeColor;
@@ -24,22 +29,30 @@ import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class PackageBakedModel extends ForwardingBakedModel {
-	public PackageBakedModel(BakedModel other) {
+	public PackageBakedModel(BakedModel other, Mesh frameMesh, Mesh innerMesh, Mesh faceMesh, Mesh theRestMesh) {
 		this.wrapped = other;
+		
+		this.frameMesh = frameMesh;
+		this.innerMesh = innerMesh;
+		this.faceMesh = faceMesh;
+		this.theRestMesh = theRestMesh;
 	}
+	
+	private Mesh frameMesh;
+	private Mesh innerMesh;
+	private Mesh faceMesh;
+	private Mesh theRestMesh;
 	
 	@Override
 	public boolean isVanillaAdapter() {
 		return false;
 	}
 	
-	//TODO override getSprite since it gets chewed up by my cursed json hack
-	
 	@Override
 	public void emitBlockQuads(BlockRenderView blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
 		Object ext = ((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos);
 		if(!(ext instanceof PackageBlockEntity.Style)) {
-			//Shit's fucked! TODO handle this better, if it even comes up at all
+			//Shit's fucked! TODO handle this case better, if it even comes up at all
 			return;
 		}
 		
@@ -76,6 +89,7 @@ public class PackageBakedModel extends ForwardingBakedModel {
 		//TODO read them from the nbt in the item stack instead of choosing literally randomly
 		//TEMP TEMP TEMP TEMP TEMP TEMP i am literally just copy paste the block method for now lmao
 		Random boop = randomSupplier.get();
+		boop.setSeed(System.currentTimeMillis()); //LOL
 		
 		Block[][] choices = new Block[][]{
 			{Blocks.OAK_LOG, Blocks.OAK_PLANKS},
@@ -100,28 +114,36 @@ public class PackageBakedModel extends ForwardingBakedModel {
 		justFuckMyShitUp(context, frameSprite, innerSprite, DyeColor.values()[boop.nextInt(16)]);
 	}
 	
-	private void justFuckMyShitUp(RenderContext context, Sprite frame, Sprite inner, DyeColor faceColor) {
-		context.pushTransform(quad -> {
-			int colorIndex = quad.colorIndex();
-			if(colorIndex == 1) {
-				//Fill in the actual tint index for the front of the package
-				int color = 0xFF000000 | faceColor.getMaterialColor().color;
-				quad.spriteColor(0, color, color, color, color);
-				
-				//And finally, phase 3 of my evil plan.
-				//Read off the sentinel values and swap in the correct textures just in time.
-			} else if(colorIndex == 100) {
-				//Sentinel colorIndex for the frame
-				quad.spriteBake(0, frame, MutableQuadView.BAKE_NORMALIZED);
-			} else if(colorIndex == 101) {
-				//Sentinel colorIndex for the inner bit
-				quad.spriteBake(0, inner, MutableQuadView.BAKE_NORMALIZED);
-			}
+	private void justFuckMyShitUp(RenderContext context, Sprite frameSprite, Sprite innerSprite, DyeColor faceColor) {
+		//Phase 4: slap the textures on as late as possible.
+		//Quad transformers are very helpful here.
+		
+		//Frame - need to texture it with the frame texture
+		context.pushTransform(q -> {
+			q.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED);
 			return true;
 		});
-		
-		context.fallbackConsumer().accept(wrapped);
-		
+		context.meshConsumer().accept(frameMesh);
 		context.popTransform();
+		
+		//Inner bit - need to texture it with the inner texture
+		context.pushTransform(q -> {
+			q.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED);
+			return true;
+		});
+		context.meshConsumer().accept(innerMesh);
+		context.popTransform();
+		
+		//Face - need to tint it the face's color
+		int tint = 0xFF000000 | faceColor.getMaterialColor().color;
+		context.pushTransform(q -> {
+			q.spriteColor(0, tint, tint, tint, tint);
+			return true;
+		});
+		context.meshConsumer().accept(faceMesh);
+		context.popTransform();
+		
+		//And everything else.
+		context.meshConsumer().accept(theRestMesh);
 	}
 }
