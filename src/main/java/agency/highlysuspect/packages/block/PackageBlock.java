@@ -1,15 +1,24 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
+import agency.highlysuspect.packages.item.PackageItem;
+import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Property;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
+import net.minecraft.world.World;
 
 public class PackageBlock extends Block implements BlockEntityProvider {
 	public PackageBlock(Settings settings) {
@@ -17,6 +26,8 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 		
 		setDefaultState(getDefaultState().with(FACING, TwelveDirection.NORTH));
 	}
+	
+	public static final Identifier CONTENTS = new Identifier(Packages.MODID, "package_contents");
 	 
 	//States, materials, etc.
 	public static final Property<TwelveDirection> FACING = EnumProperty.of("facing", TwelveDirection.class);
@@ -44,5 +55,32 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	@Override
 	public BlockEntity createBlockEntity(BlockView view) {
 		return new PackageBlockEntity();
+	}
+	
+	//Behaviors.
+	@Override
+	public PistonBehavior getPistonBehavior(BlockState state) {
+		return PistonBehavior.DESTROY;
+	}
+	
+	@Override
+	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+		BlockEntity blockEntity = world.getBlockEntity(pos);
+		if(!(blockEntity instanceof PackageBlockEntity)) return;
+		PackageBlockEntity pkg = (PackageBlockEntity) blockEntity;
+		
+		//Copy custom name
+		if(stack.hasCustomName()) {
+			pkg.setCustomName(stack.getName());
+		}
+		
+		//Copy style
+		pkg.setStyle(PackageStyle.fromItemStack(stack));
+		
+		//Copy contents
+		if(stack.getSubTag(PackageBlockEntity.CONTENTS_KEY) != null) {
+			//noinspection ConstantConditions
+			pkg.readContents(stack.getSubTag(PackageBlockEntity.CONTENTS_KEY));
+		}
 	}
 }

@@ -16,7 +16,6 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.util.List;
@@ -26,27 +25,8 @@ public class PackageItem extends BlockItem {
 		super(block, settings);
 	}
 	
-	private static final String CONTENTS_KEY = "contents"; //TODO
-	
 	public ItemStack createCustomizedStack(Block frame, Block inner, DyeColor color) {
 		return new PackageStyle(frame, inner, color).writeToStackTag(new ItemStack(this));
-	}
-	
-	@Override
-	protected boolean postPlacement(BlockPos pos, World world, PlayerEntity player, ItemStack stack, BlockState state) {
-		boolean usedBlockEntityTag = super.postPlacement(pos, world, player, stack, state);
-		if(usedBlockEntityTag) return false;
-		
-		BlockEntity be = world.getBlockEntity(pos);
-		if(!(be instanceof PackageBlockEntity)) return false;
-		PackageBlockEntity pkg = (PackageBlockEntity) be;
-		
-		PackageStyle style = PackageStyle.fromItemStack(stack);
-		pkg.setStyleAndSync(world, style);
-		
-		//TODO read contents as well
-		
-		return false;
 	}
 	
 	@Override

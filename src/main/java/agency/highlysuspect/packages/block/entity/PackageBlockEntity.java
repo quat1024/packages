@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.block.entity;
 
+import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
@@ -13,12 +14,14 @@ import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.text.Style;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DefaultedList;
+import net.minecraft.util.Nameable;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
-public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable {
+public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
 	public PackageBlockEntity(BlockEntityType<?> type) {
 		super(type);
 	}
@@ -27,7 +30,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		this(PBlockEntityTypes.PACKAGE);
 	}
 	
-	private static final String CONTENTS_KEY = "PackageContents";
+	public static final String CONTENTS_KEY = "PackageContents";
 	
 	private static final int SLOT_COUNT = 8;
 	private static final int[] NO_SLOTS = {};
@@ -35,6 +38,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	private DefaultedList<ItemStack> inv = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
 	private PackageStyle style = PackageStyle.FALLBACK;
+	private Text customName;
 	
 	@Override
 	public Object getRenderAttachmentData() {
@@ -52,11 +56,51 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
 	}
 	
-	public void setStyleAndSync(World world, PackageStyle style) {
+	public void setStyle(PackageStyle style) {
 		this.style = style;
-		if(!world.isClient) sync();
 	}
 	
+	public void readContents(CompoundTag tag) {
+		clear();
+		int count = tag.getInt("realCount");
+		if(count != 0) {
+			ItemStack stack = ItemStack.fromTag(tag.getCompound("stack"));
+			int maxPerSlot = maxStackAmountAllowed(stack);
+			
+			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
+				ItemStack toInsert = stack.copy();
+				toInsert.setCount(Math.min(remaining, maxPerSlot));
+				setInvStack(slot, toInsert);
+			}
+		}
+	}
+	
+	//What's in a name
+	@Override
+	public Text getName() {
+		return hasCustomName() ? customName : new TranslatableText(PBlocks.PACKAGE.getTranslationKey());
+	}
+	
+	@Override
+	public boolean hasCustomName() {
+		return customName != null;
+	}
+	
+	@Override
+	public Text getDisplayName() {
+		return getName();
+	}
+	
+	@Override
+	public Text getCustomName() {
+		return customName;
+	}
+	
+	public void setCustomName(Text customName) {
+		this.customName = customName;
+	}
+	
+	//Inventory stuff.
 	public ItemStack findFirstNonemptyStack() {
 		for(ItemStack stack : inv) {
 			if(!stack.isEmpty()) return stack;
@@ -192,6 +236,11 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		//Style
 		tag.put(PackageStyle.KEY, style.toTag());
 		
+		//Custom name
+		if(customName != null) {
+			tag.putString("CustomName", Text.Serializer.toJson(customName));
+		}
+		
 		return super.toTag(tag);
 	}
 	
@@ -200,21 +249,14 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		super.fromTag(tag);
 		
 		//Contents
-		clear();
-		CompoundTag contents = tag.getCompound(CONTENTS_KEY);
-		int count = contents.getInt("realCount");
-		if(count != 0) {
-			ItemStack stack = ItemStack.fromTag(contents.getCompound("stack"));
-			int maxPerSlot = maxStackAmountAllowed(stack);
-			
-			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
-				ItemStack toInsert = stack.copy();
-				toInsert.setCount(Math.min(remaining, maxPerSlot));
-				setInvStack(slot, toInsert);
-			}
-		}
+		readContents(tag.getCompound(CONTENTS_KEY));
 		
 		//Style
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
+		
+		//Custom name
+		if(tag.contains("CustomName", 8)) {
+			customName = Text.Serializer.fromJson(tag.getString("CustomName"));
+		}
 	}
 }
