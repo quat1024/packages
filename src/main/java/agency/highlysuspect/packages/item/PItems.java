@@ -9,6 +9,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -23,14 +24,47 @@ public class PItems {
 		.appendItems(list -> {
 			list.add(new ItemStack(PACKAGE_MAKER));
 			
-			Block[][] sampleBarrels = new Block[][] {
-				{ Blocks.OAK_LOG, Blocks.OAK_PLANKS },
-				{ Blocks.BIRCH_LOG, Blocks.BIRCH_PLANKS },
-				{ Blocks.SPRUCE_LOG, Blocks.SPRUCE_PLANKS } //TODO add the rest
+			Object[][] sampleBarrels = new Object[][] {
+				{ Blocks.OAK_LOG                , Blocks.OAK_PLANKS                  , DyeColor.WHITE},
+				{ Blocks.BIRCH_LOG              , Blocks.BIRCH_PLANKS                , DyeColor.YELLOW},
+				{ Blocks.SPRUCE_LOG             , Blocks.SPRUCE_PLANKS               , DyeColor.RED},
+				{ Blocks.ACACIA_LOG             , Blocks.ACACIA_PLANKS               , DyeColor.PINK},
+				{ Blocks.DARK_OAK_LOG           , Blocks.DARK_OAK_PLANKS             , DyeColor.BROWN},
+				{ Blocks.JUNGLE_LOG             , Blocks.JUNGLE_PLANKS               , DyeColor.GREEN},
+				{ Blocks.WHITE_CONCRETE         , Blocks.WHITE_CONCRETE_POWDER       , DyeColor.WHITE},
+				{ Blocks.ORANGE_CONCRETE        , Blocks.ORANGE_CONCRETE_POWDER      , DyeColor.ORANGE},
+				{ Blocks.MAGENTA_CONCRETE       , Blocks.MAGENTA_CONCRETE_POWDER     , DyeColor.MAGENTA},
+				{ Blocks.LIGHT_BLUE_CONCRETE    , Blocks.LIGHT_BLUE_CONCRETE_POWDER  , DyeColor.LIGHT_BLUE},
+				{ Blocks.YELLOW_CONCRETE        , Blocks.YELLOW_CONCRETE_POWDER      , DyeColor.YELLOW},
+				{ Blocks.LIME_CONCRETE          , Blocks.LIME_CONCRETE_POWDER        , DyeColor.LIME},
+				{ Blocks.PINK_CONCRETE          , Blocks.PINK_CONCRETE_POWDER        , DyeColor.PINK},
+				{ Blocks.GRAY_CONCRETE          , Blocks.GRAY_CONCRETE_POWDER        , DyeColor.GRAY},
+				{ Blocks.LIGHT_GRAY_CONCRETE    , Blocks.LIGHT_GRAY_CONCRETE_POWDER  , DyeColor.LIGHT_GRAY},
+				{ Blocks.CYAN_CONCRETE          , Blocks.CYAN_CONCRETE_POWDER        , DyeColor.CYAN},
+				{ Blocks.PURPLE_CONCRETE        , Blocks.PURPLE_CONCRETE_POWDER      , DyeColor.PURPLE},
+				{ Blocks.BLUE_CONCRETE          , Blocks.BLUE_CONCRETE_POWDER        , DyeColor.BLUE},
+				{ Blocks.BROWN_CONCRETE         , Blocks.BROWN_CONCRETE_POWDER       , DyeColor.BROWN},
+				{ Blocks.GREEN_CONCRETE         , Blocks.GREEN_CONCRETE_POWDER       , DyeColor.GREEN},
+				{ Blocks.RED_CONCRETE           , Blocks.RED_CONCRETE_POWDER         , DyeColor.RED},
+				{ Blocks.WHITE_TERRACOTTA       , Blocks.WHITE_TERRACOTTA            , DyeColor.WHITE},
+				{ Blocks.ORANGE_TERRACOTTA      , Blocks.ORANGE_TERRACOTTA           , DyeColor.ORANGE},
+				{ Blocks.MAGENTA_TERRACOTTA     , Blocks.MAGENTA_TERRACOTTA          , DyeColor.MAGENTA},
+				{ Blocks.LIGHT_BLUE_TERRACOTTA  , Blocks.LIGHT_BLUE_TERRACOTTA       , DyeColor.LIGHT_BLUE},
+				{ Blocks.YELLOW_TERRACOTTA      , Blocks.YELLOW_TERRACOTTA           , DyeColor.YELLOW},
+				{ Blocks.LIME_TERRACOTTA        , Blocks.LIME_TERRACOTTA             , DyeColor.LIME},
+				{ Blocks.PINK_TERRACOTTA        , Blocks.PINK_TERRACOTTA             , DyeColor.PINK},
+				{ Blocks.GRAY_TERRACOTTA        , Blocks.GRAY_TERRACOTTA             , DyeColor.GRAY},
+				{ Blocks.LIGHT_GRAY_TERRACOTTA  , Blocks.LIGHT_GRAY_TERRACOTTA       , DyeColor.LIGHT_GRAY},
+				{ Blocks.CYAN_TERRACOTTA        , Blocks.CYAN_TERRACOTTA             , DyeColor.CYAN},
+				{ Blocks.PURPLE_TERRACOTTA      , Blocks.PURPLE_TERRACOTTA           , DyeColor.PURPLE},
+				{ Blocks.BLUE_TERRACOTTA        , Blocks.BLUE_TERRACOTTA             , DyeColor.BLUE},
+				{ Blocks.BROWN_TERRACOTTA       , Blocks.BROWN_TERRACOTTA            , DyeColor.BROWN},
+				{ Blocks.GREEN_TERRACOTTA       , Blocks.GREEN_TERRACOTTA            , DyeColor.GREEN},
+				{ Blocks.RED_TERRACOTTA         , Blocks.RED_TERRACOTTA              , DyeColor.RED},
 			};
 			
-			for(Block[] pair : sampleBarrels) {
-				list.add(PACKAGE.createCustomizedStack(pair[0], pair[1]));
+			for(Object[] triple : sampleBarrels) {
+				list.add(PACKAGE.createCustomizedStack((Block) triple[0], (Block) triple[1], (DyeColor) triple[2]));
 			}
 		})
 		//todo appenditems for a bunch of sample package types? maybe?

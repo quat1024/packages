@@ -2,10 +2,10 @@ package agency.highlysuspect.packages.block.entity;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.item.PackageItem;
+import agency.highlysuspect.packages.junk.PackageStyle;
+import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,12 +13,12 @@ import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.Style;
 import net.minecraft.util.DefaultedList;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
-public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity {
+public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable {
 	public PackageBlockEntity(BlockEntityType<?> type) {
 		super(type);
 	}
@@ -28,28 +28,33 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	private static final String CONTENTS_KEY = "PackageContents";
-	private static final String STYLE_KEY = "Style";
 	
 	private static final int SLOT_COUNT = 8;
 	private static final int[] NO_SLOTS = {};
 	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
 	
 	private DefaultedList<ItemStack> inv = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
-	private Style style = new Style(Blocks.STONE, Blocks.RED_CONCRETE);
-	
-	public static class Style {
-		public Style(Block frameBlock, Block innerBlock) {
-			this.frameBlock = frameBlock;
-			this.innerBlock = innerBlock;
-		}
-		
-		public final Block frameBlock;
-		public final Block innerBlock;
-	}
+	private PackageStyle style = PackageStyle.FALLBACK;
 	
 	@Override
 	public Object getRenderAttachmentData() {
 		return style;
+	}
+	
+	@Override
+	public CompoundTag toClientTag(CompoundTag tag) {
+		tag.put(PackageStyle.KEY, style.toTag());
+		return tag;
+	}
+	
+	@Override
+	public void fromClientTag(CompoundTag tag) {
+		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
+	}
+	
+	public void setStyleAndSync(World world, PackageStyle style) {
+		this.style = style;
+		if(!world.isClient) sync();
 	}
 	
 	public ItemStack findFirstNonemptyStack() {
@@ -185,11 +190,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		tag.put(CONTENTS_KEY, contents);
 		
 		//Style
-		CompoundTag styleTag = new CompoundTag();
-		styleTag.putString("frame", Registry.BLOCK.getId(style.frameBlock).toString());
-		styleTag.putString("inner", Registry.BLOCK.getId(style.innerBlock).toString());
-		
-		tag.put(STYLE_KEY, styleTag);
+		tag.put(PackageStyle.KEY, style.toTag());
 		
 		return super.toTag(tag);
 	}
@@ -214,10 +215,6 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		}
 		
 		//Style
-		CompoundTag styleTag = tag.getCompound(STYLE_KEY);
-		Block frame = Registry.BLOCK.getOrEmpty(Identifier.tryParse(styleTag.getString("frame"))).orElse(Blocks.STONE);
-		Block inner = Registry.BLOCK.getOrEmpty(Identifier.tryParse(styleTag.getString("inner"))).orElse(Blocks.STONE);
-		style = new Style(frame, inner);
+		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
 	}
-	
 }

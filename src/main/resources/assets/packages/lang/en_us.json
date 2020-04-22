@@ -4,6 +4,7 @@
   "block.packages.package_maker": "Package Crafter",
   "block.packages.package": "Package",
   
-  "packages.frame": "%s Frame",
-  "packages.inner": "%s Core"
+  "packages.style_tooltip.frame": "%s Frame",
+  "packages.style_tooltip.inner": "%s Core",
+  "packages.style_tooltip.both": "%s Frame and Core"
 }
