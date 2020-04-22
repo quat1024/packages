@@ -19,7 +19,6 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DefaultedList;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 
 public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
 	public PackageBlockEntity(BlockEntityType<?> type) {
@@ -31,8 +30,8 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	public static final String CONTENTS_KEY = "PackageContents";
+	public static final int SLOT_COUNT = 8;
 	
-	private static final int SLOT_COUNT = 8;
 	private static final int[] NO_SLOTS = {};
 	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
 	
@@ -55,6 +54,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	@Override
 	public void fromClientTag(CompoundTag tag) {
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
+		readContents(tag.getCompound(CONTENTS_KEY));
 		
 		if(world != null) { //Which it probably never is, but IntelliJ is having a fit
 			BlockState help = world.getBlockState(pos);
@@ -143,7 +143,13 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		else return Math.min(stack.getMaxCount(), 64); //just in case
 	}
 	
-	//Inventory bullshit
+	@Override
+	public void markDirty() {
+		if(!world.isClient) sync();
+		super.markDirty();
+	}
+	
+	//More inventory bullshit
 	@Override
 	public int[] getInvAvailableSlots(Direction side) {
 		if(world == null) return NO_SLOTS;

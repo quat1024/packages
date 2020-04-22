@@ -1,10 +1,12 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
+import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
@@ -29,5 +31,7 @@ public class ClientInit implements ClientModInitializer {
 				return packageUnbakedModel;
 			} else return null;
 		});
+		
+		BlockEntityRendererRegistry.INSTANCE.register(PBlockEntityTypes.PACKAGE, PackageBlockEntityRenderer::new);
 	}
 }

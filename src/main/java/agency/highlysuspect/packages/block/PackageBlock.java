@@ -1,8 +1,6 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
-import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.minecraft.block.*;
@@ -15,7 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Property;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -27,8 +24,6 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 		setDefaultState(getDefaultState().with(FACING, TwelveDirection.NORTH));
 	}
 	
-	public static final Identifier CONTENTS = new Identifier(Packages.MODID, "package_contents");
-	 
 	//States, materials, etc.
 	public static final Property<TwelveDirection> FACING = EnumProperty.of("facing", TwelveDirection.class);
 	
@@ -69,14 +64,16 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 		if(!(blockEntity instanceof PackageBlockEntity)) return;
 		PackageBlockEntity pkg = (PackageBlockEntity) blockEntity;
 		
-		//Copy custom name
 		if(stack.hasCustomName()) {
 			pkg.setCustomName(stack.getName());
 		}
 		
-		//This is not *strictly* needed because the sync will take care of it, but this prevents packages flickering the default style after placed.
-		pkg.setStyle(PackageStyle.fromItemStack(stack));
-		
-		if(!world.isClient) pkg.sync();
+		if(world.isClient) {
+			//This is not *strictly* needed because the sync will take care of it, but this prevents packages flickering the default style after placed.
+			//Client knows the tag, might as well make use of the information
+			pkg.setStyle(PackageStyle.fromItemStack(stack));
+		} else {
+			pkg.sync();
+		}
 	}
 }
