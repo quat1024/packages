@@ -11,6 +11,7 @@ import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -26,7 +27,14 @@ public class PackageItem extends BlockItem {
 	}
 	
 	public ItemStack createCustomizedStack(Block frame, Block inner, DyeColor color) {
-		return new PackageStyle(frame, inner, color).writeToStackTag(new ItemStack(this));
+		ItemStack blah = new PackageStyle(frame, inner, color).writeToStackTag(new ItemStack(this));
+		
+		//Add a blank contents tag TODO this hack sucks ass, find a better way to make crafted pkgs and dropped empty pkgs stack
+		CompoundTag bad = new CompoundTag();
+		bad.putInt("realCount", 0);
+		blah.getSubTag("BlockEntityTag").put("PackageContents", bad);
+		
+		return blah;
 	}
 	
 	@Override

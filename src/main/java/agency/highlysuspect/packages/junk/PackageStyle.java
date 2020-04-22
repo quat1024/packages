@@ -26,7 +26,7 @@ public class PackageStyle {
 	public static PackageStyle fromItemStack(ItemStack stack) {
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return FALLBACK;
-		else return fromTag(tag.getCompound(KEY));
+		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
 	
 	public final Block frameBlock;
@@ -52,7 +52,7 @@ public class PackageStyle {
 	}
 	
 	public ItemStack writeToStackTag(ItemStack stack) {
-		toTag(stack.getOrCreateSubTag(KEY));
+		stack.getOrCreateSubTag("BlockEntityTag").put(KEY, toTag());
 		return stack;
 	}
 }

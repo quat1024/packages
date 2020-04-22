@@ -74,13 +74,9 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 			pkg.setCustomName(stack.getName());
 		}
 		
-		//Copy style
+		//This is not *strictly* needed because the sync will take care of it, but this prevents packages flickering the default style after placed.
 		pkg.setStyle(PackageStyle.fromItemStack(stack));
 		
-		//Copy contents
-		if(stack.getSubTag(PackageBlockEntity.CONTENTS_KEY) != null) {
-			//noinspection ConstantConditions
-			pkg.readContents(stack.getSubTag(PackageBlockEntity.CONTENTS_KEY));
-		}
+		if(!world.isClient) pkg.sync();
 	}
 }

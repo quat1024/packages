@@ -48,16 +48,39 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	@Override
 	public CompoundTag toClientTag(CompoundTag tag) {
 		tag.put(PackageStyle.KEY, style.toTag());
+		tag.put(CONTENTS_KEY, writeContents());
 		return tag;
 	}
 	
 	@Override
 	public void fromClientTag(CompoundTag tag) {
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
+		
+		if(world != null) { //Which it probably never is, but IntelliJ is having a fit
+			BlockState help = world.getBlockState(pos);
+			world.updateListeners(pos, help, help, 8);
+		}
 	}
 	
 	public void setStyle(PackageStyle style) {
 		this.style = style;
+	}
+	
+	public CompoundTag writeContents() {
+		CompoundTag tag = new CompoundTag();
+		
+		ItemStack first = findFirstNonemptyStack();
+		if(!first.isEmpty()) {
+			CompoundTag stackTag = findFirstNonemptyStack().toTag(new CompoundTag());
+			stackTag.putByte("Count", (byte) 1);
+			
+			tag.put("stack", stackTag);
+			tag.putInt("realCount", countItems());
+		} else {
+			tag.putInt("realCount", 0);
+		}
+		
+		return tag;
 	}
 	
 	public void readContents(CompoundTag tag) {
@@ -218,20 +241,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	@Override
 	public CompoundTag toTag(CompoundTag tag) {
 		//Contents
-		CompoundTag contents = new CompoundTag();
-		
-		ItemStack first = findFirstNonemptyStack();
-		if(!first.isEmpty()) {
-			CompoundTag stackTag = findFirstNonemptyStack().toTag(new CompoundTag());
-			stackTag.putByte("Count", (byte) 1);
-			
-			contents.put("stack", stackTag);
-			contents.putInt("realCount", countItems());
-		} else {
-			contents.putInt("realCount", 0);
-		}
-		
-		tag.put(CONTENTS_KEY, contents);
+		tag.put(CONTENTS_KEY, writeContents());
 		
 		//Style
 		tag.put(PackageStyle.KEY, style.toTag());

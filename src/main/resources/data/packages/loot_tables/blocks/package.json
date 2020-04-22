@@ -18,12 +18,12 @@
               "ops": [
                 {
                   "source": "PackageStyle",
-                  "target": "PackageStyle",
+                  "target": "BlockEntityTag.PackageStyle",
                   "op": "replace"
                 },
                 {
                   "source": "PackageContents",
-                  "target": "PackageContents",
+                  "target": "BlockEntityTag.PackageContents",
                   "op": "replace"
                 }
               ]
