@@ -3,11 +3,9 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.TwelveDirection;
-import net.fabricmc.fabric.impl.client.indigo.renderer.render.ItemRenderContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
@@ -21,9 +19,9 @@ import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-
-import java.util.Random;
+import net.minecraft.world.World;
 
 public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlockEntity> {
 	public PackageBlockEntityRenderer(BlockEntityRenderDispatcher dispatcher) {
@@ -35,46 +33,49 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		if(blockEntity == null || blockEntity.getWorld() == null) return;
 		
 		//Gather some data
+		World world = blockEntity.getWorld();
 		MinecraftClient client = MinecraftClient.getInstance();
+		
 		BlockState packageState = blockEntity.getCachedState();
 		if(!(packageState.getBlock() instanceof PackageBlock)) return;
+		
 		TwelveDirection packageTwelveDir = packageState.get(PackageBlock.FACING);
 		Direction packageDir = packageTwelveDir.primaryDirection;
+		
+		BlockPos positionInFront = blockEntity.getPos().offset(packageDir);
+		
+		//Use the light level of whatever's in front
+		//Quick fix for my block being solid so it has no light insside...
+		light = WorldRenderer.getLightmapCoordinates(world, positionInFront);
 		
 		int count = blockEntity.countItems();
 		ItemStack icon = blockEntity.findFirstNonemptyStack();
 		
-		//Use the light level of whatever's in front
-		//Quick fix for my block being solid so it has no light insside...
-		light = WorldRenderer.getLightmapCoordinates(blockEntity.getWorld(), blockEntity.getPos().offset(packageDir));
-		
 		matrices.push();
 		matrices.translate(0.5, 0.5, 0.5);
 		
+		Matrix4f modelMatrix = matrices.peek().getModel();
+		
 		//Rotate into position.
 		//This might be jank, just blindly copied from Worse Barrels really
+		//Only move the model matrix not the normal matrix, to ensure items are lit uniformly
 		if(packageDir.getHorizontal() == -1) { //up/down
-			matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-packageTwelveDir.secondaryDirection.asRotation() - 90));
-			matrices.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(packageDir == Direction.UP ? 90 : -90));
+			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-packageTwelveDir.secondaryDirection.asRotation() + 90));
+			modelMatrix.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(packageDir == Direction.UP ? 90 : -90));
 		} else {
-			matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-packageDir.asRotation() - 90));
+			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-packageDir.asRotation() - 90));
 		}
 		
 		//Draw the item on the front.
 		if(count > 0) {
 			matrices.push();
 			
-			matrices.translate(6 / 16d + 0.001, 0, 0); //just outside the front of the package
-			matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90)); //Just keep rotating until it looks right ayy lmao
-			//Just scale the world matrix, not the normals
-			//This is the magic sauce that makes item lighting work
-			matrices.peek().getModel().multiply(Matrix4f.scale(0.75f, 0.75f, 0.001f));
+			Matrix4f modelMatrix2 = matrices.peek().getModel();
+			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.001f, 0, 0));
+			modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.001f)); //it's flat fuck friday!!!!!
 			
-			ItemRenderer renderer = client.getItemRenderer();
-			
-			//DiffuseLighting.enableGuiDepthLighting();
-			renderer.renderItem(icon, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
-			//DiffuseLighting.disableGuiDepthLighting();
+			client.getItemRenderer().renderItem(icon, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
 			
 			matrices.pop();
 		}
@@ -90,11 +91,12 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		
 		if(client.getCameraEntity().isSneaking()) {
 			if(showText) showDetailedText = true;
-			if(client.getCameraEntity().getPos().squaredDistanceTo(
-				blockEntity.getPos().getX(),
-				blockEntity.getPos().getY(),
-				blockEntity.getPos().getZ()
-			) < 5 * 5) {
+			
+			if(!showText && client.getCameraEntity().getCameraPosVec(1).squaredDistanceTo(
+				blockEntity.getPos().getX() + 0.5,
+				blockEntity.getPos().getY() + 0.5	,
+				blockEntity.getPos().getZ() + 0.5
+			) < 7 * 7) {
 				showText = true;
 			}
 		}

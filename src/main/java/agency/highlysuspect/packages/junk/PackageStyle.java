@@ -33,9 +33,9 @@ public class PackageStyle {
 	public final Block innerBlock;
 	public final DyeColor color;
 	
-	private static final Block fallbackFrame = Blocks.STONE;
-	private static final Block fallbackInner = Blocks.RED_CONCRETE;
-	private static final DyeColor fallbackColor = DyeColor.BLUE;
+	private static final Block fallbackFrame = Blocks.PINK_CONCRETE;
+	private static final Block fallbackInner = Blocks.BLACK_CONCRETE;
+	private static final DyeColor fallbackColor = DyeColor.PINK;
 	
 	public static final String KEY = "PackageStyle";
 	public static final PackageStyle FALLBACK = new PackageStyle(fallbackFrame, fallbackInner, fallbackColor);

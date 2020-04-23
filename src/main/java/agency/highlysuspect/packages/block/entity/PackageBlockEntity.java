@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
@@ -17,8 +18,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DefaultedList;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.math.Direction;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ListIterator;
 
 public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
 	public PackageBlockEntity(BlockEntityType<?> type) {
@@ -139,13 +145,93 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	public static int maxStackAmountAllowed(ItemStack stack) {
 		if(stack.isEmpty()) return 64;
-		else if(stack.getItem() instanceof PackageItem) return 1; //TODO only return 1 when the package is not empty
+		else if(stack.getItem() instanceof PackageItem) {
+			//TODO clean this up
+			if(!stack.hasTag()) return 64;
+			CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+			if(beTag == null) return 64;
+			CompoundTag contentsTag = beTag.getCompound(CONTENTS_KEY);
+			if(contentsTag.getInt("realCount") > 0) return 1;
+			else return 64;
+		}
 		else return Math.min(stack.getMaxCount(), 64); //just in case
+	}
+	
+	//custom package-specific inventory wrappers, for external use
+	public boolean matches(ItemStack stack) {
+		return !stack.isEmpty() && isValidInvStack(0, stack);
+	}
+	
+	//Does not mutate 'held', always returns a different item stack.
+	//kinda like forge item handlers lol...
+	public void insert(PlayerEntity player, Hand hand, boolean fullStack) {
+		ItemStack held = player.getStackInHand(hand);
+		
+		if(held.isEmpty() || !matches(held)) return;
+		
+		//Will never be more than one stack
+		int amountToInsert = Math.min(maxStackAmountAllowed(held), fullStack ? held.getCount() : 1);
+		int insertedAmount = 0;
+		
+		ListIterator<ItemStack> stackerator = inv.listIterator();
+		while(amountToInsert > 0 && stackerator.hasNext()) {
+			ItemStack stack = stackerator.next();
+			
+			if(stack.isEmpty()) {
+				ItemStack newStack = held.copy();
+				newStack.setCount(amountToInsert);
+				insertedAmount += amountToInsert;
+				stackerator.set(newStack);
+				break;
+			} else {
+				int increaseAmount = Math.min(maxStackAmountAllowed(stack) - stack.getCount(), amountToInsert);
+				if(increaseAmount > 0) {
+					stack.increment(increaseAmount);
+					amountToInsert -= increaseAmount;
+					insertedAmount += increaseAmount;
+				}
+			}
+		}
+		
+		ItemStack leftover = held.copy();
+		leftover.decrement(insertedAmount);
+		
+		player.setStackInHand(hand, leftover);
+		
+		markDirty();
+	}
+	
+	public void take(PlayerEntity player, boolean fullStack) {
+		ItemStack contained = findFirstNonemptyStack();
+		if(contained.isEmpty()) return;
+		
+		int removeTotal = fullStack ? maxStackAmountAllowed(contained) : 1;
+		List<ItemStack> stacksToGive = new ArrayList<>();
+		
+		ListIterator<ItemStack> stackerator = inv.listIterator();
+		while(removeTotal > 0 && stackerator.hasNext()) {
+			ItemStack stack = stackerator.next();
+			if(stack.isEmpty()) continue;
+			
+			int remove = Math.min(stack.getCount(), removeTotal);
+			stacksToGive.add(stack.split(remove));
+			removeTotal -= remove;
+		}
+		
+		stacksToGive.forEach(stack -> {
+			if(!player.inventory.insertStack(player.inventory.selectedSlot, stack)) {
+				if(!player.inventory.insertStack(-1, stack)) {
+					player.dropItem(stack, false);
+				}
+			}
+		});
+		
+		markDirty();
 	}
 	
 	@Override
 	public void markDirty() {
-		if(!world.isClient) sync();
+		if(world != null && !world.isClient) sync();
 		super.markDirty();
 	}
 	
