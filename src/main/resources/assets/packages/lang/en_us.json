@@ -6,5 +6,11 @@
   
   "packages.style_tooltip.frame": "%s Frame",
   "packages.style_tooltip.inner": "%s Core",
-  "packages.style_tooltip.both": "%s Frame and Core"
+  "packages.style_tooltip.both": "%s Frame and Core",
+  "packages.style_tooltip.color": "%s Color",
+
+  "packages.package_maker.frame": "Frame",
+  "packages.package_maker.inner": "Core",
+  "packages.package_maker.dye": "Color",
+  "packages.package_maker.craft_button": "Create"
 }

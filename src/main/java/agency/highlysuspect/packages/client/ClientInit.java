@@ -4,13 +4,18 @@ import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.client.model.PackageUnbakedModel;
 import agency.highlysuspect.packages.client.screen.PContainerScreens;
+import agency.highlysuspect.packages.client.screen.PackageMakerContainerScreen;
+import agency.highlysuspect.packages.container.PackageMakerContainer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.fabric.mixin.client.texture.MixinSpriteAtlasTexture;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -39,6 +44,12 @@ public class ClientInit implements ClientModInitializer {
 			} else return null;
 		});
 		regSimpleReloadListener("dump_package_model", (mgr) -> packageUnbakedModel = null);
+		
+		ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEX).register((tex, reg) -> {
+			reg.register(PackageMakerContainer.FRAME_BG);
+			reg.register(PackageMakerContainer.INNER_BG);
+			reg.register(PackageMakerContainer.DYE_BG);
+		});
 		
 		BlockEntityRendererRegistry.INSTANCE.register(PBlockEntityTypes.PACKAGE, PackageBlockEntityRenderer::new);
 		

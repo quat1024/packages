@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.net;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
+import agency.highlysuspect.packages.container.PackageMakerContainer;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -21,7 +22,7 @@ public class PNetCommon {
 				PlayerEntity player = ctx.getPlayer();
 				World world = player.world;
 				
-				if(!sanityCheck(world, ctx.getPlayer(), pos)) return;
+				if(!packageSanityCheck(world, ctx.getPlayer(), pos)) return;
 				
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
@@ -39,7 +40,7 @@ public class PNetCommon {
 				PlayerEntity player = ctx.getPlayer();
 				World world = player.world;
 				
-				if (!sanityCheck(world, ctx.getPlayer(), pos)) return;
+				if (!packageSanityCheck(world, ctx.getPlayer(), pos)) return;
 				
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
@@ -47,10 +48,24 @@ public class PNetCommon {
 				be.take(player, mode == 1);
 			});
 		});
+		
+		ServerSidePacketRegistry.INSTANCE.register(PMessageTypes.PACKAGE_CRAFT, (ctx, buf) -> {
+			boolean all = buf.readBoolean();
+			ctx.getTaskQueue().execute(() -> {
+				PlayerEntity player = ctx.getPlayer();
+				
+				if(player.container instanceof PackageMakerContainer) {
+					for(int i = 0; i < 64; i++) { //Janky hack mate
+						((PackageMakerContainer) player.container).be.performCraft();
+						if(!all) return;
+					}
+				}
+			});
+		});
 	}
 	
 	@SuppressWarnings({"RedundantIfStatement", "deprecation"})
-	private static boolean sanityCheck(World world, PlayerEntity player, BlockPos pos) {
+	private static boolean packageSanityCheck(World world, PlayerEntity player, BlockPos pos) {
 		if(!world.isChunkLoaded(pos)) return false;
 		if(player.getBlockPos().getSquaredDistance(pos) > 8 * 8) return false;
 		

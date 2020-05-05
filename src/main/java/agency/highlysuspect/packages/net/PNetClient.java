@@ -25,4 +25,10 @@ public class PNetClient {
 		buf.writeByte(mode);
 		ClientSidePacketRegistry.INSTANCE.sendToServer(PMessageTypes.TAKE, buf);
 	}
+	
+	public static void requestPackageMakerCraft(boolean all) {
+		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		buf.writeBoolean(all);
+		ClientSidePacketRegistry.INSTANCE.sendToServer(PMessageTypes.PACKAGE_CRAFT, buf);
+	}
 }

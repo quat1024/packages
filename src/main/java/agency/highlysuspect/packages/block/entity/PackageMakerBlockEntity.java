@@ -31,6 +31,11 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		this(PBlockEntityTypes.PACKAGE_MAKER);
 	}
 	
+	public static final int FRAME_SLOT = 0;
+	public static final int INNER_SLOT = 1;
+	public static final int DYE_SLOT = 2;
+	public static final int OUTPUT_SLOT = 3;
+	
 	private final DefaultedList<ItemStack> inv = DefaultedList.ofSize(getInvSize(), ItemStack.EMPTY);
 	
 	public static boolean matchesFrameSlot(ItemStack stack) {
@@ -83,15 +88,9 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	//<editor-fold desc="SidedInventory">
-	
-	public static final int FRAME_SLOT = 0;
-	public static final int INNER_SLOT = 1;
-	public static final int DYE_SLOT = 2;
-	public static final int OUTPUT_SLOT = 3;
-	
-	private static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};
-	private static final int[] INNER_AND_DYE = new int[] {INNER_SLOT, DYE_SLOT};
-	private static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
+	public static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};
+	public static final int[] INNER_AND_DYE = new int[] {INNER_SLOT, DYE_SLOT};
+	public static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
 	
 	@Override
 	public int[] getInvAvailableSlots(Direction side) {
