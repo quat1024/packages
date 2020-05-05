@@ -1,20 +1,14 @@
 package agency.highlysuspect.packages.item;
 
-import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.item.TooltipContext;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.LiteralText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
@@ -32,13 +26,15 @@ public class PackageItem extends BlockItem {
 	
 	public ItemStack createCustomizedStack(Block frame, Block inner, DyeColor color) {
 		ItemStack blah = new PackageStyle(frame, inner, color).writeToStackTag(new ItemStack(this));
-		
+		addFakeContentsTagThisSucks(blah);
+		return blah;
+	}
+	
+	public static void addFakeContentsTagThisSucks(ItemStack stack) {
 		//Add a blank contents tag TODO this hack sucks ass, find a better way to make crafted pkgs and dropped empty pkgs stack
 		CompoundTag bad = new CompoundTag();
 		bad.putInt("realCount", 0);
-		blah.getSubTag("BlockEntityTag").put("PackageContents", bad);
-		
-		return blah;
+		stack.getSubTag("BlockEntityTag").put("PackageContents", bad);
 	}
 	
 	@Override

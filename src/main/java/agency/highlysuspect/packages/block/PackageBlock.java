@@ -1,15 +1,25 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
+import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;
-import net.minecraft.block.*;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.container.Container;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Property;
@@ -75,5 +85,43 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 		} else {
 			pkg.sync();
 		}
+	}
+	
+	@Override
+	public boolean hasComparatorOutput(BlockState state) {
+		return true;
+	}
+	
+	@Override
+	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+		return Container.calculateComparatorOutput(world.getBlockEntity(pos));
+	}
+	
+	@Override
+	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+		if(!world.isClient && player.isCreative()) {
+			getDroppedStacks(state, (ServerWorld) world, pos, world.getBlockEntity(pos)).forEach(s -> {
+				ItemEntity ent = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), s);
+				ent.setToDefaultPickupDelay();
+				world.spawnEntity(ent);
+			});
+		}
+	}
+	
+	@Override
+	@Environment(EnvType.CLIENT)
+	public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
+		ItemStack stack = super.getPickStack(world, pos, state);
+		PackageBlockEntity be = (PackageBlockEntity)world.getBlockEntity(pos);
+		if(be == null) return stack;
+		
+		//just copy the style not the contents (like shulker boxes)
+		CompoundTag tag = new CompoundTag();
+		tag.put(PackageStyle.KEY, ((PackageStyle) be.getRenderAttachmentData()).toTag());
+		stack.putSubTag("BlockEntityTag", tag);
+		
+		PackageItem.addFakeContentsTagThisSucks(stack);
+		
+		return stack;
 	}
 }

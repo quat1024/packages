@@ -4,7 +4,6 @@ import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.client.model.PackageUnbakedModel;
 import agency.highlysuspect.packages.client.screen.PContainerScreens;
-import agency.highlysuspect.packages.client.screen.PackageMakerContainerScreen;
 import agency.highlysuspect.packages.container.PackageMakerContainer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -14,7 +13,6 @@ import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegi
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.fabricmc.fabric.mixin.client.texture.MixinSpriteAtlasTexture;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
