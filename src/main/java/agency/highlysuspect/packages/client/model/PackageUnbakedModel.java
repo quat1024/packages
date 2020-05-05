@@ -1,6 +1,6 @@
-package agency.highlysuspect.packages.client;
+package agency.highlysuspect.packages.client.model;
 
-import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.junk.BakedQuadExt;
 import com.google.common.base.Preconditions;
@@ -12,9 +12,7 @@ import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.minecraft.client.render.model.*;
-import net.minecraft.client.texture.MissingSprite;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
@@ -31,8 +29,8 @@ public class PackageUnbakedModel implements UnbakedModel {
 	
 	private final UnbakedModel basePackage;
 	
-	private static final Identifier SPECIAL_FRAME = new Identifier(Packages.MODID, "special/frame");
-	private static final Identifier SPECIAL_INNER = new Identifier(Packages.MODID, "special/inner");
+	private static final Identifier SPECIAL_FRAME = new Identifier(PackagesInit.MODID, "special/frame");
+	private static final Identifier SPECIAL_INNER = new Identifier(PackagesInit.MODID, "special/inner");
 	
 	private static final Direction[] DIRECTIONS_AND_NULL = new Direction[]{
 		Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null
@@ -111,7 +109,7 @@ public class PackageUnbakedModel implements UnbakedModel {
 					} else if (type.equals(SPECIAL_INNER)) {
 						innerQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
 					} else {
-						Packages.LOGGER.error("Found a FakeSprite with ID " + type.toString() + " but I'm not sure what to do with that");
+						PackagesInit.LOGGER.error("Found a FakeSprite with ID " + type.toString() + " but I'm not sure what to do with that");
 					}
 					
 					continue;

@@ -10,7 +10,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
@@ -104,7 +103,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		}
 	}
 	
-	//What's in a name
+	//<editor-fold desc="Name cruft">
 	@Override
 	public Text getName() {
 		return hasCustomName() ? customName : new TranslatableText(PBlocks.PACKAGE.getTranslationKey());
@@ -128,6 +127,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	public void setCustomName(Text customName) {
 		this.customName = customName;
 	}
+	//</editor-fold>
 	
 	//Inventory stuff.
 	public ItemStack findFirstNonemptyStack() {
@@ -162,6 +162,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		return !stack.isEmpty() && isValidInvStack(0, stack);
 	}
 	
+	//<editor-fold desc="Interactions">
 	//Does not mutate 'held', always returns a different item stack.
 	//kinda like forge item handlers lol...
 	public void insert(PlayerEntity player, Hand hand, boolean fullStack) {
@@ -228,7 +229,9 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		
 		markDirty();
 	}
+	//</editor-fold>
 	
+	//<editor-fold desc="SidedInventory interface">
 	@Override
 	public void markDirty() {
 		if(world != null && !world.isClient) sync();
@@ -313,6 +316,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	public void clear() {
 		inv.clear();
 	}
+	//</editor-fold>
 	
 	//HopperBlockEntity.canMergeItems copy, with a modification
 	private static boolean canMergeItems(ItemStack first, ItemStack second) {
@@ -359,6 +363,8 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		//Custom name
 		if(tag.contains("CustomName", 8)) {
 			customName = Text.Serializer.fromJson(tag.getString("CustomName"));
+		} else {
+			customName = null;
 		}
 	}
 }

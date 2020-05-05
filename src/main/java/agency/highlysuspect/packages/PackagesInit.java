@@ -2,14 +2,14 @@ package agency.highlysuspect.packages;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
+import agency.highlysuspect.packages.container.PContainerTypes;
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.junk.PBlockEventHandlers;
 import agency.highlysuspect.packages.net.PNetCommon;
 import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Packages implements ModInitializer {
+public class PackagesInit implements ModInitializer {
 	public static final String MODID = "packages";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
 	
@@ -20,7 +20,7 @@ public class Packages implements ModInitializer {
 		
 		PItems.onInitialize();
 		
-		PBlockEventHandlers.onInitialize();
+		PContainerTypes.onInitialize();
 		PNetCommon.onInitialize();
 	}
 }

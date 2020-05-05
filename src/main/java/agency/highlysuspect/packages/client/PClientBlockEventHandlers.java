@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.junk;
+package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
@@ -11,7 +11,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-public class PBlockEventHandlers {
+public class PClientBlockEventHandlers {
 	private static BlockPos lastPunchPos;
 	private static long lastPunchTick;
 	
@@ -25,6 +25,7 @@ public class PBlockEventHandlers {
 				if(direction == frontDir) {
 					if(world.isClient) {
 						//Hack to work around AttackBlockCallback getting fired way too often (every tick, plus an extra time when you first punch)
+						//TODO this is ass figure out how to fix it actually
 						if (pos.equals(lastPunchPos) && (world.getTime() - lastPunchTick < 4)) return ActionResult.SUCCESS;
 						lastPunchPos = pos;
 						lastPunchTick = world.getTime();

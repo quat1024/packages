@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "agency.highlysuspect.packages.Packages"
+      "agency.highlysuspect.packages.PackagesInit"
     ],
     "client": [
       "agency.highlysuspect.packages.client.ClientInit"

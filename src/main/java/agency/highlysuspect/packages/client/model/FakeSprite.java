@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.client;
+package agency.highlysuspect.packages.client.model;
 
 import net.minecraft.client.resource.metadata.AnimationFrameResourceMetadata;
 import net.minecraft.client.resource.metadata.AnimationResourceMetadata;

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.client;
+package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.api.EnvType;

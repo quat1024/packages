@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.item;
 
-import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.block.Block;
@@ -19,7 +19,7 @@ public class PItems {
 	public static BlockItem PACKAGE_MAKER;
 	public static PackageItem PACKAGE;
 	
-	public static final ItemGroup GROUP = FabricItemGroupBuilder.create(new Identifier(Packages.MODID, "group"))
+	public static final ItemGroup GROUP = FabricItemGroupBuilder.create(new Identifier(PackagesInit.MODID, "group"))
 		.icon(() -> new ItemStack(PACKAGE_MAKER))
 		.appendItems(list -> {
 			list.add(new ItemStack(PACKAGE_MAKER));

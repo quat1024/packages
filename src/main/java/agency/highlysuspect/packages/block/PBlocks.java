@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.PackagesInit;
 import net.fabricmc.fabric.api.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.tools.FabricToolTags;
 import net.minecraft.block.Material;
@@ -14,7 +14,7 @@ public class PBlocks {
 	public static PackageBlock PACKAGE;
 	
 	public static void onInitialize() {
-		PACKAGE_MAKER = Registry.register(Registry.BLOCK, new Identifier(Packages.MODID, "package_maker"), new PackageMakerBlock(
+		PACKAGE_MAKER = Registry.register(Registry.BLOCK, new Identifier(PackagesInit.MODID, "package_maker"), new PackageMakerBlock(
 			FabricBlockSettings.of(Material.WOOD)
 				.breakByTool(FabricToolTags.AXES)
 				.sounds(BlockSoundGroup.WOOD)
@@ -22,7 +22,7 @@ public class PBlocks {
 				.build()
 		));
 		
-		PACKAGE = Registry.register(Registry.BLOCK, new Identifier(Packages.MODID, "package"), new PackageBlock(
+		PACKAGE = Registry.register(Registry.BLOCK, new Identifier(PackagesInit.MODID, "package"), new PackageBlock(
 			FabricBlockSettings.of(Material.WOOD)
 				.breakByTool(FabricToolTags.AXES)
 				.sounds(BlockSoundGroup.WOOD)
