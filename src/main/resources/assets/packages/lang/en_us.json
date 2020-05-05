@@ -8,6 +8,9 @@
   "packages.style_tooltip.inner": "%s Core",
   "packages.style_tooltip.both": "%s Frame and Core",
   "packages.style_tooltip.color": "%s Color",
+  
+  "packages.contents_tooltip": "%sx %s",
+  "packages.contents_tooltip.empty": "Empty",
 
   "packages.package_maker.frame": "Frame",
   "packages.package_maker.inner": "Core",

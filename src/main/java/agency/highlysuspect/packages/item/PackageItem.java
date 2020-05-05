@@ -10,15 +10,19 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PackageItem extends BlockItem {
@@ -40,21 +44,32 @@ public class PackageItem extends BlockItem {
 	@Override
 	@Environment(EnvType.CLIENT)
 	public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-		//TODO Show contents
-		
-		//Show frame
-		Style outer = new Style().setColor(Formatting.DARK_PURPLE).setItalic(true);
-		Style inner = new Style().setColor(Formatting.LIGHT_PURPLE).setItalic(false);
-		PackageStyle packageStyle = PackageStyle.fromItemStack(stack);
-		
-		Block frameBlock = packageStyle.frameBlock;
-		Block innerBlock = packageStyle.innerBlock;
-		
-		if(frameBlock.equals(innerBlock)) {
-			tooltip.add(new TranslatableText("packages.style_tooltip.both", frameBlock.getName().setStyle(inner)).setStyle(outer));
-		} else {
-			tooltip.add(new TranslatableText("packages.style_tooltip.frame", frameBlock.getName().setStyle(inner)).setStyle(outer));
-			tooltip.add(new TranslatableText("packages.style_tooltip.inner", innerBlock.getName().setStyle(inner)).setStyle(outer));
+		//TODO This makes me sad but im not sure what a better way would be...
+		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+		if(beTag != null) {
+			CompoundTag contentsTag = beTag.getCompound("PackageContents");
+			if(!contentsTag.isEmpty()) {
+				int count = contentsTag.getInt("realCount");
+				ItemStack containedStack = ItemStack.fromTag(contentsTag.getCompound("stack"));
+				
+				if(!containedStack.isEmpty()) {
+					Text uwu = new TranslatableText("packages.contents_tooltip", count, containedStack.getName());
+					if(context.isAdvanced()) {
+						uwu.append(" ").append(new LiteralText(Registry.ITEM.getId(containedStack.getItem()).toString()).styled(s -> s.setColor(Formatting.DARK_GRAY)));
+					}
+					tooltip.add(uwu);
+					
+					List<Text> containedTooltip = new ArrayList<>();
+					containedStack.getItem().appendTooltip(containedStack, world, containedTooltip, context);
+					for (Text containedLine : containedTooltip) {
+						tooltip.add(new LiteralText("   ").append(containedLine));
+					}
+					
+					return;
+				}
+			}
+			
+			tooltip.add(new TranslatableText("packages.contents_tooltip.empty"));
 		}
 	}
 }
