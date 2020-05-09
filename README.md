@@ -1,7 +1,9 @@
 Packages
 ========
 
-Worse Barrels successor for Fabric 1.15.2.
+Worse Barrels successor for Fabric 1.15.2!
+
+Package Crafter model by [Kat](https://kat.blue)!
 
 ### Why not port Worse Barrels directly?
 

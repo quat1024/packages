@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.PackagesInit;
+import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.client.model.PackageUnbakedModel;
 import agency.highlysuspect.packages.client.screen.PContainerScreens;
@@ -8,11 +9,13 @@ import agency.highlysuspect.packages.container.PackageMakerContainer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -50,6 +53,8 @@ public class ClientInit implements ClientModInitializer {
 		});
 		
 		BlockEntityRendererRegistry.INSTANCE.register(PBlockEntityTypes.PACKAGE, PackageBlockEntityRenderer::new);
+		
+		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(), PBlocks.PACKAGE_MAKER);
 		
 		PClientBlockEventHandlers.onInitialize();
 		PContainerScreens.onInitialize();

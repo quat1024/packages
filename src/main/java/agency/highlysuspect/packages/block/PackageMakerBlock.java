@@ -1,12 +1,12 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PContainerTypes;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -23,6 +23,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
@@ -37,6 +39,16 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	
 	public static final EnumProperty<Direction> FACING = Properties.HOPPER_FACING;
 	public static final BooleanProperty POWERED = Properties.POWERED;
+	
+	public static final VoxelShape LEG1 = createCuboidShape(1, 0, 1, 3, 6, 3);
+	public static final VoxelShape LEG2 = createCuboidShape(13, 0, 1, 15, 6, 3);
+	public static final VoxelShape LEG3 = createCuboidShape(13, 0, 13, 15, 6, 15);
+	public static final VoxelShape LEG4 = createCuboidShape(1, 0, 13, 3, 9, 15);
+	public static final VoxelShape TRAY = createCuboidShape(1, 2, 1, 15, 3, 15);
+	public static final VoxelShape TOP = createCuboidShape(1, 6, 1, 15, 9, 15);
+	
+	public static final VoxelShape ALL = VoxelShapes.union(LEG1, LEG2, LEG3, LEG4, TRAY, TOP);
+	public static final VoxelShape SIMPLE = createCuboidShape(1, 0, 1, 15, 9, 15);
 	
 	@Override
 	public BlockEntity createBlockEntity(BlockView view) {
@@ -98,5 +110,15 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		super.appendProperties(builder.add(FACING, POWERED));
+	}
+	
+	@Override
+	public VoxelShape getOutlineShape(BlockState state, BlockView view, BlockPos pos, EntityContext context) {
+		return ALL;
+	}
+	
+	@Override
+	public VoxelShape getRayTraceShape(BlockState state, BlockView view, BlockPos pos) {
+		return SIMPLE;
 	}
 }

@@ -27,6 +27,7 @@ public class PBlocks {
 				.breakByTool(FabricToolTags.AXES)
 				.sounds(BlockSoundGroup.WOOD)
 				.strength(1f, 1f)
+				.nonOpaque()
 				.build()
 		));
 	}
