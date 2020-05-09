@@ -1,0 +1,38 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "packages:package_maker"
+    ]
+  },
+  "criteria": {
+    "has_stuff": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "minecraft:logs"
+          },
+          {
+            "tag": "minecraft:planks"
+          },
+          {
+            "tag": "c:wooden_chests"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "packages:package_maker"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_stuff",
+      "has_the_recipe"
+    ]
+  ]
+}

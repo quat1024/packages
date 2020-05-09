@@ -20,6 +20,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlockEntity> {
@@ -83,19 +84,21 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		boolean showText = false, showDetailedText = false;
 		
 		if(client.getCameraEntity() == null) return;
-		HitResult ray = client.getCameraEntity().rayTrace(7, 0, false);
+		HitResult ray = client.getCameraEntity().rayTrace(8, 0, false);
+		
 		if(ray.getType() == HitResult.Type.BLOCK && blockEntity.getPos().equals(((BlockHitResult) ray).getBlockPos())) {
 			showText = true;
 		}
 		
+		double distance = client.getCameraEntity().getCameraPosVec(1).distanceTo(new Vec3d(blockEntity.getPos()).add(0.5, 0.5, 0.5));
+		//This isn't a perfectly accurate distance estimator, but works pretty well
+		//The intention is to grey out the text a bit when you're too far away to actually click
+		boolean aBitFar = distance - 0.5 >= client.interactionManager.getReachDistance();
+		
 		if(client.getCameraEntity().isSneaking()) {
 			if(showText) showDetailedText = true;
 			
-			if(!showText && client.getCameraEntity().getCameraPosVec(1).squaredDistanceTo(
-				blockEntity.getPos().getX() + 0.5,
-				blockEntity.getPos().getY() + 0.5	,
-				blockEntity.getPos().getZ() + 0.5
-			) < 7 * 7) {
+			if(!showText && distance <= 8) {
 				showText = true;
 			}
 		}
@@ -113,7 +116,8 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 			}
 			
 			boolean completelyFull = max * PackageBlockEntity.SLOT_COUNT == count;
-			int color = completelyFull ? 0xFFFF6600 : 0xFFFFFFFF;
+			int color = completelyFull ? 0x00FF6600 : 0x00FFFFFF;
+			color |= aBitFar ? 0x55000000 : 0xFF000000;
 			
 			float scale;
 			if(showDetailedText) scale = 1/70f;

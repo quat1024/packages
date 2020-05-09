@@ -38,34 +38,30 @@ public class PackageItem extends BlockItem {
 	}
 	
 	@Override
-	@Environment(EnvType.CLIENT)
-	public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-		//TODO This makes me sad but im not sure what a better way would be...
+	public Text getName(ItemStack stack) {
+		//TODO FIX THIS LMAO THIS SUCKS
 		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
 		if(beTag != null) {
 			CompoundTag contentsTag = beTag.getCompound("PackageContents");
 			if(!contentsTag.isEmpty()) {
 				int count = contentsTag.getInt("realCount");
 				ItemStack containedStack = ItemStack.fromTag(contentsTag.getCompound("stack"));
-				
-				if(!containedStack.isEmpty()) {
-					Text uwu = new TranslatableText("packages.contents_tooltip", count, containedStack.getName());
-					if(context.isAdvanced()) {
-						uwu.append(" ").append(new LiteralText(Registry.ITEM.getId(containedStack.getItem()).toString()).styled(s -> s.setColor(Formatting.DARK_GRAY)));
-					}
-					tooltip.add(uwu);
-					
-					List<Text> containedTooltip = new ArrayList<>();
-					containedStack.getItem().appendTooltip(containedStack, world, containedTooltip, context);
-					for (Text containedLine : containedTooltip) {
-						tooltip.add(new LiteralText("   ").append(containedLine));
-					}
-					
-					return;
+				if(count != 0 && !containedStack.isEmpty()) {
+					return new TranslatableText("block.packages.package.nonempty",
+						super.getName(stack),
+						count,
+						containedStack.getName()
+					);
 				}
 			}
-			
-			tooltip.add(new TranslatableText("packages.contents_tooltip.empty"));
 		}
+		
+		return super.getName(stack);
+	}
+	
+	@Override
+	@Environment(EnvType.CLIENT)
+	public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
+		return;
 	}
 }

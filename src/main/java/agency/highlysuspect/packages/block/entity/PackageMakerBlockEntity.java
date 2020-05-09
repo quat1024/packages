@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.block.entity;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.junk.PItemTags;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -41,6 +42,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		Item item = stack.getItem();
 		if(!(item instanceof BlockItem)) return false;
+		if(item.isIn(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
 		
 		Block b = ((BlockItem) item).getBlock();
 		BlockState state = b.getDefaultState();
@@ -52,7 +54,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	public static boolean matchesDyeSlot(ItemStack stack) {
-		return stack.getItem() instanceof DyeItem;
+		return stack.getItem() instanceof DyeItem && !PItemTags.BANNED_FROM_PACKAGE_MAKER.contains(stack.getItem());
 	}
 	
 	public ItemStack whatWouldBeCrafted() {

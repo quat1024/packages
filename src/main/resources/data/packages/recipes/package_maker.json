@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "LCL",
+    "L L"
+  ],
+  "key": {
+    "W": {
+      "tag": "minecraft:planks"
+    },
+    "L": {
+      "tag": "minecraft:logs"
+    },
+    "C": {
+      "tag": "c:wooden_chests"
+    }
+  },
+  "result": {
+    "item": "packages:package_maker"
+  }
+}

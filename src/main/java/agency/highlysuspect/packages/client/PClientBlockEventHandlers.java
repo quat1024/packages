@@ -3,14 +3,18 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.net.PNetClient;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
+@Environment(EnvType.CLIENT)
 public class PClientBlockEventHandlers {
 	private static BlockPos lastPunchPos;
 	private static long lastPunchTick;
@@ -21,6 +25,8 @@ public class PClientBlockEventHandlers {
 			
 			BlockState state = world.getBlockState(pos);
 			if(state.getBlock() instanceof PackageBlock) {
+				if(player.getStackInHand(hand).isEffectiveOn(state)) return ActionResult.PASS;
+				
 				Direction frontDir = state.get(PackageBlock.FACING).primaryDirection;
 				if(direction == frontDir) {
 					if(world.isClient) {

@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.block.entity;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlock;
+import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
@@ -36,6 +37,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	public static final String CONTENTS_KEY = "PackageContents";
 	public static final int SLOT_COUNT = 8;
+	public static final int RECURSION_LIMIT = 3;
 	
 	private static final int[] NO_SLOTS = {};
 	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -309,7 +311,25 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	@Override
 	public boolean isValidInvStack(int slot, ItemStack stack) {
+		if(stack.getItem() == PItems.PACKAGE && calcPackageRecursion(stack) > RECURSION_LIMIT) return false;
+		
 		return canMergeItems(findFirstNonemptyStack(), stack);
+	}
+	
+	private int calcPackageRecursion(ItemStack stack) {
+		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+		if(beTag != null) {
+			CompoundTag contentsTag = beTag.getCompound("PackageContents");
+			if(!contentsTag.isEmpty()) {
+				int count = contentsTag.getInt("realCount");
+				ItemStack containedStack = ItemStack.fromTag(contentsTag.getCompound("stack"));
+				if(count != 0 && !containedStack.isEmpty()) {
+					return 1 + calcPackageRecursion(containedStack);
+				}
+			}
+		}
+		
+		return 0;
 	}
 	
 	@Override
