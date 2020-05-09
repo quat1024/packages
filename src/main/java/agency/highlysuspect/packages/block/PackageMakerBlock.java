@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PContainerTypes;
 import net.minecraft.block.Block;
@@ -10,17 +11,22 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+
+import java.util.List;
 
 public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	public PackageMakerBlock(Settings settings) {
@@ -72,6 +78,21 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 				((PackageMakerBlockEntity) be).setCustomName(stack.getName());
 			}
 		}
+	}
+	
+	@Override
+	public List<ItemStack> getDroppedStacks(BlockState state, LootContext.Builder builder) {
+		BlockEntity be = builder.getNullable(LootContextParameters.BLOCK_ENTITY);
+		if(be instanceof PackageMakerBlockEntity) {
+			PackageMakerBlockEntity pkgMaker = (PackageMakerBlockEntity) be;
+			builder.putDrop(new Identifier("minecraft", "contents"), (ctx, cons) -> {
+				for(int i = 0; i < pkgMaker.getInvSize(); i++) {
+					cons.accept(pkgMaker.getInvStack(i));
+				}
+			});
+		}
+		
+		return super.getDroppedStacks(state, builder);
 	}
 	
 	@Override
