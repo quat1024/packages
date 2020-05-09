@@ -77,6 +77,10 @@ public enum TwelveDirection implements StringIdentifiable {
 			}
 		}
 		
+		public static TwelveDirection fromDirection(Direction dir) {
+			return byPrimary.get(dir);
+		}
+		
 		public TwelveDirection getOpposite() {
 			switch(this) {
 				case UP_NORTH: return DOWN_SOUTH;

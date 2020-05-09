@@ -39,9 +39,12 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		PlayerEntity placer = ctx.getPlayer();
-		if(placer == null) return getDefaultState();
-		else return getDefaultState().with(FACING, TwelveDirection.fromEntity(ctx.getPlayer()).getOpposite());
+		TwelveDirection facing;
+		
+		if(ctx.getPlayer() == null) facing = TwelveDirection.fromDirection(ctx.getSide());
+		else facing = TwelveDirection.fromEntity(ctx.getPlayer()).getOpposite();
+		
+		return getDefaultState().with(FACING, facing);
 	}
 	
 	@Override
