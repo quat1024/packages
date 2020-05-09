@@ -101,11 +101,21 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
 		if(!world.isClient && player.isCreative()) {
 			getDroppedStacks(state, (ServerWorld) world, pos, world.getBlockEntity(pos)).forEach(s -> {
-				ItemEntity ent = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), s);
+				ItemEntity ent = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, s);
 				ent.setToDefaultPickupDelay();
+				ent.setVelocity(0, 0, 0);
 				world.spawnEntity(ent);
 			});
 		}
+	}
+	
+	@Override
+	public void onBlockRemoved(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+		if(state.getBlock() != newState.getBlock()) {
+			world.updateHorizontalAdjacent(pos, this);
+		}
+		
+		super.onBlockRemoved(state, world, pos, newState, moved);
 	}
 	
 	@Override
