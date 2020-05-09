@@ -37,7 +37,7 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 		setDefaultState(getDefaultState().with(FACING, Direction.NORTH).with(POWERED, false));
 	}
 	
-	public static final EnumProperty<Direction> FACING = Properties.HOPPER_FACING;
+	public static final EnumProperty<Direction> FACING = Properties.HORIZONTAL_FACING;
 	public static final BooleanProperty POWERED = Properties.POWERED;
 	
 	public static final VoxelShape LEG1 = createCuboidShape(1, 0, 1, 3, 6, 3);

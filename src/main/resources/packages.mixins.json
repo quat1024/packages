@@ -3,9 +3,9 @@
   "package": "agency.highlysuspect.packages.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "BakedQuadMixin"
   ],
   "client": [
+    "client.BakedQuadMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.mixin;
+package agency.highlysuspect.packages.mixin.client;
 
 import agency.highlysuspect.packages.junk.BakedQuadExt;
 import net.minecraft.client.render.model.BakedQuad;

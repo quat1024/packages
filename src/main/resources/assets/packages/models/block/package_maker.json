@@ -5,7 +5,7 @@
 		"1": "block/stripped_acacia_log",
 		"2": "block/stripped_acacia_log_top",
 		"3": "packages:block/package_maker/grate",
-		"particle": "packages:block/package_maker/grate"
+		"particle": "#3"
 	},
 	"elements": [
 		{
@@ -39,7 +39,6 @@
 				"east": {"uv": [13, 10, 15, 16], "texture": "#1"},
 				"south": {"uv": [13, 10, 15, 16], "texture": "#1"},
 				"west": {"uv": [1, 10, 3, 16], "texture": "#1"},
-				"up": {"uv": [0, 0, 2, 2], "texture": "#missing"},
 				"down": {"uv": [7, 7, 9, 9], "texture": "#2"}
 			}
 		},
