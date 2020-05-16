@@ -12,7 +12,6 @@ import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
-import net.minecraft.client.util.math.Matrix4f;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.item.ItemStack;
@@ -20,6 +19,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
@@ -90,7 +90,8 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 			showText = true;
 		}
 		
-		double distance = client.getCameraEntity().getCameraPosVec(1).distanceTo(new Vec3d(blockEntity.getPos()).add(0.5, 0.5, 0.5));
+		double distance = client.getCameraEntity().getCameraPosVec(1).distanceTo(Vec3d.ofCenter(blockEntity.getPos()));
+		
 		//This isn't a perfectly accurate distance estimator, but works pretty well
 		//The intention is to grey out the text a bit when you're too far away to actually click
 		boolean aBitFar = distance - 0.5 >= client.interactionManager.getReachDistance();
@@ -135,7 +136,7 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 			//todo figure out what that normal call does in the original
 			matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
 			
-			int minusHalfWidth = -textRenderer.getStringWidth(text) / 2;
+			int minusHalfWidth = -textRenderer.getWidth(text) / 2;
 			textRenderer.draw(text, minusHalfWidth + 1, 1, (color & 0xFCFCFC) >> 2, false, matrices.peek().getModel(), vertexConsumers, false, 0, light);
 			matrices.translate(0, 0, -0.001);
 			textRenderer.draw(text, minusHalfWidth, 0, color, false, matrices.peek().getModel(), vertexConsumers, false, 0, light);

@@ -1,8 +1,8 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.PackagesInit;
-import net.fabricmc.fabric.api.block.FabricBlockSettings;
-import net.fabricmc.fabric.api.tools.FabricToolTags;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.Material;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
@@ -19,7 +19,6 @@ public class PBlocks {
 				.breakByTool(FabricToolTags.AXES)
 				.sounds(BlockSoundGroup.WOOD)
 				.strength(1f, 1f)
-				.build()
 		));
 		
 		PACKAGE = Registry.register(Registry.BLOCK, new Identifier(PackagesInit.MODID, "package"), new PackageBlock(
@@ -28,7 +27,6 @@ public class PBlocks {
 				.sounds(BlockSoundGroup.WOOD)
 				.strength(1f, 1f)
 				.nonOpaque()
-				.build()
 		));
 	}
 }

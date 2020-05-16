@@ -32,10 +32,10 @@ public class PackageBakedModel extends ForwardingBakedModel {
 		this.theRestMesh = theRestMesh;
 	}
 	
-	private Mesh frameMesh;
-	private Mesh innerMesh;
-	private Mesh faceMesh;
-	private Mesh theRestMesh;
+	private final Mesh frameMesh;
+	private final Mesh innerMesh;
+	private final Mesh faceMesh;
+	private final Mesh theRestMesh;
 	
 	@Override
 	public boolean isVanillaAdapter() {

@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.junk;
 
 import agency.highlysuspect.packages.item.PItems;
 import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.BlockPlacementDispenserBehavior;
 import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
 import net.minecraft.item.AutomaticItemPlacementContext;
 import net.minecraft.item.BlockItem;
@@ -22,13 +21,13 @@ public class PDispenserBehaviors {
 	public static class SimpleBlockPlacementDispenserBehavior extends FallibleItemDispenserBehavior {
 		@Override
 		protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
-			this.success = false;
+			this.setSuccess(false);
 			Item item = stack.getItem();
 			if (item instanceof BlockItem) {
 				Direction direction = pointer.getBlockState().get(DispenserBlock.FACING);
 				BlockPos blockPos = pointer.getBlockPos().offset(direction);
 				//Direction direction2 = pointer.getWorld().isAir(blockPos.down()) ? direction : Direction.UP;
-				this.success = ((BlockItem)item).place(new AutomaticItemPlacementContext(pointer.getWorld(), blockPos, direction, stack, direction/*2*/)) == ActionResult.SUCCESS;
+				this.setSuccess(((BlockItem)item).place(new AutomaticItemPlacementContext(pointer.getWorld(), blockPos, direction, stack, direction/*2*/)) == ActionResult.SUCCESS);
 			}
 			
 			return stack;

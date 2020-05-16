@@ -19,7 +19,7 @@ dependencies {
     modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     
-    modCompile "io.github.prospector:modmenu:1.10.2+build.32"
+    modCompile "io.github.prospector:modmenu:1.11.5+build.10"
 }
 
 processResources {

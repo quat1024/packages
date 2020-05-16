@@ -6,20 +6,20 @@ import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.container.Container;
-import net.minecraft.container.PlayerContainer;
-import net.minecraft.container.Slot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.PacketByteBuf;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class PackageMakerContainer extends Container {
-	public static PackageMakerContainer constructFromNetwork(int syncId, Identifier id, PlayerEntity player, PacketByteBuf buf) {
+public class PackageMakerScreenHandler extends ScreenHandler {
+	public static PackageMakerScreenHandler constructFromNetwork(int syncId, Identifier id, PlayerEntity player, PacketByteBuf buf) {
 		BlockPos pos = buf.readBlockPos();
 		
 		World world = player.world;
@@ -27,10 +27,10 @@ public class PackageMakerContainer extends Container {
 		
 		if(!(be instanceof PackageMakerBlockEntity)) throw new IllegalStateException("no package maker at " + pos.toString());
 		
-		return new PackageMakerContainer(syncId, player, (PackageMakerBlockEntity) be);
+		return new PackageMakerScreenHandler(syncId, player, (PackageMakerBlockEntity) be);
 	}
 	
-	public PackageMakerContainer(int syncId, PlayerEntity player, PackageMakerBlockEntity be) {
+	public PackageMakerScreenHandler(int syncId, PlayerEntity player, PackageMakerBlockEntity be) {
 		super(null, syncId);
 		this.playerInventory = player.inventory;
 		this.be = be;
@@ -58,7 +58,7 @@ public class PackageMakerContainer extends Container {
 	
 	@Override
 	public boolean canUse(PlayerEntity player) {
-		return be.canPlayerUseInv(player);
+		return be.canPlayerUse(player);
 	}
 	
 	public ItemStack transferSlot(PlayerEntity player, int invSlot) {
@@ -107,14 +107,14 @@ public class PackageMakerContainer extends Container {
 		
 		@Override
 		public boolean canInsert(ItemStack stack) {
-			return inventory.isValidInvStack(invSlot2, stack);
+			return inventory.isValid(invSlot2, stack);
 		}
 		
 		@Override
 		@Environment(EnvType.CLIENT)
 		public Pair<Identifier, Identifier> getBackgroundSprite() {
 			if(tex == null) return null;
-			return Pair.of(PlayerContainer.BLOCK_ATLAS_TEXTURE, tex);
+			return Pair.of(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, tex);
 		}
 	}
 }

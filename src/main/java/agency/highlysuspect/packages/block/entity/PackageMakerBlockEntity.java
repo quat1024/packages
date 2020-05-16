@@ -18,9 +18,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.DefaultedList;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Nameable;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
 
 public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable {
@@ -37,7 +37,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public static final int DYE_SLOT = 2;
 	public static final int OUTPUT_SLOT = 3;
 	
-	private final DefaultedList<ItemStack> inv = DefaultedList.ofSize(getInvSize(), ItemStack.EMPTY);
+	private final DefaultedList<ItemStack> inv = DefaultedList.ofSize(size(), ItemStack.EMPTY);
 	
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		Item item = stack.getItem();
@@ -95,24 +95,24 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
 	
 	@Override
-	public int[] getInvAvailableSlots(Direction side) {
+	public int[] getAvailableSlots(Direction side) {
 		if(side == Direction.DOWN) return OUTPUT;
 		else if(side == Direction.UP) return FRAME_AND_DYE;
 		else return INNER_AND_DYE;
 	}
 	
 	@Override
-	public boolean canInsertInvStack(int slot, ItemStack stack, Direction dir) {
-		return isValidInvStack(slot, stack);
+	public boolean canInsert(int slot, ItemStack stack, Direction dir) {
+		return isValid(slot, stack);
 	}
 	
 	@Override
-	public boolean canExtractInvStack(int slot, ItemStack stack, Direction dir) {
+	public boolean canExtract(int slot, ItemStack stack, Direction dir) {
 		return slot == OUTPUT_SLOT;
 	}
 	
 	@Override
-	public boolean isValidInvStack(int slot, ItemStack stack) {
+	public boolean isValid(int slot, ItemStack stack) {
 		switch(slot) {
 			case FRAME_SLOT: return matchesFrameSlot(stack);
 			case INNER_SLOT: return matchesInnerSlot(stack);
@@ -122,12 +122,12 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public int getInvSize() {
+	public int size() {
 		return 4;
 	}
 	
 	@Override
-	public boolean isInvEmpty() {
+	public boolean isEmpty() {
 		for(ItemStack stack : inv) {
 			if(!stack.isEmpty()) return false; 
 		}
@@ -136,27 +136,27 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public ItemStack getInvStack(int slot) {
+	public ItemStack getStack(int slot) {
 		return inv.get(slot);
 	}
 	
 	@Override
-	public ItemStack takeInvStack(int slot, int amount) {
+	public ItemStack removeStack(int slot, int amount) {
 		return Inventories.splitStack(inv, slot, amount);
 	}
 	
 	@Override
-	public ItemStack removeInvStack(int slot) {
+	public ItemStack removeStack(int slot) {
 		return Inventories.removeStack(inv, slot);
 	}
 	
 	@Override
-	public void setInvStack(int slot, ItemStack stack) {
+	public void setStack(int slot, ItemStack stack) {
 		inv.set(slot, stack);
 	}
 	
 	@Override
-	public boolean canPlayerUseInv(PlayerEntity player) {
+	public boolean canPlayerUse(PlayerEntity player) {
 		return player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64;
 	}
 	
@@ -229,8 +229,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public void fromTag(CompoundTag tag) {
-		super.fromTag(tag);
+	public void fromTag(BlockState state, CompoundTag tag) {
+		super.fromTag(state, tag);
 		fromClientTag(tag);
 	}
 }

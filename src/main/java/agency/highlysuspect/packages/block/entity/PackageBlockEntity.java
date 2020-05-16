@@ -17,9 +17,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.DefaultedList;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Nameable;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
 
 import java.util.ArrayList;
@@ -100,7 +100,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
 				ItemStack toInsert = stack.copy();
 				toInsert.setCount(Math.min(remaining, maxPerSlot));
-				setInvStack(slot, toInsert);
+				setStack(slot, toInsert);
 			}
 		}
 	}
@@ -161,7 +161,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	//custom package-specific inventory wrappers, for external use
 	public boolean matches(ItemStack stack) {
-		return !stack.isEmpty() && isValidInvStack(0, stack);
+		return !stack.isEmpty() && isValid(0, stack);
 	}
 	
 	//<editor-fold desc="Interactions">
@@ -242,7 +242,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	//More inventory bullshit
 	@Override
-	public int[] getInvAvailableSlots(Direction side) {
+	public int[] getAvailableSlots(Direction side) {
 		if(world == null) return NO_SLOTS;
 		
 		BlockState state = world.getBlockState(pos);
@@ -254,22 +254,22 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public boolean canInsertInvStack(int slot, ItemStack stack, Direction dir) {
-		return isValidInvStack(slot, stack);
+	public boolean canInsert(int slot, ItemStack stack, Direction dir) {
+		return isValid(slot, stack);
 	}
 	
 	@Override
-	public boolean canExtractInvStack(int slot, ItemStack stack, Direction dir) {
+	public boolean canExtract(int slot, ItemStack stack, Direction dir) {
 		return true;
 	}
 	
 	@Override
-	public int getInvSize() {
+	public int size() {
 		return SLOT_COUNT;
 	}
 	
 	@Override
-	public boolean isInvEmpty() {
+	public boolean isEmpty() {
 		for(ItemStack stack : inv) {
 			if(!stack.isEmpty()) return false;
 		}
@@ -277,40 +277,40 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public ItemStack getInvStack(int slot) {
+	public ItemStack getStack(int slot) {
 		return inv.get(slot);
 	}
 	
 	@Override
-	public ItemStack takeInvStack(int slot, int amount) {
+	public ItemStack removeStack(int slot, int amount) {
 		markDirty();
 		return Inventories.splitStack(inv, slot, amount);
 	}
 	
 	@Override
-	public ItemStack removeInvStack(int slot) {
+	public ItemStack removeStack(int slot) {
 		markDirty();
 		return Inventories.removeStack(inv, slot);
 	}
 	
 	@Override
-	public void setInvStack(int slot, ItemStack stack) {
+	public void setStack(int slot, ItemStack stack) {
 		inv.set(slot, stack);
 		markDirty();
 	}
 	
 	@Override
-	public int getInvMaxStackAmount() {
+	public int getMaxCountPerStack() {
 		return maxStackAmountAllowed(findFirstNonemptyStack());
 	}
 	
 	@Override
-	public boolean canPlayerUseInv(PlayerEntity player) {
+	public boolean canPlayerUse(PlayerEntity player) {
 		return true;
 	}
 	
 	@Override
-	public boolean isValidInvStack(int slot, ItemStack stack) {
+	public boolean isValid(int slot, ItemStack stack) {
 		if(stack.getItem() == PItems.PACKAGE && calcPackageRecursion(stack) > RECURSION_LIMIT) return false;
 		
 		return canMergeItems(findFirstNonemptyStack(), stack);
@@ -371,8 +371,8 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public void fromTag(CompoundTag tag) {
-		super.fromTag(tag);
+	public void fromTag(BlockState state, CompoundTag tag) {
+		super.fromTag(state, tag);
 		
 		//Contents
 		readContents(tag.getCompound(CONTENTS_KEY));

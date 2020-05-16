@@ -31,6 +31,8 @@ public class PItems {
 				{ Blocks.ACACIA_LOG             , Blocks.ACACIA_PLANKS               , DyeColor.PINK},
 				{ Blocks.DARK_OAK_LOG           , Blocks.DARK_OAK_PLANKS             , DyeColor.BROWN},
 				{ Blocks.JUNGLE_LOG             , Blocks.JUNGLE_PLANKS               , DyeColor.GREEN},
+				{ Blocks.CRIMSON_HYPHAE         , Blocks.CRIMSON_PLANKS              , DyeColor.RED},
+				{ Blocks.WARPED_HYPHAE          , Blocks.WARPED_PLANKS               , DyeColor.CYAN},
 				{ Blocks.WHITE_CONCRETE         , Blocks.WHITE_CONCRETE_POWDER       , DyeColor.WHITE},
 				{ Blocks.ORANGE_CONCRETE        , Blocks.ORANGE_CONCRETE_POWDER      , DyeColor.ORANGE},
 				{ Blocks.MAGENTA_CONCRETE       , Blocks.MAGENTA_CONCRETE_POWDER     , DyeColor.MAGENTA},

@@ -9,16 +9,15 @@ import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.container.Container;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.EnumProperty;
@@ -50,13 +49,6 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		super.appendProperties(builder.add(FACING));
-	}
-	
-	@Override
-	public Material getMaterial(BlockState state) {
-		//TODO make a state property for common materials of barrel
-		//Does having the proper material even matter though, btw?
-		return super.getMaterial(state);
 	}
 	
 	//Block entities.
@@ -97,7 +89,7 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	
 	@Override
 	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
-		return Container.calculateComparatorOutput(world.getBlockEntity(pos));
+		return ScreenHandler.calculateComparatorOutput(world.getBlockEntity(pos));
 	}
 	
 	@Override
@@ -115,7 +107,7 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	@Override
 	public void onBlockRemoved(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
 		if(state.getBlock() != newState.getBlock()) {
-			world.updateHorizontalAdjacent(pos, this);
+			world.updateComparators(pos, this);
 		}
 		
 		super.onBlockRemoved(state, world, pos, newState, moved);

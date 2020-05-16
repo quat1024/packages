@@ -5,8 +5,8 @@ import agency.highlysuspect.packages.container.PContainerTypes;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.EntityContext;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -98,8 +98,8 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 		if(be instanceof PackageMakerBlockEntity) {
 			PackageMakerBlockEntity pkgMaker = (PackageMakerBlockEntity) be;
 			builder.putDrop(new Identifier("minecraft", "contents"), (ctx, cons) -> {
-				for(int i = 0; i < pkgMaker.getInvSize(); i++) {
-					cons.accept(pkgMaker.getInvStack(i));
+				for(int i = 0; i < pkgMaker.size(); i++) {
+					cons.accept(pkgMaker.getStack(i));
 				}
 			});
 		}
@@ -113,7 +113,7 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	}
 	
 	@Override
-	public VoxelShape getOutlineShape(BlockState state, BlockView view, BlockPos pos, EntityContext context) {
+	public VoxelShape getOutlineShape(BlockState state, BlockView view, BlockPos pos, ShapeContext context) {
 		return ALL;
 	}
 	

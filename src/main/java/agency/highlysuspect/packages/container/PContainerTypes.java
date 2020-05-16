@@ -10,7 +10,7 @@ public class PContainerTypes {
 	public static final Identifier PACKAGE_MAKER = new Identifier(PackagesInit.MODID, "package_maker");
 	
 	public static void onInitialize() {
-		ContainerProviderRegistry.INSTANCE.registerFactory(PACKAGE_MAKER, PackageMakerContainer::constructFromNetwork);
+		ContainerProviderRegistry.INSTANCE.registerFactory(PACKAGE_MAKER, PackageMakerScreenHandler::constructFromNetwork);
 	}
 	
 	public static void openPackageMaker(PlayerEntity player, BlockPos pos) {

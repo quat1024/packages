@@ -2,7 +2,7 @@ package agency.highlysuspect.packages.net;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
-import agency.highlysuspect.packages.container.PackageMakerContainer;
+import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -54,9 +54,9 @@ public class PNetCommon {
 			ctx.getTaskQueue().execute(() -> {
 				PlayerEntity player = ctx.getPlayer();
 				
-				if(player.container instanceof PackageMakerContainer) {
+				if(player.currentScreenHandler instanceof PackageMakerScreenHandler) {
 					for(int i = 0; i < 64; i++) { //Janky hack mate
-						((PackageMakerContainer) player.container).be.performCraft();
+						((PackageMakerScreenHandler) player.currentScreenHandler).be.performCraft();
 						if(!all) return;
 					}
 				}
