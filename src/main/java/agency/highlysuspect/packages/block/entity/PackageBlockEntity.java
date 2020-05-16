@@ -222,10 +222,8 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		}
 		
 		stacksToGive.forEach(stack -> {
-			if(!player.inventory.insertStack(player.inventory.selectedSlot, stack)) {
-				if(!player.inventory.insertStack(-1, stack)) {
-					player.dropItem(stack, false);
-				}
+			if(!player.inventory.insertStack(stack)) {
+				player.dropItem(stack, false);
 			}
 		});
 		
