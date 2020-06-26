@@ -4,7 +4,7 @@ import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.client.model.PackageUnbakedModel;
-import agency.highlysuspect.packages.client.screen.PScreenHandlers;
+import agency.highlysuspect.packages.client.screen.PScreens;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
@@ -57,7 +57,7 @@ public class ClientInit implements ClientModInitializer {
 		BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutoutMipped(), PBlocks.PACKAGE_MAKER);
 		
 		PClientBlockEventHandlers.onInitialize();
-		PScreenHandlers.onInitialize();
+		PScreens.onInitialize();
 	}
 	
 	@SuppressWarnings("SameParameterValue") //i know i'm overengineering intellij. shut

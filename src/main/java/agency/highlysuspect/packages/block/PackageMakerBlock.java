@@ -1,7 +1,6 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
-import agency.highlysuspect.packages.container.PContainerTypes;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
@@ -70,8 +69,9 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	
 	@Override
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		if(!world.isClient) {
-			PContainerTypes.openPackageMaker(player, pos);
+		BlockEntity be = world.getBlockEntity(pos);
+		if(be instanceof PackageMakerBlockEntity) {
+			player.openHandledScreen((PackageMakerBlockEntity) be);
 		}
 		
 		return ActionResult.SUCCESS;

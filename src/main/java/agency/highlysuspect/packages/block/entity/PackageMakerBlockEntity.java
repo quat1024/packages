@@ -1,14 +1,17 @@
 package agency.highlysuspect.packages.block.entity;
 
 import agency.highlysuspect.packages.block.PBlocks;
+import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PItemTags;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.BlockItem;
@@ -16,6 +19,10 @@ import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
@@ -23,7 +30,7 @@ import net.minecraft.util.Nameable;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
 
-public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable {
+public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable, ExtendedScreenHandlerFactory {
 	public PackageMakerBlockEntity(BlockEntityType<?> type) {
 		super(type);
 	}
@@ -88,6 +95,18 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		inv.get(DYE_SLOT).decrement(1);
 		markDirty();
 	}
+	
+	//<editor-fold desc="ExtendedScreenHandlerFactory">
+	@Override
+	public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
+		buf.writeBlockPos(pos);
+	}
+	
+	@Override
+	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+		return new PackageMakerScreenHandler(syncId, inv, player, this);
+	}
+	//</editor-fold>
 	
 	//<editor-fold desc="SidedInventory">
 	public static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};

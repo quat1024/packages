@@ -9,7 +9,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -17,8 +19,8 @@ import net.minecraft.util.Util;
 public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler> {
 	private static final Identifier TEXTURE = new Identifier(PackagesInit.MODID, "textures/gui/package_maker.png");
 	
-	public PackageMakerScreen(PackageMakerScreenHandler container) {
-		super(container, container.playerInventory, container.be.getDisplayName());
+	public PackageMakerScreen(PackageMakerScreenHandler sh, PlayerInventory inventory, Text title) {
+		super(sh, inventory, title);
 	}
 	
 	private static final String[] SLOTS_TO_TOOLTIPS = Util.make(new String[3], (m) -> {
@@ -78,31 +80,6 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 			}
 		}
 	}
-	
-	/*
-	protected void drawForeground(int mouseX, int mouseY) {
-		String string = this.title.asFormattedString();
-		this.font.draw(string, (float)(this.containerWidth / 2 - this.font.getStringWidth(string) / 2), 6.0F, 4210752);
-		this.font.draw(this.playerInventory.getDisplayName().asFormattedString(), 8.0F, (float)(this.containerHeight - 96 + 2), 4210752);
-		
-		if(!container.slots.get(0).hasStack()) {
-			//draw a preview of the crafted item behind a transparent overlay
-			//I guess this makes sense ?? lmao
-			ItemStack dryRun = container.be.whatWouldBeCrafted();
-			if (!dryRun.isEmpty()) {
-				int x = container.slots.get(0).xPosition;
-				int y = container.slots.get(0).yPosition;
-				//noinspection ConstantConditions
-				itemRenderer.renderGuiItem(this.minecraft.player, dryRun, x, y);
-				
-				RenderSystem.disableDepthTest();
-				RenderSystem.colorMask(true, true, true, false);
-				this.fillGradient(x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
-				RenderSystem.colorMask(true, true, true, true);
-				RenderSystem.enableDepthTest();
-			}
-		}
-	}*/
 	
 	//Copy paste from Generic3x3ContainerScreen
 	@Override
