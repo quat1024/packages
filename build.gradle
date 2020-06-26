@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.4.13'
+    id 'fabric-loom' version '0.4-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -19,7 +19,7 @@ dependencies {
     modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     
-    modCompile "io.github.prospector:modmenu:1.11.5+build.10"
+    modCompile "io.github.prospector:modmenu:1.12.1+build.15"
 }
 
 processResources {

@@ -43,9 +43,9 @@ public class FakeSprite extends Sprite {
 		for(int k = 0; k < 16; ++k) {
 			for(int l = 0; l < 16; ++l) {
 				if (k < 4 ^ l < 4) { //wow a different pattern
-					nativeImage.setPixelRgba(l, k, 0x00FF00); //wow a different color
+					nativeImage.setPixelColor(l, k, 0x00FF00); //wow a different color
 				} else {
-					nativeImage.setPixelRgba(l, k, 0x0088FF); //amazing
+					nativeImage.setPixelColor(l, k, 0x0088FF); //amazing
 				}
 			}
 		}

@@ -68,7 +68,7 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 			if (!dryRun.isEmpty()) {
 				int x = screenHandler.slots.get(0).x;
 				int y = screenHandler.slots.get(0).y;
-				itemRenderer.renderGuiItem(dryRun, x, y);
+				itemRenderer.renderInGui(dryRun, x, y);
 				
 				RenderSystem.disableDepthTest();
 				RenderSystem.colorMask(true, true, true, false);
