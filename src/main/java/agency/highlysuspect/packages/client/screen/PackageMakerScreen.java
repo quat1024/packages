@@ -5,7 +5,6 @@ import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.net.PNetClient;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -61,7 +60,6 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 		//End copy paste
 		
 		PackageMakerScreenHandler screenHandler = getScreenHandler();
-		MinecraftClient client = MinecraftClient.getInstance();
 		
 		if(!getScreenHandler().slots.get(0).hasStack()) {
 			//draw a preview of the crafted item behind a transparent overlay
@@ -82,6 +80,7 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 	}
 	
 	//Copy paste from Generic3x3ContainerScreen
+	@SuppressWarnings("ConstantConditions")
 	@Override
 	protected void drawBackground(MatrixStack matrixStack, float f, int mouseY, int i) {
 		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);

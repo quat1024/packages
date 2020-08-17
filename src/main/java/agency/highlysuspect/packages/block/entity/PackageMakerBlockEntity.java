@@ -20,7 +20,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -104,7 +103,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	
 	@Override
 	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-		return new PackageMakerScreenHandler(syncId, inv, player, this);
+		return new PackageMakerScreenHandler(syncId, inv, this);
 	}
 	//</editor-fold>
 	

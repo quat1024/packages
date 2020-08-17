@@ -94,6 +94,7 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		
 		//This isn't a perfectly accurate distance estimator, but works pretty well
 		//The intention is to grey out the text a bit when you're too far away to actually click
+		@SuppressWarnings("ConstantConditions")
 		boolean aBitFar = distance - 0.5 >= client.interactionManager.getReachDistance();
 		
 		if(client.getCameraEntity().isSneaking()) {

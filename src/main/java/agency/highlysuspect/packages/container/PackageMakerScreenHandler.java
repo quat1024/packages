@@ -16,25 +16,20 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 public class PackageMakerScreenHandler extends ScreenHandler {
 	public static PackageMakerScreenHandler constructFromNetwork(int syncId, PlayerInventory inventory, PacketByteBuf buf) {
 		BlockPos pos = buf.readBlockPos();
 		
-		PlayerEntity player = inventory.player;
-		World world = player.world;
-		BlockEntity be = world.getBlockEntity(pos);
-		
+		BlockEntity be = inventory.player.world.getBlockEntity(pos);
 		if(!(be instanceof PackageMakerBlockEntity)) throw new IllegalStateException("no package maker at " + pos.toString());
 		
-		return new PackageMakerScreenHandler(syncId, inventory, player, (PackageMakerBlockEntity) be);
+		return new PackageMakerScreenHandler(syncId, inventory, (PackageMakerBlockEntity) be);
 	}
 	
-	public PackageMakerScreenHandler(int syncId, PlayerInventory playerInventory, PlayerEntity player, PackageMakerBlockEntity be) {
+	public PackageMakerScreenHandler(int syncId, PlayerInventory playerInventory, PackageMakerBlockEntity be) {
 		super(PScreenHandlers.PACKAGE_MAKER, syncId);
 		this.be = be;
-		this.playerInventory = playerInventory;
 		
 		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.OUTPUT_SLOT, 134, 35, null));
 		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.FRAME_SLOT, 26, 17, FRAME_BG));
@@ -54,7 +49,6 @@ public class PackageMakerScreenHandler extends ScreenHandler {
 		}
 	}
 	
-	public final PlayerInventory playerInventory;
 	public final PackageMakerBlockEntity be;
 	
 	@Override

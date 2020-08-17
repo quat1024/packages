@@ -1,19 +1,13 @@
 package agency.highlysuspect.packages.item;
 
 import agency.highlysuspect.packages.junk.PackageStyle;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
-import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
-import net.minecraft.world.World;
-
-import java.util.List;
 
 public class PackageItem extends BlockItem {
 	public PackageItem(Block block, Settings settings) {
@@ -53,11 +47,5 @@ public class PackageItem extends BlockItem {
 		}
 		
 		return super.getName(stack);
-	}
-	
-	@Override
-	@Environment(EnvType.CLIENT)
-	public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
-		return;
 	}
 }
