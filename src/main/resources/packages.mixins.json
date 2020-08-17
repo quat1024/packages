@@ -5,7 +5,8 @@
   "mixins": [
   ],
   "client": [
-    "client.BakedQuadMixin"
+    "client.BakedQuadMixin",
+    "client.ItemRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

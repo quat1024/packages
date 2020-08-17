@@ -40,13 +40,10 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		if(!(packageState.getBlock() instanceof PackageBlock)) return;
 		
 		TwelveDirection packageTwelveDir = packageState.get(PackageBlock.FACING);
-		Direction packageDir = packageTwelveDir.primaryDirection;
 		
-		BlockPos positionInFront = blockEntity.getPos().offset(packageDir);
-		
-		//Use the light level of whatever's in front
-		//Quick fix for my block being solid so it has no light insside...
-		light = WorldRenderer.getLightmapCoordinates(world, positionInFront);
+		//get the light level of whatever's in front
+		//Quick fix for my block being solid so it has no light inside...
+		light = WorldRenderer.getLightmapCoordinates(world, blockEntity.getPos().offset(packageTwelveDir.primaryDirection));
 		
 		int count = blockEntity.countItems();
 		ItemStack icon = blockEntity.findFirstNonemptyStack();
@@ -54,30 +51,9 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		matrices.push();
 		matrices.translate(0.5, 0.5, 0.5);
 		
-		Matrix4f modelMatrix = matrices.peek().getModel();
-		
-		//Rotate into position.
-		//This might be jank, just blindly copied from Worse Barrels really
-		//Only move the model matrix not the normal matrix, to ensure items are lit uniformly
-		if(packageDir.getHorizontal() == -1) { //up/down
-			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-packageTwelveDir.secondaryDirection.asRotation() + 90));
-			modelMatrix.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(packageDir == Direction.UP ? 90 : -90));
-		} else {
-			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-packageDir.asRotation() - 90));
-		}
-		
-		//Draw the item on the front.
+		//draw the item on the front
 		if(count > 0) {
-			matrices.push();
-			
-			Matrix4f modelMatrix2 = matrices.peek().getModel();
-			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.001f, 0, 0));
-			modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
-			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.001f)); //it's flat fuck friday!!!!!
-			
-			client.getItemRenderer().renderItem(icon, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
-			
-			matrices.pop();
+			drawItem(matrices, vertexConsumers, packageTwelveDir, icon, light, true);
 		}
 		
 		//See if we need to show text.
@@ -131,7 +107,7 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 			
 			TextRenderer textRenderer = client.textRenderer;
 			
-			matrices.translate(6 / 16d + 0.005, 0, 0);
+			matrices.translate(6 / 16d + 0.05, 0, 0);
 			matrices.scale(-1, -scale, scale);
 			matrices.translate(0, -4, 0);
 			//todo figure out what that normal call does in the original
@@ -144,6 +120,33 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 			
 			matrices.pop();
 		}
+		
+		matrices.pop();
+	}
+	
+	public static void drawItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, TwelveDirection dir, ItemStack stack, int light, boolean flatten) {
+		MinecraftClient client = MinecraftClient.getInstance();
+		
+		Matrix4f modelMatrix = matrices.peek().getModel();
+		
+		//Rotate into position.
+		//This might be jank, just blindly copied from Worse Barrels really
+		//Only move the model matrix not the normal matrix, to ensure items are lit uniformly
+		if(dir.primaryDirection.getHorizontal() == -1) { //up/down
+			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-dir.secondaryDirection.asRotation() + 90));
+			modelMatrix.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(dir.primaryDirection == Direction.UP ? 90 : -90));
+		} else {
+			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-dir.primaryDirection.asRotation() - 90));
+		}
+		
+		matrices.push();
+		
+		Matrix4f modelMatrix2 = matrices.peek().getModel();
+		modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.003f, 0, 0));
+		modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+		modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.01f)); //it's flat fuck friday!!!!!
+		
+		client.getItemRenderer().renderItem(stack, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
 		
 		matrices.pop();
 	}

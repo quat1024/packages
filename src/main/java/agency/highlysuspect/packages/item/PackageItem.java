@@ -9,6 +9,8 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 
+import java.util.Optional;
+
 public class PackageItem extends BlockItem {
 	public PackageItem(Block block, Settings settings) {
 		super(block, settings);
@@ -47,5 +49,16 @@ public class PackageItem extends BlockItem {
 		}
 		
 		return super.getName(stack);
+	}
+	
+	public Optional<ItemStack> getContainedStack(ItemStack stack) {
+		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+		if(beTag != null) {
+			CompoundTag contentsTag = beTag.getCompound("PackageContents");
+			if (!contentsTag.isEmpty()) {
+				return Optional.of(ItemStack.fromTag(contentsTag.getCompound("stack"))).filter(s -> !s.isEmpty());
+			}
+		}
+		return Optional.empty();
 	}
 }
