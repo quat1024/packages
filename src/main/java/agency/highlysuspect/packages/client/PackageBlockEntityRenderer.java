@@ -17,7 +17,6 @@ import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
@@ -53,7 +52,7 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		
 		//draw the item on the front
 		if(count > 0) {
-			drawItem(matrices, vertexConsumers, packageTwelveDir, icon, light, true);
+			drawItem(matrices, vertexConsumers, packageTwelveDir, icon, light);
 		}
 		
 		//See if we need to show text.
@@ -124,7 +123,9 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		matrices.pop();
 	}
 	
-	public static void drawItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, TwelveDirection dir, ItemStack stack, int light, boolean flatten) {
+	private static int depth = 0;
+	
+	public static void drawItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, TwelveDirection dir, ItemStack stack, int light) {
 		MinecraftClient client = MinecraftClient.getInstance();
 		
 		Matrix4f modelMatrix = matrices.peek().getModel();
@@ -142,11 +143,24 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		matrices.push();
 		
 		Matrix4f modelMatrix2 = matrices.peek().getModel();
-		modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.003f, 0, 0));
-		modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
-		modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.01f)); //it's flat fuck friday!!!!!
 		
-		client.getItemRenderer().renderItem(stack, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
+		if(depth == 0) {
+			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.006f, 0, 0));
+			modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
+		} else {
+			//Don't think about this too hard, just a workaround to slightly space out deeply-nested items.
+			//If I don't do this, situations like packages-inside-packages-inside-packages start zfighting pretty hard.
+			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.07f, 0, 0)); //Lift it out more
+			modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
+		}
+		
+		depth++;
+		if(depth < 5) {
+			client.getItemRenderer().renderItem(stack, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
+		}
+		depth--;
 		
 		matrices.pop();
 	}

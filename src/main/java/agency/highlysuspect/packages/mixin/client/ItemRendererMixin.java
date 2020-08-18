@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.mixin.client;
 
-import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.client.PackageBlockEntityRenderer;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.TwelveDirection;
@@ -29,7 +28,7 @@ public class ItemRendererMixin {
 			PItems.PACKAGE.getContainedStack(stack).ifPresent(inner -> {
 					matrixStack.push();
 					model.getTransformation().getTransformation(transformMode).apply(invert, matrixStack);
-					PackageBlockEntityRenderer.drawItem(matrixStack, vertexConsumerProvider, TwelveDirection.NORTH, inner, light, true);
+					PackageBlockEntityRenderer.drawItem(matrixStack, vertexConsumerProvider, TwelveDirection.NORTH, inner, light);
 					matrixStack.pop();
 				}
 			);
