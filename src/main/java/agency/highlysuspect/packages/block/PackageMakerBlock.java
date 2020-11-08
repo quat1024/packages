@@ -118,7 +118,7 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	}
 	
 	@Override
-	public VoxelShape getRayTraceShape(BlockState state, BlockView view, BlockPos pos) {
+	public VoxelShape getVisualShape(BlockState state, BlockView view, BlockPos pos, ShapeContext context) {
 		return SIMPLE;
 	}
 }

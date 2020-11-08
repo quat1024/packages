@@ -71,7 +71,7 @@ public class ClientInit implements ClientModInitializer {
 		//SpriteAtlasTexture.BLOCK_ATLAS_TEX is deprecated but as of 1.16.2 is used all throughout vanilla code
 		//So I am not bothered.
 		//noinspection deprecation
-		ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEX).register((tex, reg) -> {
+		ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).register((tex, reg) -> {
 			reg.register(PackageMakerScreenHandler.FRAME_BG);
 			reg.register(PackageMakerScreenHandler.INNER_BG);
 			reg.register(PackageMakerScreenHandler.DYE_BG);

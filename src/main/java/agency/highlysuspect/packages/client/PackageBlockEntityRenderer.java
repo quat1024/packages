@@ -59,7 +59,7 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		boolean showText = false, showDetailedText = false;
 		
 		if(client.getCameraEntity() == null) return;
-		HitResult ray = client.getCameraEntity().rayTrace(8, 0, false);
+		HitResult ray = client.getCameraEntity().raycast(8, 0, false);
 		
 		if(ray.getType() == HitResult.Type.BLOCK && blockEntity.getPos().equals(((BlockHitResult) ray).getBlockPos())) {
 			showText = true;
