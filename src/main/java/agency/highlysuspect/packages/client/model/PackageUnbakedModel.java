@@ -20,6 +20,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -79,11 +80,39 @@ public class PackageUnbakedModel implements UnbakedModel {
 					emitter.tag(3);
 				}
 				
+				hackyJmxFix(emitter);
+				
 				emitter.emit();
 			}
 		}
 		
 		return new PackageBakedModel(fromJson, mb.build());
+	}
+	
+	private static void hackyJmxFix(QuadEmitter a) {
+		//shh
+		Class<? extends QuadEmitter> classs = a.getClass();
+		if(classs.getName().equals("grondag.canvas.apiimpl.mesh.MeshBuilderImpl$Maker")) {
+			Class<?> qviclass = classs.getSuperclass().getSuperclass();
+			if(qviclass.getName().equals("grondag.canvas.apiimpl.mesh.QuadViewImpl")) {
+				//SHHHH
+				Field spriteMappedFlags;
+				try {
+					spriteMappedFlags = qviclass.getDeclaredField("spriteMappedFlags");
+				} catch (NoSuchFieldException e) {
+					return; //it's gone in newer versions of Canvas
+				}
+				
+				try {
+					spriteMappedFlags.setAccessible(true);
+					//shh   it's ok      you don't have to call findSprite and NPE on something
+					//(i actually don't know why the game explodes)
+					spriteMappedFlags.setInt(a, 0);
+				} catch(ReflectiveOperationException e) {
+					return;
+				}
+			}
+		}
 	}
 	
 	//Imagine a red box encompassing the Sprite on its texture atlas, and the QuadEmitter's UV coordinates on the atlas are a blue box.
