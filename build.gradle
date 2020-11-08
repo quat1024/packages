@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.4-SNAPSHOT'
+    id 'fabric-loom' version '0.5-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -13,11 +13,29 @@ group = project.maven_group
 minecraft {
 }
 
+repositories {
+//	maven {
+//		url "https://maven.dblsaiko.net"
+//	}
+//	
+//	maven {
+//		url "https://server.bbkr.space/artifactory/libs-release/"
+//	}
+}
+
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modCompile "net.fabricmc:fabric-loader:${project.loader_version}"
     modCompile "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    
+    modImplementation("io.github.prospector:modmenu:${project.modmenu_version}") {
+    		exclude group: "net.fabricmc.fabric-api"
+    		exclude group: "net.fabricmc.fabric-loader"
+    	}
+    
+    //modCompile "grondag:canvas-mc116:1.0.1086"
+    //modCompile "grondag:frex-mc116:4.0.159" //apparently i need this for canvas to run
     
     //modCompile "io.github.prospector:modmenu:1.12.1+build.15"
 }

@@ -49,10 +49,11 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		
 		matrices.push();
 		matrices.translate(0.5, 0.5, 0.5);
+		applyRotation(matrices, packageTwelveDir);
 		
 		//draw the item on the front
 		if(count > 0) {
-			drawItem(matrices, vertexConsumers, packageTwelveDir, icon, light);
+			drawItem(matrices, vertexConsumers, icon, light);
 		}
 		
 		//See if we need to show text.
@@ -125,20 +126,22 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 	
 	private static int depth = 0;
 	
-	public static void drawItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, TwelveDirection dir, ItemStack stack, int light) {
-		MinecraftClient client = MinecraftClient.getInstance();
-		
-		Matrix4f modelMatrix = matrices.peek().getModel();
-		
+	public static void applyRotation(MatrixStack matrices, TwelveDirection dir) {
 		//Rotate into position.
 		//This might be jank, just blindly copied from Worse Barrels really
 		//Only move the model matrix not the normal matrix, to ensure items are lit uniformly
+		Matrix4f modelMatrix = matrices.peek().getModel();
+		
 		if(dir.primaryDirection.getHorizontal() == -1) { //up/down
 			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-dir.secondaryDirection.asRotation() + 90));
 			modelMatrix.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(dir.primaryDirection == Direction.UP ? 90 : -90));
 		} else {
 			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-dir.primaryDirection.asRotation() - 90));
 		}
+	}
+	
+	public static void drawItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, ItemStack stack, int light) {
+		MinecraftClient client = MinecraftClient.getInstance();
 		
 		matrices.push();
 		

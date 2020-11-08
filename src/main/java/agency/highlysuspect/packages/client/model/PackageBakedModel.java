@@ -1,9 +1,7 @@
 package agency.highlysuspect.packages.client.model;
 
-import agency.highlysuspect.packages.client.PackageBlockEntityRenderer;
-import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.junk.PackageStyle;
-import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
@@ -11,38 +9,28 @@ import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
-import net.fabricmc.fabric.impl.client.indigo.renderer.render.ItemRenderContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockRenderView;
 
-import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class PackageBakedModel extends ForwardingBakedModel {
-	public PackageBakedModel(BakedModel other, Mesh frameMesh, Mesh innerMesh, Mesh faceMesh, Mesh theRestMesh) {
+	public PackageBakedModel(BakedModel other, Mesh mesh) {
 		this.wrapped = other;
 		
-		this.frameMesh = frameMesh;
-		this.innerMesh = innerMesh;
-		this.faceMesh = faceMesh;
-		this.theRestMesh = theRestMesh;
+		this.mesh = mesh;
 	}
 	
-	private final Mesh frameMesh;
-	private final Mesh innerMesh;
-	private final Mesh faceMesh;
-	private final Mesh theRestMesh;
+	private final Mesh mesh;
 	
 	@Override
 	public boolean isVanillaAdapter() {
@@ -75,36 +63,17 @@ public class PackageBakedModel extends ForwardingBakedModel {
 		Sprite frameSprite = mgr.getModel(style.frameBlock.getDefaultState()).getSprite();
 		Sprite innerSprite = mgr.getModel(style.innerBlock.getDefaultState()).getSprite();
 		DyeColor color = style.color;
-		
-		//Phase 4: slap the textures on as late as possible.
-		//Quad transformers are very helpful here.
-		
-		//Frame - need to texture it with the frame texture
-		context.pushTransform(q -> {
-			q.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED);
-			return true;
-		});
-		context.meshConsumer().accept(frameMesh);
-		context.popTransform();
-		
-		//Inner bit - need to texture it with the inner texture
-		context.pushTransform(q -> {
-			q.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED);
-			return true;
-		});
-		context.meshConsumer().accept(innerMesh);
-		context.popTransform();
-		
-		//Face - need to tint it the face's color
 		int tint = 0xFF000000 | color.getMaterialColor().color; //what a line of code
+		
 		context.pushTransform(q -> {
-			q.spriteColor(0, tint, tint, tint, tint);
+			switch(q.tag()) {
+				case 1: q.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED); break;
+				case 2: q.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED); break;
+				case 3: q.spriteColor(0, tint, tint, tint, tint); break;
+			}
 			return true;
 		});
-		context.meshConsumer().accept(faceMesh);
+		context.meshConsumer().accept(mesh);
 		context.popTransform();
-		
-		//And everything else.
-		context.meshConsumer().accept(theRestMesh);
 	}
 }

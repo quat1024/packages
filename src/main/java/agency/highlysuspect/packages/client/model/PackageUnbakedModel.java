@@ -7,15 +7,18 @@ import com.google.common.base.Preconditions;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.minecraft.client.render.model.*;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.*;
 import java.util.function.Function;
@@ -43,106 +46,90 @@ public class PackageUnbakedModel implements UnbakedModel {
 	
 	@Override
 	public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
-		//Remove references to the special textures, so the game doesn't try to load them
-		return basePackage.getTextureDependencies(unbakedModelGetter, unresolvedTextureReferences)
-			.stream()
-			.filter(sid -> !sid.getTextureId().equals(SPECIAL_FRAME) && !sid.getTextureId().equals(SPECIAL_INNER))
-			.collect(Collectors.toList());
+		return basePackage.getTextureDependencies(unbakedModelGetter, unresolvedTextureReferences);
 	}
 	
 	@Override
 	public BakedModel bake(ModelLoader loader, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
-		//I have a terrible plan, and it takes four steps.
-		
-		//Phase 1.
-		//Load through vanilla JSON model loading machinery, but whenever a "placeholder" texture is requested intentionally
-		//fuck up its texture atlas coordinates. I'm trusting that the basePackage unbaked model is from vanilla, but if some
-		//other mod is wrapping it for some reason, should be alright? Just assuming my dumb fakesprite things don't break
-		//mods too much.
-		BakedModel fromJson = basePackage.bake(
-			loader,
-			//When you ask for a "special" texture, give it one that spans (0, 0) -> (1, 1).
-			//The fake sprite appears to takes up the entire texture atlas, so when the JSON loader is choosing
-			//the texture coordinates to apply to the BakedQuad, numerically, nothing happens.
-			
-			//I also make sure to note which quad this sprite came from.
-			(id) -> {
-				Identifier textureId = id.getTextureId();
-				if (SPECIAL_FRAME.equals(textureId)) {
-					return new FakeSprite(SPECIAL_FRAME);
-				} else if (SPECIAL_INNER.equals(textureId)) {
-					return new FakeSprite(SPECIAL_INNER);
-				} else return textureGetter.apply(id);
-			},
-			rotationContainer, modelId
-		);
-		
+		BakedModel fromJson = basePackage.bake(loader,	textureGetter, rotationContainer, modelId);
 		Preconditions.checkNotNull(fromJson, "null model when loading the barrel model?!");
 		
-		//Phase 2.
-		//Sort the quads into four buckets:
-		// * quads belonging to the frame
-		// * quads belonging to the inner bit
-		// * quads belonging to the recolored face on the front (anything with tintindex 1)
-		// * everything else
-		//For cases 1 and 2, disambiguate them from the FakeSprite's ID.
-		//For case 3, I check the tint index.
-		//Everything else goes in the 4th bucket.
-		
-		//cullFace -> quads. Note that cullFace can be null, so an EnumMap can't do.
-		Map<Direction, List<BakedQuad>> frameQuads = new HashMap<>();
-		Map<Direction, List<BakedQuad>> innerQuads = new HashMap<>();
-		Map<Direction, List<BakedQuad>> faceQuads = new HashMap<>();
-		Map<Direction, List<BakedQuad>> theRest = new HashMap<>();
+		//When canvas(JMX) is present, mixing a getSprite() onto BakedQuad and calling it on a quad from BakedModel#getQuads implemented by JMX,
+		//you just get the particle texture.
+		//My model depends on being able to tell textures apart, so, I compare texture coordinates instead.
+		Sprite specialFrameSprite = textureGetter.apply(new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, SPECIAL_FRAME));
+		Sprite specialInnerSprite = textureGetter.apply(new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, SPECIAL_INNER));
 		
 		Random probablyShouldntPassNullHere = new Random();
 		
-		for (Direction d : DIRECTIONS_AND_NULL) {
-			for (BakedQuad quad : fromJson.getQuads(PBlocks.PACKAGE.getDefaultState(), d, probablyShouldntPassNullHere)) {
-				Sprite sprite = ((BakedQuadExt) quad).pkgs$getSprite();
+		Renderer renderer = RendererAccess.INSTANCE.getRenderer();
+		assert renderer != null;
+		MeshBuilder mb = renderer.meshBuilder();
+		QuadEmitter emitter = mb.getEmitter();
+		
+		for (Direction cullFace : DIRECTIONS_AND_NULL) {
+			for (BakedQuad quad : fromJson.getQuads(PBlocks.PACKAGE.getDefaultState(), cullFace, probablyShouldntPassNullHere)) {
+				emitter.fromVanilla(quad, null, cullFace);
 				
-				if (sprite instanceof FakeSprite) {
-					Identifier type = sprite.getId();
-					
-					if (type.equals(SPECIAL_FRAME)) {
-						frameQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
-					} else if (type.equals(SPECIAL_INNER)) {
-						innerQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
-					} else {
-						PackagesInit.LOGGER.error("Found a FakeSprite with ID " + type.toString() + " but I'm not sure what to do with that");
-					}
-					
-					continue;
+				if(remapToUnitSquare(emitter, specialFrameSprite)) {
+					emitter.tag(1);
+				} else if(remapToUnitSquare(emitter, specialInnerSprite)) {
+					emitter.tag(2);
+				} else if(quad.getColorIndex() == 1) {
+					emitter.tag(3);
 				}
 				
-				if (quad.getColorIndex() == 1) {
-					faceQuads.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
-					continue;
-				}
-				
-				theRest.computeIfAbsent(d, x -> new ArrayList<>()).add(quad);
+				emitter.emit();
 			}
 		}
 		
-		//Phase 3: cook these these into meshes, since I don't need the raw quads anymore
-		//This also, nicely, disposes of all references to the FakeSprites. Which is great since I don't want other mods seeing those ever lmao
-		MeshBuilder mb = RendererAccess.INSTANCE.getRenderer().meshBuilder();
-		Mesh frameMesh = meshFromMapThingie(mb, frameQuads);
-		Mesh innerMesh = meshFromMapThingie(mb, innerQuads);
-		Mesh faceMesh = meshFromMapThingie(mb, faceQuads);
-		Mesh theRestMesh = meshFromMapThingie(mb, theRest);
-		
-		//Phase 4 happens in the baked model
-		return new PackageBakedModel(fromJson, frameMesh, innerMesh, faceMesh, theRestMesh);
+		return new PackageBakedModel(fromJson, mb.build());
 	}
 	
-	private static Mesh meshFromMapThingie(MeshBuilder mb, Map<Direction, List<BakedQuad>> quadMap) {
-		QuadEmitter emitter = mb.getEmitter();
-		quadMap.forEach((direction, quads) -> quads.forEach(q -> {
-			emitter.fromVanilla(q.getVertexData(), 0, false);
-			emitter.cullFace(direction); //It's ok to pass null here
-			emitter.emit();
-		}));
-		return mb.build();
+	//Imagine a red box encompassing the Sprite on its texture atlas, and the QuadEmitter's UV coordinates on the atlas are a blue box.
+	//If the blue box is not inside the red box, this method does nothing and returns false.
+	//If they are, this method scales the red box up to fill the entire atlas (the unit square), while keeping the proportional sizes of the boxes the same.
+	private static boolean remapToUnitSquare(QuadEmitter emitter, Sprite sprite) {
+		float spriteMinU = sprite.getMinU();
+		float spriteMaxU = sprite.getMaxU();
+		float spriteMinV = sprite.getMinV();
+		float spriteMaxV = sprite.getMaxV();
+		
+		float minU = Float.POSITIVE_INFINITY;
+		float maxU = Float.NEGATIVE_INFINITY;
+		float minV = Float.POSITIVE_INFINITY;
+		float maxV = Float.NEGATIVE_INFINITY;
+		
+		for(int i = 0; i < 4; i++) {
+			float u = emitter.spriteU(i, 0);
+			if(minU > u) minU = u;
+			if(maxU < u) maxU = u;
+			
+			float v = emitter.spriteV(i, 0);
+			if(minV > v) minV = v;
+			if(maxV < v) maxV = v;
+		}
+		
+		if(spriteMinU <= minU && spriteMaxU >= maxU && spriteMinV <= minV && spriteMaxV >= maxV) {
+			float remappedMinU = rangeRemap(minU, spriteMinU, spriteMaxU, 0, 1);
+			float remappedMaxU = rangeRemap(maxU, spriteMinU, spriteMaxU, 0, 1);
+			float remappedMinV = rangeRemap(minV, spriteMinV, spriteMaxV, 0, 1);
+			float remappedMaxV = rangeRemap(maxV, spriteMinV, spriteMaxV, 0, 1);
+			
+			for(int i = 0; i < 4; i++) {
+				float writeU = emitter.spriteU(i, 0) == minU ? remappedMinU : remappedMaxU;
+				float writeV = emitter.spriteV(i, 0) == minV ? remappedMinV : remappedMaxV;
+				emitter.sprite(i, 0, writeU, writeV);
+			}
+			
+			return true;
+		}
+		return false;
+	}
+	
+	//my favorite method in the whole wide world
+	public static float rangeRemap(float value, float low1, float high1, float low2, float high2) {
+		float value2 = MathHelper.clamp(value, low1, high1);
+		return low2 + (value2 - low1) * (high2 - low2) / (high1 - low1);
 	}
 }

@@ -28,7 +28,8 @@ public class ItemRendererMixin {
 			PItems.PACKAGE.getContainedStack(stack).ifPresent(inner -> {
 					matrixStack.push();
 					model.getTransformation().getTransformation(transformMode).apply(invert, matrixStack);
-					PackageBlockEntityRenderer.drawItem(matrixStack, vertexConsumerProvider, TwelveDirection.NORTH, inner, light);
+					PackageBlockEntityRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);
+					PackageBlockEntityRenderer.drawItem(matrixStack, vertexConsumerProvider, inner, light);
 					matrixStack.pop();
 				}
 			);
