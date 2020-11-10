@@ -5,6 +5,8 @@ import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.client.model.PackageUnbakedModel;
 import agency.highlysuspect.packages.client.screen.PScreens;
+import agency.highlysuspect.packages.compat.FrexProxy;
+import agency.highlysuspect.packages.compat.NoFrex;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.net.PNetClient;
 import net.fabricmc.api.ClientModInitializer;
@@ -16,6 +18,7 @@ import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegi
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.resource.ResourceManager;
@@ -39,8 +42,23 @@ public class ClientInit implements ClientModInitializer {
 	//cached unbaked model!
 	private static PackageUnbakedModel packageUnbakedModel;
 	
+	//Frex(Canvas) compat stuff
+	public static FrexProxy FREX_PROXY;
+	
 	@Override
 	public void onInitializeClient() {
+		
+		if(FabricLoader.getInstance().isModLoaded("frex")) {
+			try {
+				FREX_PROXY = (FrexProxy) Class.forName("agency.highlysuspect.packages.compat.YesFrex").newInstance();
+			} catch (ReflectiveOperationException e) {
+				PackagesInit.LOGGER.error("Problem initializing FREX compat, special stuff will be disabled: ", e);
+				FREX_PROXY = new NoFrex();
+			}
+		} else {
+			FREX_PROXY = new NoFrex();
+		}
+		
 		/////Funky hacky package model
 		//Loading it
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {

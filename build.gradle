@@ -14,13 +14,13 @@ minecraft {
 }
 
 repositories {
-//	maven {
-//		url "https://maven.dblsaiko.net"
-//	}
-//	
-//	maven {
-//		url "https://server.bbkr.space/artifactory/libs-release/"
-//	}
+	maven {
+		url "https://maven.dblsaiko.net"
+	}
+	
+	maven {
+		url "https://server.bbkr.space/artifactory/libs-release/"
+	}
 }
 
 dependencies {
@@ -34,10 +34,8 @@ dependencies {
     		exclude group: "net.fabricmc.fabric-loader"
     	}
     
-    //modCompile "grondag:canvas-mc116:1.0.1086"
-    //modCompile "grondag:frex-mc116:4.0.159" //apparently i need this for canvas to run
-    
-    //modCompile "io.github.prospector:modmenu:1.12.1+build.15"
+    modCompile "grondag:canvas-mc116:1.0.1094"
+    modCompile "grondag:frex-mc116:4.0.159"
 }
 
 processResources {

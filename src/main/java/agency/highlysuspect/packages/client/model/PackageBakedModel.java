@@ -1,19 +1,29 @@
 package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.PackagesInit;
+import agency.highlysuspect.packages.client.ClientInit;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.renderer.v1.Renderer;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
+import net.fabricmc.fabric.api.renderer.v1.material.MaterialFinder;
+import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
+import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
+import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
+import net.fabricmc.fabric.impl.renderer.SpriteFinderImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockRenderManager;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
@@ -65,6 +75,21 @@ public class PackageBakedModel extends ForwardingBakedModel {
 		DyeColor color = style.color;
 		int tint = 0xFF000000 | color.getMaterialColor().color; //what a line of code
 		
+		//Add funky quad transformer that applies the relevant frex material
+		if(ClientInit.FREX_PROXY.isFrex()) {
+			SpriteFinder spriteFinder = SpriteFinder.get(MinecraftClient.getInstance().getBakedModelManager().method_24153(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)); //oof
+			
+			context.pushTransform(q -> {
+				if(q.tag() == 1 || q.tag() == 2) {
+					BlockState state = (q.tag() == 1 ? style.frameBlock : style.innerBlock).getDefaultState();
+					Sprite sprite = spriteFinder.find(q, 0);
+					RenderMaterial mat = ClientInit.FREX_PROXY.getMaterial(state, sprite);
+					q.material(mat);
+				}
+				return true;
+			});
+		}
+		
 		context.pushTransform(q -> {
 			switch(q.tag()) {
 				case 1: q.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED); break;
@@ -73,7 +98,10 @@ public class PackageBakedModel extends ForwardingBakedModel {
 			}
 			return true;
 		});
+		
 		context.meshConsumer().accept(mesh);
+		
 		context.popTransform();
+		if(ClientInit.FREX_PROXY.isFrex()) context.popTransform();
 	}
 }

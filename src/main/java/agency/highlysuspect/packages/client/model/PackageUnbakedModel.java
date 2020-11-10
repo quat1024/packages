@@ -95,19 +95,24 @@ public class PackageUnbakedModel implements UnbakedModel {
 		if(classs.getName().equals("grondag.canvas.apiimpl.mesh.MeshBuilderImpl$Maker")) {
 			Class<?> qviclass = classs.getSuperclass().getSuperclass();
 			if(qviclass.getName().equals("grondag.canvas.apiimpl.mesh.QuadViewImpl")) {
-				//SHHHH
-				Field spriteMappedFlags;
+				//shh   it's ok      you don't have to call findSprite and NPE on something
+				//(i actually don't know why the game explodes)
+				
+				Field flagField;
 				try {
-					spriteMappedFlags = qviclass.getDeclaredField("spriteMappedFlags");
-				} catch (NoSuchFieldException e) {
-					return; //it's gone in newer versions of Canvas
+					//older versions of canvas
+					flagField = qviclass.getDeclaredField("spriteMappedFlags");
+					flagField.setAccessible(true);
+					flagField.setInt(a, 0);
+				} catch (ReflectiveOperationException e) {
+					//swallow it, yummy yummy exception
 				}
 				
 				try {
-					spriteMappedFlags.setAccessible(true);
-					//shh   it's ok      you don't have to call findSprite and NPE on something
-					//(i actually don't know why the game explodes)
-					spriteMappedFlags.setInt(a, 0);
+					//newer versions of canvas
+					flagField = qviclass.getDeclaredField("spriteMappedFlag");
+					flagField.setAccessible(true);
+					flagField.setBoolean(a, false);
 				} catch(ReflectiveOperationException e) {
 					return;
 				}
@@ -145,6 +150,8 @@ public class PackageUnbakedModel implements UnbakedModel {
 			float remappedMinV = rangeRemap(minV, spriteMinV, spriteMaxV, 0, 1);
 			float remappedMaxV = rangeRemap(maxV, spriteMinV, spriteMaxV, 0, 1);
 			
+			//This loop has to go in reverse order or else UV mapping totally falls apart under Canvas. Not sure why, I should ask!
+			//It's not float comparison issues, pretty sure (if i add an epsilon, it's still broken)
 			for(int i = 3; i >= 0; i--) {
 				float writeU = emitter.spriteU(i, 0) == minU ? remappedMinU : remappedMaxU;
 				float writeV = emitter.spriteV(i, 0) == minV ? remappedMinV : remappedMaxV;
