@@ -145,7 +145,7 @@ public class PackageUnbakedModel implements UnbakedModel {
 			float remappedMinV = rangeRemap(minV, spriteMinV, spriteMaxV, 0, 1);
 			float remappedMaxV = rangeRemap(maxV, spriteMinV, spriteMaxV, 0, 1);
 			
-			for(int i = 0; i < 4; i++) {
+			for(int i = 3; i >= 0; i--) {
 				float writeU = emitter.spriteU(i, 0) == minU ? remappedMinU : remappedMaxU;
 				float writeV = emitter.spriteV(i, 0) == minV ? remappedMinV : remappedMaxV;
 				emitter.sprite(i, 0, writeU, writeV);
