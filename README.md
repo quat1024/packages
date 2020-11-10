@@ -1,9 +1,11 @@
 Packages
 ========
 
-Worse Barrels successor for Fabric 1.15.2!
+Worse Barrels successor for Fabric ~~1.15.2~~ 1.16.4!
 
 Package Crafter model by [Kat](https://kat.blue)!
+
+soft dependency on FREX (transfers frex blockstate materials onto the package model) - fucking amazing work by Grondag on these mods
 
 ### Why not port Worse Barrels directly?
 
