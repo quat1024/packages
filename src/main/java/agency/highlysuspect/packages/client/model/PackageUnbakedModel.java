@@ -2,14 +2,14 @@ package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
-import agency.highlysuspect.packages.junk.BakedQuadExt;
+import agency.highlysuspect.packages.client.compat.canvas.CanvasCompat;
 import com.google.common.base.Preconditions;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
-import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.minecraft.client.render.model.*;
@@ -23,15 +23,22 @@ import net.minecraft.util.math.MathHelper;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
-public class PackageUnbakedModel implements UnbakedModel {
+public class PackageUnbakedModel extends DelegatingUnbakedModel {
 	public PackageUnbakedModel(UnbakedModel basePackage) {
-		this.basePackage = basePackage;
+		super(basePackage);
 	}
 	
-	private final UnbakedModel basePackage;
+	public PackageUnbakedModel(ModelProviderContext ctx) {
+		this(ctx.loadModel(BLOCKMODEL_PATH));
+	}
+	
+	public static final Identifier PACKAGE_SPECIAL = new Identifier(PackagesInit.MODID, "special/package");
+	//TODO, find out why making this a regular item model and setting "parent": "pacakges:special/package" seems to break all resource loading
+	public static final Identifier ITEM_SPECIAL = new Identifier(PackagesInit.MODID, "item/package");
+	
+	public static final Identifier BLOCKMODEL_PATH = new Identifier(PackagesInit.MODID, "block/package");
 	
 	private static final Identifier SPECIAL_FRAME = new Identifier(PackagesInit.MODID, "special/frame");
 	private static final Identifier SPECIAL_INNER = new Identifier(PackagesInit.MODID, "special/inner");
@@ -41,18 +48,8 @@ public class PackageUnbakedModel implements UnbakedModel {
 	};
 	
 	@Override
-	public Collection<Identifier> getModelDependencies() {
-		return basePackage.getModelDependencies();
-	}
-	
-	@Override
-	public Collection<SpriteIdentifier> getTextureDependencies(Function<Identifier, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
-		return basePackage.getTextureDependencies(unbakedModelGetter, unresolvedTextureReferences);
-	}
-	
-	@Override
 	public BakedModel bake(ModelLoader loader, Function<SpriteIdentifier, Sprite> textureGetter, ModelBakeSettings rotationContainer, Identifier modelId) {
-		BakedModel fromJson = basePackage.bake(loader,	textureGetter, rotationContainer, modelId);
+		BakedModel fromJson = super.bake(loader,	textureGetter, rotationContainer, modelId);
 		Preconditions.checkNotNull(fromJson, "null model when loading the barrel model?!");
 		
 		//When canvas(JMX) is present, mixing a getSprite() onto BakedQuad and calling it on a quad from BakedModel#getQuads implemented by JMX,
@@ -80,44 +77,13 @@ public class PackageUnbakedModel implements UnbakedModel {
 					emitter.tag(3);
 				}
 				
-				hackyJmxFix(emitter);
+				CanvasCompat.PROXY.fixQuadEmitter(emitter);
 				
 				emitter.emit();
 			}
 		}
 		
 		return new PackageBakedModel(fromJson, mb.build());
-	}
-	
-	private static void hackyJmxFix(QuadEmitter a) {
-		//shh
-		Class<? extends QuadEmitter> classs = a.getClass();
-		if(classs.getName().equals("grondag.canvas.apiimpl.mesh.MeshBuilderImpl$Maker")) {
-			Class<?> qviclass = classs.getSuperclass().getSuperclass();
-			if(qviclass.getName().equals("grondag.canvas.apiimpl.mesh.QuadViewImpl")) {
-				//shh   it's ok      you don't have to call findSprite and NPE on something
-				//(i actually don't know why the game explodes)
-				
-				Field flagField;
-				try {
-					//older versions of canvas
-					flagField = qviclass.getDeclaredField("spriteMappedFlags");
-					flagField.setAccessible(true);
-					flagField.setInt(a, 0);
-				} catch (ReflectiveOperationException e) {
-					//swallow it, yummy yummy exception
-				}
-				
-				try {
-					//newer versions of canvas
-					flagField = qviclass.getDeclaredField("spriteMappedFlag");
-					flagField.setAccessible(true);
-					flagField.setBoolean(a, false);
-				} catch(ReflectiveOperationException e) {
-					return;
-				}
-			}
-		}
 	}
 	
 	//Imagine a red box encompassing the Sprite on its texture atlas, and the QuadEmitter's UV coordinates on the atlas are a blue box.

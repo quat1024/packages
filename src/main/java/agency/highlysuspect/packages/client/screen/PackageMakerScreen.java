@@ -5,8 +5,10 @@ import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.net.PNetClient;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -88,5 +90,14 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 		int j = (this.width - this.backgroundWidth) / 2;
 		int k = (this.height - this.backgroundHeight) / 2;
 		this.drawTexture(matrixStack, j, k, 0, 0, this.backgroundWidth, this.backgroundHeight);
+	}
+	
+	public static void onInitializeClient() {
+		//noinspection deprecation
+		ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).register((tex, reg) -> {
+			reg.register(PackageMakerScreenHandler.FRAME_BG);
+			reg.register(PackageMakerScreenHandler.INNER_BG);
+			reg.register(PackageMakerScreenHandler.DYE_BG);
+		});
 	}
 }

@@ -55,4 +55,24 @@ public class PackageStyle {
 		stack.getOrCreateSubTag("BlockEntityTag").put(KEY, toTag());
 		return stack;
 	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if(this == o) return true;
+		if(o == null || getClass() != o.getClass()) return false;
+		
+		PackageStyle that = (PackageStyle) o;
+		
+		if(!frameBlock.equals(that.frameBlock)) return false;
+		if(!innerBlock.equals(that.innerBlock)) return false;
+		return color == that.color;
+	}
+	
+	@Override
+	public int hashCode() {
+		int result = frameBlock.hashCode();
+		result = 31 * result + innerBlock.hashCode();
+		result = 31 * result + color.hashCode();
+		return result;
+	}
 }

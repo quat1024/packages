@@ -7,10 +7,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 
 public class PNetClient {
-	public static void onInitialize() {
-		
-	}
-	
 	public static void requestInsert(BlockPos pos, Hand hand, int mode) { //TODO magic ints bad
 		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);

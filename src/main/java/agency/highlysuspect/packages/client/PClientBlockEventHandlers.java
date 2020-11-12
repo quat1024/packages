@@ -18,7 +18,7 @@ public class PClientBlockEventHandlers {
 	private static BlockPos lastPunchPos;
 	private static long lastPunchTick;
 	
-	public static void onInitialize() {
+	public static void onInitializeClient() {
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
 			if(player.isSpectator()) return ActionResult.PASS;
 			

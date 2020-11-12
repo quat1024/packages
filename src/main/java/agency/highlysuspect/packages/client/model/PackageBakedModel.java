@@ -1,13 +1,12 @@
 package agency.highlysuspect.packages.client.model;
 
-import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.client.ClientInit;
+import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
+import agency.highlysuspect.packages.client.compat.frex.FrexProxy;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
-import net.fabricmc.fabric.api.renderer.v1.material.MaterialFinder;
 import net.fabricmc.fabric.api.renderer.v1.material.RenderMaterial;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
@@ -17,7 +16,6 @@ import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.model.SpriteFinder;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
-import net.fabricmc.fabric.impl.renderer.SpriteFinderImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockRenderManager;
@@ -29,18 +27,24 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockRenderView;
 
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
 public class PackageBakedModel extends ForwardingBakedModel {
-	public PackageBakedModel(BakedModel other, Mesh mesh) {
+	public PackageBakedModel(BakedModel other, Mesh baseMesh) {
 		this.wrapped = other;
-		
-		this.mesh = mesh;
+		this.baseMesh = baseMesh;
 	}
 	
-	private final Mesh mesh;
+	private final Mesh baseMesh;
+	private static final Map<PackageStyle, Mesh> meshCache = new ConcurrentHashMap<>();
+	
+	public static void dumpCache() {
+		meshCache.clear();
+	}
 	
 	@Override
 	public boolean isVanillaAdapter() {
@@ -55,7 +59,6 @@ public class PackageBakedModel extends ForwardingBakedModel {
 		if(ext instanceof PackageStyle) {
 			style = (PackageStyle) ext;
 		} else {
-			//TODO handle this better?
 			style = PackageStyle.FALLBACK;
 		}
 		
@@ -68,40 +71,35 @@ public class PackageBakedModel extends ForwardingBakedModel {
 	}
 	
 	private void emitFrame(RenderContext context, PackageStyle style) {
-		BlockRenderManager mgr = MinecraftClient.getInstance().getBlockRenderManager();
-		
-		Sprite frameSprite = mgr.getModel(style.frameBlock.getDefaultState()).getSprite();
-		Sprite innerSprite = mgr.getModel(style.innerBlock.getDefaultState()).getSprite();
-		DyeColor color = style.color;
-		int tint = 0xFF000000 | color.getMaterialColor().color; //what a line of code
-		
-		//Add funky quad transformer that applies the relevant frex material
-		if(ClientInit.FREX_PROXY.isFrex()) {
-			SpriteFinder spriteFinder = SpriteFinder.get(MinecraftClient.getInstance().getBakedModelManager().method_24153(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE)); //oof
+		context.meshConsumer().accept(meshCache.computeIfAbsent(style, x -> {
+			BlockRenderManager mgr = MinecraftClient.getInstance().getBlockRenderManager();
+			Sprite frameSprite = mgr.getModel(style.frameBlock.getDefaultState()).getSprite();
+			Sprite innerSprite = mgr.getModel(style.innerBlock.getDefaultState()).getSprite();
+			DyeColor color = style.color;
+			int tint = 0xFF000000 | color.getMaterialColor().color; //what a line of code
 			
-			context.pushTransform(q -> {
-				if(q.tag() == 1 || q.tag() == 2) {
-					BlockState state = (q.tag() == 1 ? style.frameBlock : style.innerBlock).getDefaultState();
-					Sprite sprite = spriteFinder.find(q, 0);
-					RenderMaterial mat = ClientInit.FREX_PROXY.getMaterial(state, sprite);
-					q.material(mat);
+			Renderer renderer = RendererAccess.INSTANCE.getRenderer();
+			assert renderer != null;
+			MeshBuilder meshBuilder = renderer.meshBuilder();
+			QuadEmitter emitter = meshBuilder.getEmitter();
+			
+			baseMesh.forEach(quad -> {
+				quad.copyTo(emitter);
+				
+				switch(emitter.tag()) {
+					case 1: emitter.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED); break;
+					case 2: emitter.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED); break;
+					case 3: emitter.spriteColor(0, tint, tint, tint, tint); break;
 				}
-				return true;
+				
+				//TODO this isn't the best way to do this, mainly b/c it does things like re-lookup the spritefinder every time
+				// It's not that big a deal though, especially because it gets cached
+				FrexCompat.PROXY.fancifyPackageQuad(emitter, style);
+				
+				emitter.emit();
 			});
-		}
-		
-		context.pushTransform(q -> {
-			switch(q.tag()) {
-				case 1: q.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED); break;
-				case 2: q.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED); break;
-				case 3: q.spriteColor(0, tint, tint, tint, tint); break;
-			}
-			return true;
-		});
-		
-		context.meshConsumer().accept(mesh);
-		
-		context.popTransform();
-		if(ClientInit.FREX_PROXY.isFrex()) context.popTransform();
+			
+			return meshBuilder.build();
+		}));
 	}
 }
