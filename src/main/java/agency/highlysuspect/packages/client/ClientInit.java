@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
-import agency.highlysuspect.packages.client.compat.canvas.CanvasCompat;
 import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.client.screen.PScreens;
 import agency.highlysuspect.packages.client.screen.PackageMakerScreen;
@@ -18,7 +17,6 @@ public class ClientInit implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		FrexCompat.onInitializeClient();
-		CanvasCompat.onInitializeClient();
 		
 		PModelStuff.onInitializeClient();
 		PackageMakerScreen.onInitializeClient();

@@ -75,4 +75,9 @@ public class PackageStyle {
 		result = 31 * result + color.hashCode();
 		return result;
 	}
+	
+	@Override
+	public String toString() {
+		return "PackageStyle{frameBlock=" + frameBlock + ", innerBlock=" + innerBlock + ", color=" + color + '}';
+	}
 }
