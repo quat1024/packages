@@ -4,7 +4,9 @@ import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PItemTags;
+import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
+import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -28,8 +30,9 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Direction;
+import org.jetbrains.annotations.Nullable;
 
-public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable, ExtendedScreenHandlerFactory {
+public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
 	public PackageMakerBlockEntity(BlockEntityType<?> type) {
 		super(type);
 	}
@@ -38,6 +41,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		this(PBlockEntityTypes.PACKAGE_MAKER);
 	}
 	
+	//region Crafting logic
 	public static final int FRAME_SLOT = 0;
 	public static final int INNER_SLOT = 1;
 	public static final int DYE_SLOT = 2;
@@ -94,8 +98,29 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		inv.get(DYE_SLOT).decrement(1);
 		markDirty();
 	}
+	//endregion
 	
-	//<editor-fold desc="ExtendedScreenHandlerFactory">
+	//region RenderAttachmentBlockEntity
+	@Override
+	public @Nullable Object getRenderAttachmentData() {
+		//TODO this sucks lol
+		Block frameBlock = null;
+		Block innerBlock = null;
+		DyeColor dye = null;
+		
+		ItemStack frameStack = inv.get(FRAME_SLOT);
+		ItemStack innerStack = inv.get(INNER_SLOT);
+		ItemStack dyeStack = inv.get(DYE_SLOT);
+		
+		if(!frameStack.isEmpty() && frameStack.getItem() instanceof BlockItem) frameBlock = ((BlockItem) frameStack.getItem()).getBlock();
+		if(!innerStack.isEmpty() && innerStack.getItem() instanceof BlockItem) innerBlock = ((BlockItem) innerStack.getItem()).getBlock();
+		if(!dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem) dye = ((DyeItem) dyeStack.getItem()).getColor();
+		
+		return new PackageStyle(frameBlock, innerBlock, dye);
+	}
+	//endregion
+	
+	//region ExtendedScreenHandlerFactory
 	@Override
 	public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
 		buf.writeBlockPos(pos);
@@ -105,9 +130,9 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
 		return new PackageMakerScreenHandler(syncId, inv, this);
 	}
-	//</editor-fold>
+	//endregion
 	
-	//<editor-fold desc="SidedInventory">
+	//region SidedInventory
 	public static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};
 	public static final int[] INNER_AND_DYE = new int[] {INNER_SLOT, DYE_SLOT};
 	public static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
@@ -182,9 +207,9 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public void clear() {
 		inv.clear();
 	}
-	//</editor-fold>
+	//endregion
 	
-	//<editor-fold desc="Custom name cruft">
+	//region Custom name cruft
 	private Text customName;
 	
 	@Override
@@ -210,10 +235,9 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public void setCustomName(Text customName) {
 		this.customName = customName;
 	}
-	//</editor-fold>
+	//endregion
 	
-	//Serialization
-	//Kind of a cheesy thing, but I happen to not have anything I don't want to send to the client
+	//region Serialization
 	@Override
 	public CompoundTag toClientTag(CompoundTag tag) {
 		if(customName != null) {
@@ -251,4 +275,5 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		super.fromTag(state, tag);
 		fromClientTag(tag);
 	}
+	//endregion
 }

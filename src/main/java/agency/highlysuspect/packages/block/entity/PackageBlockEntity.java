@@ -42,8 +42,8 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	private static final int[] NO_SLOTS = {};
 	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
 	
-	private DefaultedList<ItemStack> inv = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
-	private PackageStyle style = PackageStyle.FALLBACK;
+	private final DefaultedList<ItemStack> inv = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
+	private PackageStyle style = PackageStyle.ERROR_LOL;
 	private Text customName;
 	
 	@Override

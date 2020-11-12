@@ -1,8 +1,8 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.client.model.PackageBakedModel;
-import agency.highlysuspect.packages.client.model.PackageUnbakedModel;
+import agency.highlysuspect.packages.client.model.PackageMakerModel;
+import agency.highlysuspect.packages.client.model.PackageModel;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -11,14 +11,22 @@ import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
 
 public class PModelStuff {
-	private static PackageUnbakedModel packageUnbakedModel;
+	private static PackageModel packageModel;
+	private static PackageMakerModel packageMakerModel;
 	
 	public static void onInitializeClient() {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
-			if(PackageUnbakedModel.PACKAGE_SPECIAL.equals(id) || PackageUnbakedModel.ITEM_SPECIAL.equals(id)) {
-				if(packageUnbakedModel == null) packageUnbakedModel = new PackageUnbakedModel(ctx);
-				return packageUnbakedModel;
-			} else return null;
+			if(PackageModel.PACKAGE_SPECIAL.equals(id) || PackageModel.ITEM_SPECIAL.equals(id)) {
+				if(packageModel == null) packageModel = new PackageModel();
+				return packageModel;
+			}
+			
+			if(PackageMakerModel.PACKAGE_MAKER_SPECIAL.equals(id)) {
+				if(packageMakerModel == null) packageMakerModel = new PackageMakerModel();
+				return packageMakerModel;
+			}
+			
+			return null;
 		});
 		
 		Identifier id = new Identifier(PackagesInit.MODID, "dump_caches");
@@ -31,8 +39,8 @@ public class PModelStuff {
 				
 				@Override
 				public void apply(ResourceManager manager) {
-					packageUnbakedModel = null;
-					PackageBakedModel.dumpCache();
+					packageModel = null;
+					packageMakerModel = null;
 				}
 			}
 		);

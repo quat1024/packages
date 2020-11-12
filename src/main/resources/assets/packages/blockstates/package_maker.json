@@ -1,18 +1,18 @@
 {
   "variants": {
     "facing=north": {
-      "model": "packages:block/package_maker"
+      "model": "packages:special/package_maker"
     },
     "facing=east": {
-      "model": "packages:block/package_maker",
+      "model": "packages:special/package_maker",
       "y": 90
     },
     "facing=south": {
-      "model": "packages:block/package_maker",
+      "model": "packages:special/package_maker",
       "y": 180
     },
     "facing=west": {
-      "model": "packages:block/package_maker",
+      "model": "packages:special/package_maker",
       "y": 270
     }
   }

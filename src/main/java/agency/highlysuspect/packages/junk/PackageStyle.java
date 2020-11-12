@@ -7,9 +7,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class PackageStyle {
-	public PackageStyle(Block frameBlock, Block innerBlock, DyeColor color) {
+	public PackageStyle(@Nullable Block frameBlock, @Nullable Block innerBlock, @Nullable DyeColor color) {
 		this.frameBlock = frameBlock;
 		this.innerBlock = innerBlock;
 		this.color = color;
@@ -17,43 +20,65 @@ public class PackageStyle {
 	
 	public static PackageStyle fromTag(CompoundTag tag) {
 		return new PackageStyle(
-			Registry.BLOCK.getOrEmpty(Identifier.tryParse(tag.getString("frame"))).orElse(fallbackFrame),
-			Registry.BLOCK.getOrEmpty(Identifier.tryParse(tag.getString("inner"))).orElse(fallbackInner),
-			DyeColor.byId(tag.getInt("color"))
+			Registry.BLOCK.get(Identifier.tryParse(tag.getString("frame"))),
+			Registry.BLOCK.get(Identifier.tryParse(tag.getString("inner"))),
+			tag.contains("color") ? DyeColor.byId(tag.getInt("color")) : null
 		);
 	}
 	
+	public static final PackageStyle EMPTY = new PackageStyle(null, null, null);
+	public static final PackageStyle ERROR_LOL = new PackageStyle(Blocks.PINK_CONCRETE, Blocks.BLACK_CONCRETE, DyeColor.RED);
+	
 	public static PackageStyle fromItemStack(ItemStack stack) {
 		CompoundTag tag = stack.getTag();
-		if(tag == null) return FALLBACK;
+		if(tag == null) return ERROR_LOL;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
 	
-	public final Block frameBlock;
-	public final Block innerBlock;
-	public final DyeColor color;
-	
-	private static final Block fallbackFrame = Blocks.PINK_CONCRETE;
-	private static final Block fallbackInner = Blocks.BLACK_CONCRETE;
-	private static final DyeColor fallbackColor = DyeColor.PINK;
+	@Nullable public final Block frameBlock;
+	@Nullable public final Block innerBlock;
+	@Nullable public final DyeColor color;
 	
 	public static final String KEY = "PackageStyle";
-	public static final PackageStyle FALLBACK = new PackageStyle(fallbackFrame, fallbackInner, fallbackColor);
 	
 	public CompoundTag toTag() {
 		return toTag(new CompoundTag());
 	}
 	
 	public CompoundTag toTag(CompoundTag writeTo) {
-		writeTo.putString("frame", Registry.BLOCK.getId(frameBlock).toString());
-		writeTo.putString("inner", Registry.BLOCK.getId(innerBlock).toString());
-		writeTo.putInt("color", color.getId());
+		if(frameBlock != null) writeTo.putString("frame", Registry.BLOCK.getId(frameBlock).toString());
+		if(innerBlock != null) writeTo.putString("inner", Registry.BLOCK.getId(innerBlock).toString());
+		if(color != null) writeTo.putInt("color", color.getId());
 		return writeTo;
 	}
 	
 	public ItemStack writeToStackTag(ItemStack stack) {
 		stack.getOrCreateSubTag("BlockEntityTag").put(KEY, toTag());
 		return stack;
+	}
+	
+	public boolean hasFrame() {
+		return frameBlock != null;
+	}
+	
+	public boolean hasInner() {
+		return innerBlock != null;
+	}
+	
+	public boolean hasColor() {
+		return color != null;
+	}
+	
+	public Block getFrame() {
+		return frameBlock;
+	}
+	
+	public Block getInner() {
+		return innerBlock;
+	}
+	
+	public DyeColor getColor() {
+		return color;
 	}
 	
 	@Override
@@ -63,21 +88,25 @@ public class PackageStyle {
 		
 		PackageStyle that = (PackageStyle) o;
 		
-		if(!frameBlock.equals(that.frameBlock)) return false;
-		if(!innerBlock.equals(that.innerBlock)) return false;
+		if(!Objects.equals(frameBlock, that.frameBlock)) return false;
+		if(!Objects.equals(innerBlock, that.innerBlock)) return false;
 		return color == that.color;
 	}
 	
 	@Override
 	public int hashCode() {
-		int result = frameBlock.hashCode();
-		result = 31 * result + innerBlock.hashCode();
-		result = 31 * result + color.hashCode();
+		int result = frameBlock != null ? frameBlock.hashCode() : 0;
+		result = 31 * result + (innerBlock != null ? innerBlock.hashCode() : 0);
+		result = 31 * result + (color != null ? color.hashCode() : 0);
 		return result;
 	}
 	
 	@Override
 	public String toString() {
-		return "PackageStyle{frameBlock=" + frameBlock + ", innerBlock=" + innerBlock + ", color=" + color + '}';
+		return "PackageStyle{" +
+			"frameBlock=" + frameBlock +
+			", innerBlock=" + innerBlock +
+			", color=" + color +
+			'}';
 	}
 }
