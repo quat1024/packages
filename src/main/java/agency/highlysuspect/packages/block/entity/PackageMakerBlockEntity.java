@@ -11,7 +11,6 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
@@ -20,7 +19,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.DyeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -29,16 +28,13 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
 public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
-	public PackageMakerBlockEntity(BlockEntityType<?> type) {
-		super(type);
-	}
-	
-	public PackageMakerBlockEntity() {
-		this(PBlockEntityTypes.PACKAGE_MAKER);
+	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
+		super(PBlockEntityTypes.PACKAGE_MAKER, pos, state);
 	}
 	
 	//region Crafting logic
@@ -52,7 +48,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		Item item = stack.getItem();
 		if(!(item instanceof BlockItem)) return false;
-		if(item.isIn(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
+		if(PItemTags.BANNED_FROM_PACKAGE_MAKER.contains(item)) return false;
 		
 		Block b = ((BlockItem) item).getBlock();
 		BlockState state = b.getDefaultState();
@@ -239,24 +235,24 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	
 	//region Serialization
 	@Override
-	public CompoundTag toClientTag(CompoundTag tag) {
+	public NbtCompound toClientTag(NbtCompound tag) {
 		if(customName != null) {
 			tag.putString("CustomName", Text.Serializer.toJson(customName));
 		}
 		
-		Inventories.toTag(tag, inv);
+		Inventories.writeNbt(tag, inv);
 		return tag;
 	}
 	
 	@Override
-	public void fromClientTag(CompoundTag tag) {
+	public void fromClientTag(NbtCompound tag) {
 		if(tag.contains("CustomName", 8)) {
 			customName = Text.Serializer.fromJson(tag.getString("CustomName"));
 		} else {
 			customName = null;
 		}
 		
-		Inventories.fromTag(tag, inv);
+		Inventories.readNbt(tag, inv);
 	}
 	
 	@Override
@@ -266,13 +262,13 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
-		return super.toTag(toClientTag(tag));
+	public NbtCompound writeNbt(NbtCompound tag) {
+		return super.writeNbt(toClientTag(tag));
 	}
 	
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
 		fromClientTag(tag);
 	}
 	//endregion

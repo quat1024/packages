@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.junk;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -18,7 +18,7 @@ public class PackageStyle {
 		this.color = color;
 	}
 	
-	public static PackageStyle fromTag(CompoundTag tag) {
+	public static PackageStyle fromTag(NbtCompound tag) {
 		return new PackageStyle(
 			Registry.BLOCK.get(Identifier.tryParse(tag.getString("frame"))),
 			Registry.BLOCK.get(Identifier.tryParse(tag.getString("inner"))),
@@ -30,7 +30,7 @@ public class PackageStyle {
 	public static final PackageStyle ERROR_LOL = new PackageStyle(Blocks.PINK_CONCRETE, Blocks.BLACK_CONCRETE, DyeColor.RED);
 	
 	public static PackageStyle fromItemStack(ItemStack stack) {
-		CompoundTag tag = stack.getTag();
+		NbtCompound tag = stack.getTag();
 		if(tag == null) return ERROR_LOL;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
@@ -41,11 +41,11 @@ public class PackageStyle {
 	
 	public static final String KEY = "PackageStyle";
 	
-	public CompoundTag toTag() {
-		return toTag(new CompoundTag());
+	public NbtCompound toTag() {
+		return toTag(new NbtCompound());
 	}
 	
-	public CompoundTag toTag(CompoundTag writeTo) {
+	public NbtCompound toTag(NbtCompound writeTo) {
 		if(frameBlock != null) writeTo.putString("frame", Registry.BLOCK.getId(frameBlock).toString());
 		if(innerBlock != null) writeTo.putString("inner", Registry.BLOCK.getId(innerBlock).toString());
 		if(color != null) writeTo.putInt("color", color.getId());

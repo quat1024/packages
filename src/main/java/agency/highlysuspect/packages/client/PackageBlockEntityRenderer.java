@@ -9,23 +9,25 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.client.render.block.entity.BlockEntityRenderer;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 
-public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlockEntity> {
-	public PackageBlockEntityRenderer(BlockEntityRenderDispatcher dispatcher) {
-		super(dispatcher);
+public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBlockEntity> {
+	public PackageBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
+		textRenderer = context.getTextRenderer();
 	}
+	
+	private final TextRenderer textRenderer;
 	
 	@Override
 	public void render(PackageBlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
@@ -105,13 +107,11 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 			
 			matrices.push();
 			
-			TextRenderer textRenderer = client.textRenderer;
-			
 			matrices.translate(6 / 16d + 0.05, 0, 0);
 			matrices.scale(-1, -scale, scale);
 			matrices.translate(0, -4, 0);
 			//todo figure out what that normal call does in the original
-			matrices.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+			matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
 			
 			int minusHalfWidth = -textRenderer.getWidth(text) / 2;
 			textRenderer.draw(text, minusHalfWidth + 1, 1, (color & 0xFCFCFC) >> 2, false, matrices.peek().getModel(), vertexConsumers, false, 0, light);
@@ -133,10 +133,10 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		Matrix4f modelMatrix = matrices.peek().getModel();
 		
 		if(dir.primaryDirection.getHorizontal() == -1) { //up/down
-			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-dir.secondaryDirection.asRotation() + 90));
-			modelMatrix.multiply(Vector3f.POSITIVE_Z.getDegreesQuaternion(dir.primaryDirection == Direction.UP ? 90 : -90));
+			modelMatrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-dir.secondaryDirection.asRotation() + 90));
+			modelMatrix.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(dir.primaryDirection == Direction.UP ? 90 : -90));
 		} else {
-			modelMatrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(-dir.primaryDirection.asRotation() - 90));
+			modelMatrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-dir.primaryDirection.asRotation() - 90));
 		}
 	}
 	
@@ -149,19 +149,19 @@ public class PackageBlockEntityRenderer extends BlockEntityRenderer<PackageBlock
 		
 		if(depth == 0) {
 			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.006f, 0, 0));
-			modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+			modelMatrix2.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
 			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
 		} else {
 			//Don't think about this too hard, just a workaround to slightly space out deeply-nested items.
 			//If I don't do this, situations like packages-inside-packages-inside-packages start zfighting pretty hard.
 			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.07f, 0, 0)); //Lift it out more
-			modelMatrix2.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion(90));
+			modelMatrix2.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
 			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
 		}
 		
 		depth++;
 		if(depth < 5) {
-			client.getItemRenderer().renderItem(stack, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers);
+			client.getItemRenderer().renderItem(stack, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
 		}
 		depth--;
 		

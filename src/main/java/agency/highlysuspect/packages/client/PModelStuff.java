@@ -38,7 +38,7 @@ public class PModelStuff {
 				}
 				
 				@Override
-				public void apply(ResourceManager manager) {
+				public void reload(ResourceManager manager) {
 					packageModel = null;
 					packageMakerModel = null;
 				}

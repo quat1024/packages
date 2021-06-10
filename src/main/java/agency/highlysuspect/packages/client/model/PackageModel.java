@@ -16,7 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.BlockRenderView;
 
-import java.util.*;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.function.Supplier;
 

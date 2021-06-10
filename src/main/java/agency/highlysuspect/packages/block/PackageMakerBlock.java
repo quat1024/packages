@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
@@ -50,8 +51,8 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	public static final VoxelShape SIMPLE = createCuboidShape(1, 0, 1, 15, 9, 15);
 	
 	@Override
-	public BlockEntity createBlockEntity(BlockView view) {
-		return new PackageMakerBlockEntity();
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return PBlockEntityTypes.PACKAGE_MAKER.instantiate(pos, state);
 	}
 	
 	@Override
@@ -118,7 +119,7 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	}
 	
 	@Override
-	public VoxelShape getVisualShape(BlockState state, BlockView view, BlockPos pos, ShapeContext context) {
+	public VoxelShape getCameraCollisionShape(BlockState state, BlockView view, BlockPos pos, ShapeContext context) {
 		return SIMPLE;
 	}
 }

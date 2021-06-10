@@ -24,7 +24,7 @@ public class PClientBlockEventHandlers {
 			
 			BlockState state = world.getBlockState(pos);
 			if(state.getBlock() instanceof PackageBlock) {
-				if(player.getStackInHand(hand).isEffectiveOn(state)) return ActionResult.PASS;
+				if(player.getStackInHand(hand).isSuitableFor(state)) return ActionResult.PASS;
 				
 				Direction frontDir = state.get(PackageBlock.FACING).primaryDirection;
 				if(direction == frontDir) {

@@ -33,6 +33,10 @@ public class PItems {
 				{ Blocks.JUNGLE_LOG             , Blocks.JUNGLE_PLANKS               , DyeColor.GREEN},
 				{ Blocks.CRIMSON_HYPHAE         , Blocks.CRIMSON_PLANKS              , DyeColor.RED},
 				{ Blocks.WARPED_HYPHAE          , Blocks.WARPED_PLANKS               , DyeColor.CYAN},
+				{ Blocks.POLISHED_ANDESITE      , Blocks.ANDESITE                    , DyeColor.LIGHT_GRAY},
+				{ Blocks.POLISHED_GRANITE       , Blocks.GRANITE                     , DyeColor.PINK},
+				{ Blocks.POLISHED_DIORITE       , Blocks.DIORITE                     , DyeColor.WHITE},
+				{ Blocks.POLISHED_DEEPSLATE     , Blocks.COBBLED_DEEPSLATE           , DyeColor.GRAY},
 				{ Blocks.WHITE_CONCRETE         , Blocks.WHITE_CONCRETE_POWDER       , DyeColor.WHITE},
 				{ Blocks.ORANGE_CONCRETE        , Blocks.ORANGE_CONCRETE_POWDER      , DyeColor.ORANGE},
 				{ Blocks.MAGENTA_CONCRETE       , Blocks.MAGENTA_CONCRETE_POWDER     , DyeColor.MAGENTA},
@@ -63,6 +67,10 @@ public class PItems {
 				{ Blocks.BROWN_TERRACOTTA       , Blocks.BROWN_TERRACOTTA            , DyeColor.BROWN},
 				{ Blocks.GREEN_TERRACOTTA       , Blocks.GREEN_TERRACOTTA            , DyeColor.GREEN},
 				{ Blocks.RED_TERRACOTTA         , Blocks.RED_TERRACOTTA              , DyeColor.RED},
+				{ Blocks.COPPER_BLOCK           , Blocks.CUT_COPPER                  , DyeColor.WHITE},
+				{ Blocks.EXPOSED_COPPER         , Blocks.EXPOSED_CUT_COPPER          , DyeColor.WHITE},
+				{ Blocks.WEATHERED_COPPER       , Blocks.WEATHERED_CUT_COPPER        , DyeColor.WHITE},
+				{ Blocks.OXIDIZED_COPPER        , Blocks.OXIDIZED_CUT_COPPER         , DyeColor.WHITE},
 			};
 			
 			for(Object[] triple : sampleBarrels) {

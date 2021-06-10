@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.junk;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public class PUtil {
 	//Yeah I know there's collections.singleton and immutablelist.of etc, but I want mutable ones!

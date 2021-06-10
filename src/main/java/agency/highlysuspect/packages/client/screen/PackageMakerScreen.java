@@ -8,6 +8,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
@@ -24,6 +25,8 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 		super(sh, inventory, title);
 	}
 	
+	private ButtonWidget buddon;
+	
 	private static final String[] SLOTS_TO_TOOLTIPS = Util.make(new String[3], (m) -> {
 		m[PackageMakerBlockEntity.FRAME_SLOT] = PackagesInit.MODID + ".package_maker.frame";
 		m[PackageMakerBlockEntity.INNER_SLOT] = PackagesInit.MODID + ".package_maker.inner";
@@ -33,7 +36,8 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 	@Override
 	protected void init() {
 		super.init();
-		addButton(new ButtonWidget((width / 2) - 25, y + 33, 50, 20, new TranslatableText(PackagesInit.MODID + ".package_maker.craft_button"), (button) -> PNetClient.requestPackageMakerCraft(hasShiftDown())));
+		buddon = new ButtonWidget((width / 2) - 25, y + 33, 50, 20, new TranslatableText(PackagesInit.MODID + ".package_maker.craft_button"), (button) -> PNetClient.requestPackageMakerCraft(hasShiftDown()));
+		addSelectableChild(buddon);
 	}
 	
 	public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
@@ -53,13 +57,12 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 				}
 			}
 		}
+		
+		buddon.render(matrices, mouseX, mouseY, delta);
 	}
 	
-	protected void drawForeground(MatrixStack matrixStack, int i, int j) {
-		//Begin copy paste
-		this.textRenderer.draw(matrixStack, this.title, (float)(this.backgroundWidth / 2 - this.textRenderer.getWidth(this.title) / 2), 6.0F, 4210752);
-		this.textRenderer.draw(matrixStack, this.playerInventory.getDisplayName(), 8.0F, (float)(this.backgroundHeight - 96 + 2), 4210752);
-		//End copy paste
+	protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
+		super.drawForeground(matrices, mouseX, mouseY);
 		
 		PackageMakerScreenHandler screenHandler = getScreenHandler();
 		
@@ -74,7 +77,7 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 				
 				RenderSystem.disableDepthTest();
 				RenderSystem.colorMask(true, true, true, false);
-				this.fillGradient(matrixStack, x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
+				this.fillGradient(matrices, x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
 				RenderSystem.colorMask(true, true, true, true);
 				RenderSystem.enableDepthTest();
 			}
@@ -82,14 +85,14 @@ public class PackageMakerScreen extends HandledScreen<PackageMakerScreenHandler>
 	}
 	
 	//Copy paste from Generic3x3ContainerScreen
-	@SuppressWarnings("ConstantConditions")
 	@Override
-	protected void drawBackground(MatrixStack matrixStack, float f, int mouseY, int i) {
-		RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-		this.client.getTextureManager().bindTexture(TEXTURE);
-		int j = (this.width - this.backgroundWidth) / 2;
-		int k = (this.height - this.backgroundHeight) / 2;
-		this.drawTexture(matrixStack, j, k, 0, 0, this.backgroundWidth, this.backgroundHeight);
+	protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
+		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		RenderSystem.setShaderTexture(0, TEXTURE);
+		int i = (this.width - this.backgroundWidth) / 2;
+		int j = (this.height - this.backgroundHeight) / 2;
+		this.drawTexture(matrices, i, j, 0, 0, this.backgroundWidth, this.backgroundHeight);
 	}
 	
 	public static void onInitializeClient() {

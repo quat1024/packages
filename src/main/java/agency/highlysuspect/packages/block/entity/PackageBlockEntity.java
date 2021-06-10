@@ -9,17 +9,17 @@ import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Nameable;
 import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
 import java.util.ArrayList;
@@ -27,12 +27,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
-	public PackageBlockEntity(BlockEntityType<?> type) {
-		super(type);
-	}
-	
-	public PackageBlockEntity() {
-		this(PBlockEntityTypes.PACKAGE);
+	public PackageBlockEntity(BlockPos pos, BlockState state) {
+		super(PBlockEntityTypes.PACKAGE, pos, state);
 	}
 	
 	public static final String CONTENTS_KEY = "PackageContents";
@@ -52,14 +48,14 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public CompoundTag toClientTag(CompoundTag tag) {
+	public NbtCompound toClientTag(NbtCompound tag) {
 		tag.put(PackageStyle.KEY, style.toTag());
 		tag.put(CONTENTS_KEY, writeContents());
 		return tag;
 	}
 	
 	@Override
-	public void fromClientTag(CompoundTag tag) {
+	public void fromClientTag(NbtCompound tag) {
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
 		readContents(tag.getCompound(CONTENTS_KEY));
 		
@@ -73,12 +69,12 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		this.style = style;
 	}
 	
-	public CompoundTag writeContents() {
-		CompoundTag tag = new CompoundTag();
+	public NbtCompound writeContents() {
+		NbtCompound tag = new NbtCompound();
 		
 		ItemStack first = findFirstNonemptyStack();
 		if(!first.isEmpty()) {
-			CompoundTag stackTag = findFirstNonemptyStack().toTag(new CompoundTag());
+			NbtCompound stackTag = findFirstNonemptyStack().writeNbt(new NbtCompound());
 			stackTag.putByte("Count", (byte) 1);
 			
 			tag.put("stack", stackTag);
@@ -90,11 +86,11 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		return tag;
 	}
 	
-	public void readContents(CompoundTag tag) {
+	public void readContents(NbtCompound tag) {
 		clear();
 		int count = tag.getInt("realCount");
 		if(count != 0) {
-			ItemStack stack = ItemStack.fromTag(tag.getCompound("stack"));
+			ItemStack stack = ItemStack.fromNbt(tag.getCompound("stack"));
 			int maxPerSlot = maxStackAmountAllowed(stack);
 			
 			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
@@ -150,9 +146,9 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		else if(stack.getItem() instanceof PackageItem) {
 			//TODO clean this up
 			if(!stack.hasTag()) return 64;
-			CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+			NbtCompound beTag = stack.getSubTag("BlockEntityTag");
 			if(beTag == null) return 64;
-			CompoundTag contentsTag = beTag.getCompound(CONTENTS_KEY);
+			NbtCompound contentsTag = beTag.getCompound(CONTENTS_KEY);
 			if(contentsTag.getInt("realCount") > 0) return 1;
 			else return 64;
 		}
@@ -222,7 +218,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		}
 		
 		stacksToGive.forEach(stack -> {
-			if(!player.inventory.insertStack(stack)) {
+			if(!player.getInventory().insertStack(stack)) {
 				player.dropItem(stack, false);
 			}
 		});
@@ -315,12 +311,12 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	private int calcPackageRecursion(ItemStack stack) {
-		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+		NbtCompound beTag = stack.getSubTag("BlockEntityTag");
 		if(beTag != null) {
-			CompoundTag contentsTag = beTag.getCompound("PackageContents");
+			NbtCompound contentsTag = beTag.getCompound("PackageContents");
 			if(!contentsTag.isEmpty()) {
 				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.fromTag(contentsTag.getCompound("stack"));
+				ItemStack containedStack = ItemStack.fromNbt(contentsTag.getCompound("stack"));
 				if(count != 0 && !containedStack.isEmpty()) {
 					return 1 + calcPackageRecursion(containedStack);
 				}
@@ -353,7 +349,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	
 	//Serialization
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
+	public NbtCompound writeNbt(NbtCompound tag) {
 		//Contents
 		tag.put(CONTENTS_KEY, writeContents());
 		
@@ -365,12 +361,12 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 			tag.putString("CustomName", Text.Serializer.toJson(customName));
 		}
 		
-		return super.toTag(tag);
+		return super.writeNbt(tag);
 	}
 	
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
 		
 		//Contents
 		readContents(tag.getCompound(CONTENTS_KEY));

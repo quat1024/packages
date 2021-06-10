@@ -4,7 +4,7 @@ import agency.highlysuspect.packages.junk.PackageStyle;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
@@ -24,7 +24,7 @@ public class PackageItem extends BlockItem {
 	
 	public static void addFakeContentsTagThisSucks(ItemStack stack) {
 		//Add a blank contents tag TODO this hack sucks ass, find a better way to make crafted pkgs and dropped empty pkgs stack
-		CompoundTag bad = new CompoundTag();
+		NbtCompound bad = new NbtCompound();
 		bad.putInt("realCount", 0);
 		stack.getSubTag("BlockEntityTag").put("PackageContents", bad);
 	}
@@ -32,12 +32,12 @@ public class PackageItem extends BlockItem {
 	@Override
 	public Text getName(ItemStack stack) {
 		//TODO FIX THIS LMAO THIS SUCKS
-		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+		NbtCompound beTag = stack.getSubTag("BlockEntityTag");
 		if(beTag != null) {
-			CompoundTag contentsTag = beTag.getCompound("PackageContents");
+			NbtCompound contentsTag = beTag.getCompound("PackageContents");
 			if(!contentsTag.isEmpty()) {
 				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.fromTag(contentsTag.getCompound("stack"));
+				ItemStack containedStack = ItemStack.fromNbt(contentsTag.getCompound("stack"));
 				if(count != 0 && !containedStack.isEmpty()) {
 					return new TranslatableText("block.packages.package.nonempty",
 						super.getName(stack),
@@ -52,11 +52,11 @@ public class PackageItem extends BlockItem {
 	}
 	
 	public Optional<ItemStack> getContainedStack(ItemStack stack) {
-		CompoundTag beTag = stack.getSubTag("BlockEntityTag");
+		NbtCompound beTag = stack.getSubTag("BlockEntityTag");
 		if(beTag != null) {
-			CompoundTag contentsTag = beTag.getCompound("PackageContents");
+			NbtCompound contentsTag = beTag.getCompound("PackageContents");
 			if (!contentsTag.isEmpty()) {
-				return Optional.of(ItemStack.fromTag(contentsTag.getCompound("stack"))).filter(s -> !s.isEmpty());
+				return Optional.of(ItemStack.fromNbt(contentsTag.getCompound("stack"))).filter(s -> !s.isEmpty());
 			}
 		}
 		return Optional.empty();

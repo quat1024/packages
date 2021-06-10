@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
@@ -16,7 +17,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
@@ -53,8 +54,8 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	
 	//Block entities.
 	@Override
-	public BlockEntity createBlockEntity(BlockView view) {
-		return new PackageBlockEntity();
+	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+		return PBlockEntityTypes.PACKAGE.instantiate(pos, state);
 	}
 	
 	//Behaviors.
@@ -121,7 +122,7 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 		if(be == null) return stack;
 		
 		//just copy the style not the contents (like shulker boxes)
-		CompoundTag tag = new CompoundTag();
+		NbtCompound tag = new NbtCompound();
 		tag.put(PackageStyle.KEY, ((PackageStyle) be.getRenderAttachmentData()).toTag());
 		stack.putSubTag("BlockEntityTag", tag);
 		

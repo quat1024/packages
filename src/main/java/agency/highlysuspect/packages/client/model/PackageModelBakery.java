@@ -6,7 +6,6 @@ import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.junk.PUtil;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import com.mojang.datafixers.util.Pair;
-import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
@@ -93,7 +92,7 @@ public class PackageModelBakery {
 					
 					if(style.hasColor() && emitter.colorIndex() == 1) {
 						DyeColor color = Objects.requireNonNull(style.getColor());
-						int tint = 0xFF000000 | color.getMaterialColor().color;
+						int tint = 0xFF000000 | color.getMapColor().color;
 						emitter.spriteColor(0, tint, tint, tint, tint);
 						emitter.emit();
 						continue;

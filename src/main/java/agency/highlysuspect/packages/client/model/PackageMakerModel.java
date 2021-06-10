@@ -1,7 +1,6 @@
 package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.client.PModelStuff;
 import agency.highlysuspect.packages.junk.PUtil;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import com.mojang.datafixers.util.Pair;
@@ -9,12 +8,15 @@ import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.*;
+import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.ModelBakeSettings;
+import net.minecraft.client.render.model.ModelLoader;
+import net.minecraft.client.render.model.UnbakedModel;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.SpriteIdentifier;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.BlockRenderView;
 
 import java.util.Collection;
@@ -73,7 +75,7 @@ public class PackageMakerModel extends PackageModelBakery.DependentUnbakedModel 
 				return;
 			}
 			
-			Vector3f scratch = new Vector3f(0, 0, 0);
+			Vec3f scratch = new Vec3f(0, 0, 0);
 			float size = 10/16f;
 			
 			context.pushTransform(q -> {
