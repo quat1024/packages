@@ -3,8 +3,8 @@ package agency.highlysuspect.packages.block.entity;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
 import agency.highlysuspect.packages.junk.PItemTags;
-import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
@@ -112,7 +112,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		if(!innerStack.isEmpty() && innerStack.getItem() instanceof BlockItem) innerBlock = ((BlockItem) innerStack.getItem()).getBlock();
 		if(!dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem) dye = ((DyeItem) dyeStack.getItem()).getColor();
 		
-		return new PackageStyle(frameBlock, innerBlock, dye);
+		return new PackageMakerRenderAttachment(frameBlock, innerBlock, dye);
 	}
 	//endregion
 	

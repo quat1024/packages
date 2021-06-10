@@ -21,7 +21,7 @@ public class PModelStuff {
 				return packageModel;
 			}
 			
-			if(PackageMakerModel.PACKAGE_MAKER_SPECIAL.equals(id)) {
+			if(PackageMakerModel.PACKAGE_MAKER_SPECIAL.equals(id) || PackageMakerModel.ITEM_SPECIAL.equals(id)) {
 				if(packageMakerModel == null) packageMakerModel = new PackageMakerModel();
 				return packageMakerModel;
 			}

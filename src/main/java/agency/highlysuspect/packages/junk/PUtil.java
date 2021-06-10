@@ -1,28 +1,30 @@
 package agency.highlysuspect.packages.junk;
 
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 public class PUtil {
-	//Yeah I know there's collections.singleton and immutablelist.of etc, but I want mutable ones!
+	public static final Direction[] DIRECTIONS_AND_NULL = new Direction[]{
+		Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST, null
+	};
+	
 	@SafeVarargs
-	public static <T> ArrayList<T> arrayListOf(T... things) {
+	public static <T> ArrayList<T> concat(Collection<T>... collections) {
 		ArrayList<T> list = new ArrayList<>();
-		Collections.addAll(list, things);
+		
+		for(Collection<T> c : collections) {
+			list.addAll(c);
+		}
+		
 		return list;
 	}
 	
-	@SafeVarargs
-	public static <T> ArrayList<T> concat(Collection<T> others, T... things) {
-		ArrayList<T> list = new ArrayList<>(others);
-		Collections.addAll(list, things);
-		return list;
-	}
-	
-	public static <T> ArrayList<T> concatCollections(Collection<T> a, Collection<T> b) {
-		ArrayList<T> list = new ArrayList<>(a);
-		list.addAll(b);
-		return list;
+	//my favorite method in the whole wide world
+	public static float rangeRemap(float value, float low1, float high1, float low2, float high2) {
+		float value2 = MathHelper.clamp(value, low1, high1);
+		return low2 + (value2 - low1) * (high2 - low2) / (high1 - low1);
 	}
 }
