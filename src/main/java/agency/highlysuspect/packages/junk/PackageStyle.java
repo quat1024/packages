@@ -11,7 +11,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public class PackageStyle {
+public record PackageStyle(@Nullable Block frameBlock,
+													 @Nullable Block innerBlock,
+													 @Nullable DyeColor color) {
 	public PackageStyle(@Nullable Block frameBlock, @Nullable Block innerBlock, @Nullable DyeColor color) {
 		this.frameBlock = frameBlock;
 		this.innerBlock = innerBlock;
@@ -34,10 +36,6 @@ public class PackageStyle {
 		if(tag == null) return ERROR_LOL;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
-	
-	@Nullable public final Block frameBlock;
-	@Nullable public final Block innerBlock;
-	@Nullable public final DyeColor color;
 	
 	public static final String KEY = "PackageStyle";
 	
@@ -77,7 +75,8 @@ public class PackageStyle {
 		return innerBlock;
 	}
 	
-	public DyeColor getColor() {
+	public @Nullable
+	DyeColor getColor() {
 		return color;
 	}
 	

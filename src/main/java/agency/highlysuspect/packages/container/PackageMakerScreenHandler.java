@@ -60,7 +60,7 @@ public class PackageMakerScreenHandler extends ScreenHandler {
 		//Based on copy paste from generic3x3 container as well
 		ItemStack itemStack = ItemStack.EMPTY;
 		Slot slot = this.slots.get(invSlot);
-		if (slot != null && slot.hasStack()) {
+		if (slot.hasStack()) {
 			ItemStack itemStack2 = slot.getStack();
 			itemStack = itemStack2.copy();
 			if (invSlot < 4) {
@@ -97,8 +97,9 @@ public class PackageMakerScreenHandler extends ScreenHandler {
 			this.invSlot2 = invSlot;
 			this.tex = tex;
 		}
-		int invSlot2;
-		Identifier tex;
+		
+		private final int invSlot2;
+		private final Identifier tex;
 		
 		@Override
 		public boolean canInsert(ItemStack stack) {

@@ -11,7 +11,7 @@ public class FrexCompat {
 		
 		if(FabricLoader.getInstance().isModLoaded("frex")) {
 			try {
-				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.client.compat.frex.YesFrex").newInstance();
+				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.client.compat.frex.YesFrex").getDeclaredConstructor().newInstance();
 			} catch (ReflectiveOperationException e) {
 				PackagesInit.LOGGER.error("Problem initializing FREX compat, special stuff will be disabled: ", e);
 				p = new NoFrex();
@@ -23,6 +23,7 @@ public class FrexCompat {
 		PROXY = p;
 	}
 	
+	@SuppressWarnings("EmptyMethod")
 	public static void onInitializeClient() {
 		//Triggers static init
 	}

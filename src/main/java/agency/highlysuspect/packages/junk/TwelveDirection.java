@@ -59,11 +59,11 @@ public enum TwelveDirection implements StringIdentifiable {
 		}
 		
 		public TwelveDirection withSecondary(Direction sec) {
-			switch(primaryDirection) {
-				case UP: return ups.get(sec);
-				case DOWN: return downs.get(sec);
-				default: return this;
-			}
+			return switch(primaryDirection) {
+				case UP -> ups.get(sec);
+				case DOWN -> downs.get(sec);
+				default -> this;
+			};
 		}
 		
 		public static TwelveDirection fromEntity(Entity ent) {
@@ -82,20 +82,19 @@ public enum TwelveDirection implements StringIdentifiable {
 		}
 		
 		public TwelveDirection getOpposite() {
-			switch(this) {
-				case UP_NORTH: return DOWN_SOUTH;
-				case UP_EAST: return DOWN_WEST;
-				case UP_SOUTH: return DOWN_NORTH;
-				case UP_WEST: return DOWN_EAST;
-				case NORTH: return SOUTH;
-				case EAST: return WEST;
-				case SOUTH: return NORTH;
-				case WEST: return EAST;
-				case DOWN_NORTH: return UP_SOUTH;
-				case DOWN_EAST: return UP_WEST;
-				case DOWN_SOUTH: return UP_NORTH;
-				case DOWN_WEST: return UP_EAST;
-				default: throw new RuntimeException("Impossible");
-			}
+			return switch(this) {
+				case UP_NORTH -> DOWN_SOUTH;
+				case UP_EAST -> DOWN_WEST;
+				case UP_SOUTH -> DOWN_NORTH;
+				case UP_WEST -> DOWN_EAST;
+				case NORTH -> SOUTH;
+				case EAST -> WEST;
+				case SOUTH -> NORTH;
+				case WEST -> EAST;
+				case DOWN_NORTH -> UP_SOUTH;
+				case DOWN_EAST -> UP_WEST;
+				case DOWN_SOUTH -> UP_NORTH;
+				case DOWN_WEST -> UP_EAST;
+			};
 		}
 	}

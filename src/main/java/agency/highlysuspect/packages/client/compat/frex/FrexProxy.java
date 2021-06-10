@@ -5,6 +5,5 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.texture.Sprite;
 
 public interface FrexProxy {
-	boolean isFrex();
 	void fancifyPackageQuad(QuadEmitter emitter, BlockState state, Sprite sprite);
 }

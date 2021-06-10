@@ -67,8 +67,7 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	@Override
 	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
-		if(!(blockEntity instanceof PackageBlockEntity)) return;
-		PackageBlockEntity pkg = (PackageBlockEntity) blockEntity;
+		if(!(blockEntity instanceof PackageBlockEntity pkg)) return;
 		
 		if(stack.hasCustomName()) {
 			pkg.setCustomName(stack.getName());
@@ -121,12 +120,15 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 		PackageBlockEntity be = (PackageBlockEntity)world.getBlockEntity(pos);
 		if(be == null) return stack;
 		
-		//just copy the style not the contents (like shulker boxes)
-		NbtCompound tag = new NbtCompound();
-		tag.put(PackageStyle.KEY, ((PackageStyle) be.getRenderAttachmentData()).toTag());
-		stack.putSubTag("BlockEntityTag", tag);
-		
-		PackageItem.addFakeContentsTagThisSucks(stack);
+		Object renderAttach = be.getRenderAttachmentData();
+		if(renderAttach instanceof PackageStyle style) {
+			//just copy the style not the contents (like shulker boxes)
+			NbtCompound tag = new NbtCompound();
+			tag.put(PackageStyle.KEY, style.toTag());
+			stack.putSubTag("BlockEntityTag", tag);
+			
+			PackageItem.addFakeContentsTagThisSucks(stack);
+		}
 		
 		return stack;
 	}

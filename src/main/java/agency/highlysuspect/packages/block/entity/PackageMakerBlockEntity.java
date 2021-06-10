@@ -152,12 +152,12 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	
 	@Override
 	public boolean isValid(int slot, ItemStack stack) {
-		switch(slot) {
-			case FRAME_SLOT: return matchesFrameSlot(stack);
-			case INNER_SLOT: return matchesInnerSlot(stack);
-			case DYE_SLOT: return matchesDyeSlot(stack);
-			case OUTPUT_SLOT: default: return false;
-		}
+		return switch(slot) {
+			case FRAME_SLOT -> matchesFrameSlot(stack);
+			case INNER_SLOT -> matchesInnerSlot(stack);
+			case DYE_SLOT -> matchesDyeSlot(stack);
+			default -> false;
+		};
 	}
 	
 	@Override

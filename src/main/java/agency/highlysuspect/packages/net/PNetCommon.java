@@ -64,7 +64,7 @@ public class PNetCommon {
 		});
 	}
 	
-	@SuppressWarnings({"RedundantIfStatement", "deprecation"})
+	@SuppressWarnings({"RedundantIfStatement", "deprecation", "BooleanMethodIsAlwaysInverted"})
 	private static boolean packageSanityCheck(World world, PlayerEntity player, BlockPos pos) {
 		if(!world.isChunkLoaded(pos)) return false;
 		if(player.getBlockPos().getSquaredDistance(pos) > 8 * 8) return false;

@@ -96,8 +96,7 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	@Override
 	public List<ItemStack> getDroppedStacks(BlockState state, LootContext.Builder builder) {
 		BlockEntity be = builder.getNullable(LootContextParameters.BLOCK_ENTITY);
-		if(be instanceof PackageMakerBlockEntity) {
-			PackageMakerBlockEntity pkgMaker = (PackageMakerBlockEntity) be;
+		if(be instanceof PackageMakerBlockEntity pkgMaker) {
 			builder.putDrop(new Identifier("minecraft", "contents"), (ctx, cons) -> {
 				for(int i = 0; i < pkgMaker.size(); i++) {
 					cons.accept(pkgMaker.getStack(i));

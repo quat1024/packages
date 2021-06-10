@@ -77,7 +77,6 @@ public class PItems {
 				list.add(PACKAGE.createCustomizedStack((Block) triple[0], (Block) triple[1], (DyeColor) triple[2]));
 			}
 		})
-		//todo appenditems for a bunch of sample package types? maybe?
 		.build();
 	
 	public static void onInitialize() {

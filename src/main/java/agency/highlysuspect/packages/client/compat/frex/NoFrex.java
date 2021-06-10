@@ -5,10 +5,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.texture.Sprite;
 
 public class NoFrex implements FrexProxy {
-	@Override
-	public boolean isFrex() {
-		return false;
-	}
 	
 	@Override
 	public void fancifyPackageQuad(QuadEmitter emitter, BlockState state, Sprite sprite) {
