@@ -13,6 +13,7 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.screen.ScreenHandler;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
@@ -86,6 +87,23 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 		if(stack.hasCustomName() && world.getBlockEntity(pos) instanceof PackageMakerBlockEntity maker) {
 			maker.setCustomName(stack.getName());
 		}
+	}
+	
+	@Override
+	public boolean hasComparatorOutput(BlockState state) {
+		return true;
+	}
+	
+	@Override
+	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+		if(world.getBlockEntity(pos) instanceof PackageMakerBlockEntity maker) {
+			int level = 0;
+			if(maker.hasFrame()) level += 1;
+			if(maker.hasInner()) level += 2;
+			if(maker.hasDye()) level += 4;
+			if(maker.hasOutput()) level += 8;
+			return level;
+		} else return 0;
 	}
 	
 	@Override

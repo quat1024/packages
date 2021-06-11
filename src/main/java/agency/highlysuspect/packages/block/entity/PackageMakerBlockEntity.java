@@ -65,7 +65,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	public ItemStack whatWouldBeCrafted() {
-		if(inv.get(FRAME_SLOT).isEmpty() || inv.get(INNER_SLOT).isEmpty() || inv.get(DYE_SLOT).isEmpty()) return ItemStack.EMPTY;
+		if(!(hasFrame() && hasInner() && hasDye())) return ItemStack.EMPTY;
 		
 		Block frameBlock = ((BlockItem) inv.get(FRAME_SLOT).getItem()).getBlock();
 		Block innerBlock = ((BlockItem) inv.get(INNER_SLOT).getItem()).getBlock();
@@ -94,6 +94,22 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		inv.get(INNER_SLOT).decrement(1);
 		inv.get(DYE_SLOT).decrement(1);
 		markDirty();
+	}
+	
+	public boolean hasFrame() {
+		return !inv.get(FRAME_SLOT).isEmpty();
+	}
+	
+	public boolean hasInner() {
+		return !inv.get(INNER_SLOT).isEmpty();
+	}
+	
+	public boolean hasDye() {
+		return !inv.get(DYE_SLOT).isEmpty();
+	}
+	
+	public boolean hasOutput() {
+		return !inv.get(OUTPUT_SLOT).isEmpty();
 	}
 	//endregion
 	
