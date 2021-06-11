@@ -57,22 +57,20 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	
 	@Override
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos neighborPos, boolean moved) {
-		BlockEntity be = world.getBlockEntity(pos);
-		if(be instanceof PackageMakerBlockEntity) {
+		if(world.getBlockEntity(pos) instanceof PackageMakerBlockEntity maker) {
 			boolean wasPowered = state.get(POWERED);
 			boolean isPowered = world.isReceivingRedstonePower(pos);
 			if(wasPowered != isPowered) {
 				world.setBlockState(pos, state.with(POWERED, isPowered));
-				if(isPowered) ((PackageMakerBlockEntity) be).performCraft();
+				if(isPowered) maker.performCraft();
 			}
 		}
 	}
 	
 	@Override
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-		BlockEntity be = world.getBlockEntity(pos);
-		if(be instanceof PackageMakerBlockEntity) {
-			player.openHandledScreen((PackageMakerBlockEntity) be);
+		if(world.getBlockEntity(pos) instanceof PackageMakerBlockEntity maker) {
+			player.openHandledScreen(maker);
 		}
 		
 		return ActionResult.SUCCESS;
@@ -85,21 +83,17 @@ public class PackageMakerBlock extends Block implements BlockEntityProvider {
 	
 	@Override
 	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
-		if(stack.hasCustomName()) {
-			BlockEntity be = world.getBlockEntity(pos);
-			if(be instanceof PackageMakerBlockEntity) {
-				((PackageMakerBlockEntity) be).setCustomName(stack.getName());
-			}
+		if(stack.hasCustomName() && world.getBlockEntity(pos) instanceof PackageMakerBlockEntity maker) {
+			maker.setCustomName(stack.getName());
 		}
 	}
 	
 	@Override
 	public List<ItemStack> getDroppedStacks(BlockState state, LootContext.Builder builder) {
-		BlockEntity be = builder.getNullable(LootContextParameters.BLOCK_ENTITY);
-		if(be instanceof PackageMakerBlockEntity pkgMaker) {
+		if(builder.getNullable(LootContextParameters.BLOCK_ENTITY) instanceof PackageMakerBlockEntity maker) {
 			builder.putDrop(new Identifier("minecraft", "contents"), (ctx, cons) -> {
-				for(int i = 0; i < pkgMaker.size(); i++) {
-					cons.accept(pkgMaker.getStack(i));
+				for(int i = 0; i < maker.size(); i++) {
+					cons.accept(maker.getStack(i));
 				}
 			});
 		}

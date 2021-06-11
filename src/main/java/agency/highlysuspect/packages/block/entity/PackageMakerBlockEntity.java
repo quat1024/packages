@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -99,20 +100,15 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	//region RenderAttachmentBlockEntity
 	@Override
 	public @Nullable Object getRenderAttachmentData() {
-		//TODO this sucks lol
-		Block frameBlock = null;
-		Block innerBlock = null;
-		DyeColor dye = null;
-		
 		ItemStack frameStack = inv.get(FRAME_SLOT);
 		ItemStack innerStack = inv.get(INNER_SLOT);
 		ItemStack dyeStack = inv.get(DYE_SLOT);
 		
-		if(!frameStack.isEmpty() && frameStack.getItem() instanceof BlockItem) frameBlock = ((BlockItem) frameStack.getItem()).getBlock();
-		if(!innerStack.isEmpty() && innerStack.getItem() instanceof BlockItem) innerBlock = ((BlockItem) innerStack.getItem()).getBlock();
-		if(!dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem) dye = ((DyeItem) dyeStack.getItem()).getColor();
+		Block frameBlock = !frameStack.isEmpty() && frameStack.getItem() instanceof BlockItem frameItem ? frameItem.getBlock() : null;
+		Block innerBlock = !innerStack.isEmpty() && innerStack.getItem() instanceof BlockItem innerItem ? innerItem.getBlock() : null;
+		DyeColor dyeColor = !dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem dyeItem ? dyeItem.getColor() : null;
 		
-		return new PackageMakerRenderAttachment(frameBlock, innerBlock, dye);
+		return new PackageMakerRenderAttachment(frameBlock, innerBlock, dyeColor);
 	}
 	//endregion
 	
@@ -253,6 +249,12 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		}
 		
 		Inventories.readNbt(tag, inv);
+		
+		//Im really sorry for this. How do you actually trigger a chunk rebuild from a blockentity sync these days?
+		if(world != null && world.isClient) {
+			BlockState state = world.getBlockState(pos);
+			world.scheduleBlockRerenderIfNeeded(pos, Blocks.AIR.getDefaultState(), state);
+		}
 	}
 	
 	@Override
