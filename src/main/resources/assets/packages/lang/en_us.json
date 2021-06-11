@@ -16,5 +16,7 @@
   "packages.package_maker.frame": "Frame",
   "packages.package_maker.inner": "Core",
   "packages.package_maker.dye": "Color",
-  "packages.package_maker.craft_button": "Create"
+  "packages.package_maker.craft_button": "Create",
+	
+	"packages.subtitle.package_maker_craft": "Package Crafter used"
 }

@@ -1,0 +1,11 @@
+{
+	"package_maker_craft": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:ui.stonecutter.take_result"
+			}
+		],
+		"subtitle": "packages.subtitle.package_maker_craft"
+	}
+}

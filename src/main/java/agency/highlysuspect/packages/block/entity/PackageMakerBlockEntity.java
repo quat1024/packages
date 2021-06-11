@@ -1,8 +1,10 @@
 package agency.highlysuspect.packages.block.entity;
 
+import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
 import agency.highlysuspect.packages.junk.PItemTags;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
@@ -24,6 +26,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.DyeColor;
@@ -81,7 +84,6 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		ItemStack currentOutputStack = inv.get(OUTPUT_SLOT);
 		if(currentOutputStack.isEmpty()) {
 			inv.set(OUTPUT_SLOT, wouldCraft);
-			
 		} else {
 			if(currentOutputStack.getCount() != currentOutputStack.getMaxCount() &&
 				 currentOutputStack.isItemEqual(wouldCraft) &&
@@ -93,7 +95,13 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		inv.get(FRAME_SLOT).decrement(1);
 		inv.get(INNER_SLOT).decrement(1);
 		inv.get(DYE_SLOT).decrement(1);
+		
 		markDirty();
+		
+		//doubt it's null, lol
+		if(world != null)	{
+			world.playSound(null, pos, PSoundEvents.PACKAGE_MAKER_CRAFT, SoundCategory.BLOCKS, 0.5f, 1f);
+		}
 	}
 	
 	public boolean hasFrame() {
