@@ -25,6 +25,12 @@
   "mixins": [
     "packages.mixins.json"
   ],
+  "custom": {
+    "dashloader:customobject": [
+      "agency.highlysuspect.packages.client.compat.dashloader.DashPackageModel",
+      "agency.highlysuspect.packages.client.compat.dashloader.DashPackageMakerModel"
+    ]
+  },
   "depends": {
     "fabricloader": "*",
     "fabric": "*",

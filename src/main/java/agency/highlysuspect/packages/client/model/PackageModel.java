@@ -50,7 +50,7 @@ public class PackageModel implements UnbakedModel {
 			this.bakery = bakery;
 		}
 		
-		private final PackageModelBakery bakery;
+		public final PackageModelBakery bakery;
 		
 		@Override
 		public boolean isVanillaAdapter() {

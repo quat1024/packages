@@ -28,6 +28,10 @@ repositories {
 		name = "shedaniel"
 		url = "https://maven.shedaniel.me/"
 	}
+	maven {
+		url "https://oskarstrom.net/maven"
+	}
+
 }
 
 dependencies {
@@ -40,9 +44,10 @@ dependencies {
 // 			exclude group: "net.fabricmc.fabric-api"
 // 			exclude group: "net.fabricmc.fabric-loader"
 // 	}
-	
-	modImplementation "grondag:canvas-mc117-1.17:1.0.1598"
-	modImplementation "grondag:frex-mc117:5.2.223"
+
+	modImplementation 'net.oskarstrom:DashLoader:2.0'
+//	modImplementation "grondag:canvas-mc117-1.17:1.0.1598" // if you need this make DashLoader modCompileOnly
+	modCompileOnly "grondag:frex-mc117:5.2.223" // if you need this make DashLoader modCompileOnly
 }
 
 processResources {
