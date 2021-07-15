@@ -28,10 +28,10 @@ repositories {
 		name = "shedaniel"
 		url = "https://maven.shedaniel.me/"
 	}
+	
 	maven {
 		url "https://oskarstrom.net/maven"
 	}
-
 }
 
 dependencies {
