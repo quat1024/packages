@@ -40,14 +40,15 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
-// 	modImplementation("io.github.prospector:modmenu:${project.modmenu_version}") {
-// 			exclude group: "net.fabricmc.fabric-api"
-// 			exclude group: "net.fabricmc.fabric-loader"
-// 	}
-
+	// run with dashloader
 	modImplementation 'net.oskarstrom:DashLoader:2.0'
-//	modImplementation "grondag:canvas-mc117-1.17:1.0.1598" // if you need this make DashLoader modCompileOnly
-	modCompileOnly "grondag:frex-mc117:5.2.223" // if you need this make DashLoader modCompileOnly
+	modCompileOnly "grondag:frex-mc117:5.2.223"
+	
+	// run with frexiepoo
+	// modImplementation "grondag:canvas-mc117-1.17:1.0.1598" // if you need this make DashLoader modCompileOnly
+	// modCompileOnly 'net.oskarstrom:DashLoader:2.0'
+	
+	//god i wish there was a better way to do this lol
 }
 
 processResources {
