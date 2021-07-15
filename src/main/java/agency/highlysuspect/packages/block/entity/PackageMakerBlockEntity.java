@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.block.entity;
 
-import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import agency.highlysuspect.packages.item.PItems;
@@ -12,8 +11,8 @@ import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventories;
@@ -266,6 +265,17 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	
 	@Override
 	public void fromClientTag(NbtCompound tag) {
+		fromClientTag0(tag);
+		
+		if(world != null && world.isClient) {
+			//this cast and method call is safe; fromClientTag itself is never referenced on the server.
+			//shared ser/de logic goes in fromClientTag0 below.
+			//god i hate raw nbt lmao
+			((ClientWorld) world).scheduleBlockRenders(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+		}
+	}
+	
+	private void fromClientTag0(NbtCompound tag) {
 		if(tag.contains("CustomName", 8)) {
 			customName = Text.Serializer.fromJson(tag.getString("CustomName"));
 		} else {
@@ -273,12 +283,6 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		}
 		
 		Inventories.readNbt(tag, inv);
-		
-		//Im really sorry for this. How do you actually trigger a chunk rebuild from a blockentity sync these days?
-		if(world != null && world.isClient) {
-			BlockState state = world.getBlockState(pos);
-			world.scheduleBlockRerenderIfNeeded(pos, Blocks.AIR.getDefaultState(), state);
-		}
 	}
 	
 	@Override
@@ -295,7 +299,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	@Override
 	public void readNbt(NbtCompound tag) {
 		super.readNbt(tag);
-		fromClientTag(tag);
+		fromClientTag0(tag);
 	}
 	//endregion
 }
