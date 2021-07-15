@@ -10,6 +10,7 @@ import net.oskarstrom.dashloader.api.annotation.DashObject;
 import net.oskarstrom.dashloader.model.DashModel;
 
 @DashObject(PackageMakerModel.Baked.class)
+@SuppressWarnings("unused") //activej; DashLoader
 public class DashPackageMakerModel implements DashModel {
 	public DashPackageMakerModel(@Deserialize("data") DashPackageModelBakery data) {
 		this.data = data;

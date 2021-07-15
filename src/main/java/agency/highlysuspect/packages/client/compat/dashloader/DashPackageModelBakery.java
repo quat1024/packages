@@ -6,6 +6,7 @@ import io.activej.serializer.annotations.Serialize;
 import net.oskarstrom.dashloader.DashRegistry;
 
 public class DashPackageModelBakery {
+	@SuppressWarnings("unused") //activej
 	public DashPackageModelBakery(@Deserialize("baseModel") int baseModel, @Deserialize("specialFrameSprite") int specialFrameSprite, @Deserialize("specialInnerSprite") int specialInnerSprite) {
 		this.baseModel = baseModel;
 		this.specialFrameSprite = specialFrameSprite;
