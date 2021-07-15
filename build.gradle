@@ -45,7 +45,7 @@ dependencies {
 	modCompileOnly "grondag:frex-mc117:5.2.223"
 	
 	// run with frexiepoo
-	// modImplementation "grondag:canvas-mc117-1.17:1.0.1598" // if you need this make DashLoader modCompileOnly
+	// modImplementation "grondag:canvas-mc117-1.17:1.0.1598"
 	// modCompileOnly 'net.oskarstrom:DashLoader:2.0'
 	
 	//god i wish there was a better way to do this lol
