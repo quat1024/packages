@@ -5,29 +5,29 @@ import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
-public class PackageMakerScreenHandler extends ScreenHandler {
-	public static PackageMakerScreenHandler constructFromNetwork(int syncId, PlayerInventory inventory, PacketByteBuf buf) {
+public class PackageMakerScreenHandler extends AbstractContainerMenu {
+	public static PackageMakerScreenHandler constructFromNetwork(int syncId, Inventory inventory, FriendlyByteBuf buf) {
 		BlockPos pos = buf.readBlockPos();
 		
-		BlockEntity be = inventory.player.world.getBlockEntity(pos);
+		BlockEntity be = inventory.player.level.getBlockEntity(pos);
 		if(!(be instanceof PackageMakerBlockEntity)) throw new IllegalStateException("no package maker at " + pos.toString());
 		
 		return new PackageMakerScreenHandler(syncId, inventory, (PackageMakerBlockEntity) be);
 	}
 	
-	public PackageMakerScreenHandler(int syncId, PlayerInventory playerInventory, PackageMakerBlockEntity be) {
+	public PackageMakerScreenHandler(int syncId, Inventory playerInventory, PackageMakerBlockEntity be) {
 		super(PScreenHandlers.PACKAGE_MAKER, syncId);
 		this.be = be;
 		
@@ -52,65 +52,65 @@ public class PackageMakerScreenHandler extends ScreenHandler {
 	public final PackageMakerBlockEntity be;
 	
 	@Override
-	public boolean canUse(PlayerEntity player) {
-		return be.canPlayerUse(player);
+	public boolean stillValid(Player player) {
+		return be.stillValid(player);
 	}
 	
-	public ItemStack transferSlot(PlayerEntity player, int invSlot) {
+	public ItemStack quickMoveStack(Player player, int invSlot) {
 		//Based on copy paste from generic3x3 container as well
 		ItemStack itemStack = ItemStack.EMPTY;
 		Slot slot = this.slots.get(invSlot);
-		if (slot.hasStack()) {
-			ItemStack itemStack2 = slot.getStack();
+		if (slot.hasItem()) {
+			ItemStack itemStack2 = slot.getItem();
 			itemStack = itemStack2.copy();
 			if (invSlot < 4) {
-				if (!this.insertItem(itemStack2, 4, 40, true)) {
+				if (!this.moveItemStackTo(itemStack2, 4, 40, true)) {
 					return ItemStack.EMPTY;
 				}
-			} else if (!this.insertItem(itemStack2, 0, 4, false)) {
+			} else if (!this.moveItemStackTo(itemStack2, 0, 4, false)) {
 				return ItemStack.EMPTY;
 			}
 			
 			if (itemStack2.isEmpty()) {
-				slot.setStack(ItemStack.EMPTY);
+				slot.set(ItemStack.EMPTY);
 			} else {
-				slot.markDirty();
+				slot.setChanged();
 			}
 			
 			if (itemStack2.getCount() == itemStack.getCount()) {
 				return ItemStack.EMPTY;
 			}
 			
-			slot.onTakeItem(player, itemStack2);
+			slot.onTake(player, itemStack2);
 		}
 		
 		return itemStack;
 	}
 	
-	public static final Identifier FRAME_BG = new Identifier(PackagesInit.MODID, "gui/slot_frame");
-	public static final Identifier INNER_BG = new Identifier(PackagesInit.MODID, "gui/slot_inner");
-	public static final Identifier DYE_BG = new Identifier(PackagesInit.MODID, "gui/slot_dye");
+	public static final ResourceLocation FRAME_BG = new ResourceLocation(PackagesInit.MODID, "gui/slot_frame");
+	public static final ResourceLocation INNER_BG = new ResourceLocation(PackagesInit.MODID, "gui/slot_inner");
+	public static final ResourceLocation DYE_BG = new ResourceLocation(PackagesInit.MODID, "gui/slot_dye");
 	
 	public static class WorkingSlot extends Slot {
-		public WorkingSlot(Inventory inventory, int invSlot, int xPosition, int yPosition, Identifier tex) {
+		public WorkingSlot(Container inventory, int invSlot, int xPosition, int yPosition, ResourceLocation tex) {
 			super(inventory, invSlot, xPosition, yPosition);
 			this.invSlot2 = invSlot;
 			this.tex = tex;
 		}
 		
 		private final int invSlot2;
-		private final Identifier tex;
+		private final ResourceLocation tex;
 		
 		@Override
-		public boolean canInsert(ItemStack stack) {
-			return inventory.isValid(invSlot2, stack);
+		public boolean mayPlace(ItemStack stack) {
+			return container.canPlaceItem(invSlot2, stack);
 		}
 		
 		@Override
 		@Environment(EnvType.CLIENT)
-		public Pair<Identifier, Identifier> getBackgroundSprite() {
+		public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
 			if(tex == null) return null;
-			return Pair.of(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, tex);
+			return Pair.of(InventoryMenu.BLOCK_ATLAS, tex);
 		}
 	}
 }

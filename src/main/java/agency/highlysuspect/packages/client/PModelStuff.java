@@ -6,9 +6,9 @@ import agency.highlysuspect.packages.client.model.PackageModel;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class PModelStuff {
 	private static PackageModel packageModel;
@@ -29,16 +29,16 @@ public class PModelStuff {
 			return null;
 		});
 		
-		Identifier id = new Identifier(PackagesInit.MODID, "dump_caches");
-		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(
+		ResourceLocation id = new ResourceLocation(PackagesInit.MODID, "dump_caches");
+		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
 			new SimpleSynchronousResourceReloadListener() {
 				@Override
-				public Identifier getFabricId() {
+				public ResourceLocation getFabricId() {
 					return id;
 				}
 				
 				@Override
-				public void reload(ResourceManager manager) {
+				public void onResourceManagerReload(ResourceManager manager) {
 					packageModel = null;
 					packageMakerModel = null;
 				}

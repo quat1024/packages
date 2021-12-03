@@ -1,21 +1,21 @@
 package agency.highlysuspect.packages.junk;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 public final class PackageStyle {
-	public static PackageStyle fromTag(NbtCompound tag) {
+	public static PackageStyle fromTag(CompoundTag tag) {
 		return new PackageStyle(
-			Registry.BLOCK.getOrEmpty(Identifier.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
-			Registry.BLOCK.getOrEmpty(Identifier.tryParse(tag.getString("inner"))).orElse(Blocks.AIR),
+			Registry.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
+			Registry.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("inner"))).orElse(Blocks.AIR),
 			tag.contains("color") ? DyeColor.byId(tag.getInt("color")) : DyeColor.WHITE
 		);
 	}
@@ -23,7 +23,7 @@ public final class PackageStyle {
 	public static final PackageStyle ERROR_LOL = new PackageStyle(Blocks.PINK_CONCRETE, Blocks.BLACK_CONCRETE, DyeColor.RED);
 	
 	public static PackageStyle fromItemStack(ItemStack stack) {
-		NbtCompound tag = stack.getTag();
+		CompoundTag tag = stack.getTag();
 		if(tag == null) return ERROR_LOL;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
@@ -39,19 +39,19 @@ public final class PackageStyle {
 		this.color = color;
 	}
 	
-	public NbtCompound toTag() {
-		return toTag(new NbtCompound());
+	public CompoundTag toTag() {
+		return toTag(new CompoundTag());
 	}
 	
-	public NbtCompound toTag(NbtCompound writeTo) {
-		writeTo.putString("frame", Registry.BLOCK.getId(frameBlock).toString());
-		writeTo.putString("inner", Registry.BLOCK.getId(innerBlock).toString());
+	public CompoundTag toTag(CompoundTag writeTo) {
+		writeTo.putString("frame", Registry.BLOCK.getKey(frameBlock).toString());
+		writeTo.putString("inner", Registry.BLOCK.getKey(innerBlock).toString());
 		writeTo.putInt("color", color.getId());
 		return writeTo;
 	}
 	
 	public ItemStack writeToStackTag(ItemStack stack) {
-		stack.getOrCreateSubTag("BlockEntityTag").put(KEY, toTag());
+		stack.getOrCreateTagElement("BlockEntityTag").put(KEY, toTag());
 		return stack;
 	}
 	

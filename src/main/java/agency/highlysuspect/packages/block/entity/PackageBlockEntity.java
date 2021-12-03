@@ -7,26 +7,25 @@ import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Nameable;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.Nameable;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-public class PackageBlockEntity extends BlockEntity implements SidedInventory, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
+public class PackageBlockEntity extends BlockEntity implements WorldlyContainer, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE, pos, state);
 	}
@@ -38,9 +37,9 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	private static final int[] NO_SLOTS = {};
 	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
 	
-	private final DefaultedList<ItemStack> inv = DefaultedList.ofSize(SLOT_COUNT, ItemStack.EMPTY);
+	private final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	private PackageStyle style = PackageStyle.ERROR_LOL;
-	private Text customName;
+	private Component customName;
 	
 	@Override
 	public Object getRenderAttachmentData() {
@@ -48,20 +47,20 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public NbtCompound toClientTag(NbtCompound tag) {
+	public CompoundTag toClientTag(CompoundTag tag) {
 		tag.put(PackageStyle.KEY, style.toTag());
 		tag.put(CONTENTS_KEY, writeContents());
 		return tag;
 	}
 	
 	@Override
-	public void fromClientTag(NbtCompound tag) {
+	public void fromClientTag(CompoundTag tag) {
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
 		readContents(tag.getCompound(CONTENTS_KEY));
 		
-		if(world != null) { //Which it probably never is, but IntelliJ is having a fit
-			BlockState help = world.getBlockState(pos);
-			world.updateListeners(pos, help, help, 8);
+		if(level != null) { //Which it probably never is, but IntelliJ is having a fit
+			BlockState help = level.getBlockState(worldPosition);
+			level.sendBlockUpdated(worldPosition, help, help, 8);
 		}
 	}
 	
@@ -69,12 +68,12 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		this.style = style;
 	}
 	
-	public NbtCompound writeContents() {
-		NbtCompound tag = new NbtCompound();
+	public CompoundTag writeContents() {
+		CompoundTag tag = new CompoundTag();
 		
 		ItemStack first = findFirstNonemptyStack();
 		if(!first.isEmpty()) {
-			NbtCompound stackTag = findFirstNonemptyStack().writeNbt(new NbtCompound());
+			CompoundTag stackTag = findFirstNonemptyStack().save(new CompoundTag());
 			stackTag.putByte("Count", (byte) 1);
 			
 			tag.put("stack", stackTag);
@@ -86,25 +85,25 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		return tag;
 	}
 	
-	public void readContents(NbtCompound tag) {
-		clear();
+	public void readContents(CompoundTag tag) {
+		clearContent();
 		int count = tag.getInt("realCount");
 		if(count != 0) {
-			ItemStack stack = ItemStack.fromNbt(tag.getCompound("stack"));
+			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
 			int maxPerSlot = maxStackAmountAllowed(stack);
 			
 			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
 				ItemStack toInsert = stack.copy();
 				toInsert.setCount(Math.min(remaining, maxPerSlot));
-				setStack(slot, toInsert);
+				setItem(slot, toInsert);
 			}
 		}
 	}
 	
 	//<editor-fold desc="Name cruft">
 	@Override
-	public Text getName() {
-		return hasCustomName() ? customName : new TranslatableText(PBlocks.PACKAGE.getTranslationKey());
+	public Component getName() {
+		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE.getDescriptionId());
 	}
 	
 	@Override
@@ -113,16 +112,16 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public Text getDisplayName() {
+	public Component getDisplayName() {
 		return getName();
 	}
 	
 	@Override
-	public Text getCustomName() {
+	public Component getCustomName() {
 		return customName;
 	}
 	
-	public void setCustomName(Text customName) {
+	public void setCustomName(Component customName) {
 		this.customName = customName;
 	}
 	//</editor-fold>
@@ -146,25 +145,25 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		else if(stack.getItem() instanceof PackageItem) {
 			//TODO clean this up
 			if(!stack.hasTag()) return 64;
-			NbtCompound beTag = stack.getSubTag("BlockEntityTag");
+			CompoundTag beTag = stack.getTagElement("BlockEntityTag");
 			if(beTag == null) return 64;
-			NbtCompound contentsTag = beTag.getCompound(CONTENTS_KEY);
+			CompoundTag contentsTag = beTag.getCompound(CONTENTS_KEY);
 			if(contentsTag.getInt("realCount") > 0) return 1;
 			else return 64;
 		}
-		else return Math.min(stack.getMaxCount(), 64); //just in case
+		else return Math.min(stack.getMaxStackSize(), 64); //just in case
 	}
 	
 	//custom package-specific inventory wrappers, for external use
 	public boolean matches(ItemStack stack) {
-		return !stack.isEmpty() && isValid(0, stack);
+		return !stack.isEmpty() && canPlaceItem(0, stack);
 	}
 	
 	//<editor-fold desc="Interactions">
 	//Does not mutate 'held', always returns a different item stack.
 	//kinda like forge item handlers lol...
-	public void insert(PlayerEntity player, Hand hand, boolean fullStack) {
-		ItemStack held = player.getStackInHand(hand);
+	public void insert(Player player, InteractionHand hand, boolean fullStack) {
+		ItemStack held = player.getItemInHand(hand);
 		
 		if(held.isEmpty() || !matches(held)) return;
 		
@@ -185,7 +184,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 			} else {
 				int increaseAmount = Math.min(maxStackAmountAllowed(stack) - stack.getCount(), amountToInsert);
 				if(increaseAmount > 0) {
-					stack.increment(increaseAmount);
+					stack.grow(increaseAmount);
 					amountToInsert -= increaseAmount;
 					insertedAmount += increaseAmount;
 				}
@@ -193,14 +192,14 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		}
 		
 		ItemStack leftover = held.copy();
-		leftover.decrement(insertedAmount);
+		leftover.shrink(insertedAmount);
 		
-		player.setStackInHand(hand, leftover);
+		player.setItemInHand(hand, leftover);
 		
-		markDirty();
+		setChanged();
 	}
 	
-	public void take(PlayerEntity player, boolean fullStack) {
+	public void take(Player player, boolean fullStack) {
 		ItemStack contained = findFirstNonemptyStack();
 		if(contained.isEmpty()) return;
 		
@@ -218,47 +217,47 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		}
 		
 		stacksToGive.forEach(stack -> {
-			if(!player.getInventory().insertStack(stack)) {
-				player.dropItem(stack, false);
+			if(!player.getInventory().add(stack)) {
+				player.drop(stack, false);
 			}
 		});
 		
-		markDirty();
+		setChanged();
 	}
 	//</editor-fold>
 	
 	//<editor-fold desc="SidedInventory interface">
 	@Override
-	public void markDirty() {
-		if(world != null && !world.isClient) sync();
-		super.markDirty();
+	public void setChanged() {
+		if(level != null && !level.isClientSide) sync();
+		super.setChanged();
 	}
 	
 	//More inventory bullshit
 	@Override
-	public int[] getAvailableSlots(Direction side) {
-		if(world == null) return NO_SLOTS;
+	public int[] getSlotsForFace(Direction side) {
+		if(level == null) return NO_SLOTS;
 		
-		BlockState state = world.getBlockState(pos);
+		BlockState state = level.getBlockState(worldPosition);
 		if(state.getBlock() instanceof PackageBlock) {
-			return state.get(PackageBlock.FACING).primaryDirection == side ? NO_SLOTS : ALL_SLOTS;
+			return state.getValue(PackageBlock.FACING).primaryDirection == side ? NO_SLOTS : ALL_SLOTS;
 		}
 		
 		return NO_SLOTS;
 	}
 	
 	@Override
-	public boolean canInsert(int slot, ItemStack stack, Direction dir) {
-		return isValid(slot, stack);
+	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction dir) {
+		return canPlaceItem(slot, stack);
 	}
 	
 	@Override
-	public boolean canExtract(int slot, ItemStack stack, Direction dir) {
+	public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir) {
 		return true;
 	}
 	
 	@Override
-	public int size() {
+	public int getContainerSize() {
 		return SLOT_COUNT;
 	}
 	
@@ -271,52 +270,52 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public ItemStack getStack(int slot) {
+	public ItemStack getItem(int slot) {
 		return inv.get(slot);
 	}
 	
 	@Override
-	public ItemStack removeStack(int slot, int amount) {
-		markDirty();
-		return Inventories.splitStack(inv, slot, amount);
+	public ItemStack removeItem(int slot, int amount) {
+		setChanged();
+		return ContainerHelper.removeItem(inv, slot, amount);
 	}
 	
 	@Override
-	public ItemStack removeStack(int slot) {
-		markDirty();
-		return Inventories.removeStack(inv, slot);
+	public ItemStack removeItemNoUpdate(int slot) {
+		setChanged();
+		return ContainerHelper.takeItem(inv, slot);
 	}
 	
 	@Override
-	public void setStack(int slot, ItemStack stack) {
+	public void setItem(int slot, ItemStack stack) {
 		inv.set(slot, stack);
-		markDirty();
+		setChanged();
 	}
 	
 	@Override
-	public int getMaxCountPerStack() {
+	public int getMaxStackSize() {
 		return maxStackAmountAllowed(findFirstNonemptyStack());
 	}
 	
 	@Override
-	public boolean canPlayerUse(PlayerEntity player) {
+	public boolean stillValid(Player player) {
 		return true;
 	}
 	
 	@Override
-	public boolean isValid(int slot, ItemStack stack) {
+	public boolean canPlaceItem(int slot, ItemStack stack) {
 		if(stack.getItem() == PItems.PACKAGE && calcPackageRecursion(stack) > RECURSION_LIMIT) return false;
 		
 		return canMergeItems(findFirstNonemptyStack(), stack);
 	}
 	
 	private int calcPackageRecursion(ItemStack stack) {
-		NbtCompound beTag = stack.getSubTag("BlockEntityTag");
+		CompoundTag beTag = stack.getTagElement("BlockEntityTag");
 		if(beTag != null) {
-			NbtCompound contentsTag = beTag.getCompound("PackageContents");
+			CompoundTag contentsTag = beTag.getCompound("PackageContents");
 			if(!contentsTag.isEmpty()) {
 				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.fromNbt(contentsTag.getCompound("stack"));
+				ItemStack containedStack = ItemStack.of(contentsTag.getCompound("stack"));
 				if(count != 0 && !containedStack.isEmpty()) {
 					return 1 + calcPackageRecursion(containedStack);
 				}
@@ -327,7 +326,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 	}
 	
 	@Override
-	public void clear() {
+	public void clearContent() {
 		inv.clear();
 	}
 	//</editor-fold>
@@ -338,18 +337,18 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		
 		if (first.getItem() != second.getItem()) {
 			return false;
-		} else if (first.getDamage() != second.getDamage()) {
+		} else if (first.getDamageValue() != second.getDamageValue()) {
 			return false;
-		} else if (first.getCount() > first.getMaxCount()) {
+		} else if (first.getCount() > first.getMaxStackSize()) {
 			return false;
 		} else {
-			return ItemStack.areTagsEqual(first, second);
+			return ItemStack.tagMatches(first, second);
 		}
 	}
 	
 	//Serialization
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
+	public CompoundTag save(CompoundTag tag) {
 		//Contents
 		tag.put(CONTENTS_KEY, writeContents());
 		
@@ -358,15 +357,15 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		
 		//Custom name
 		if(customName != null) {
-			tag.putString("CustomName", Text.Serializer.toJson(customName));
+			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
 		
-		return super.writeNbt(tag);
+		return super.save(tag);
 	}
 	
 	@Override
-	public void readNbt(NbtCompound tag) {
-		super.readNbt(tag);
+	public void load(CompoundTag tag) {
+		super.load(tag);
 		
 		//Contents
 		readContents(tag.getCompound(CONTENTS_KEY));
@@ -376,7 +375,7 @@ public class PackageBlockEntity extends BlockEntity implements SidedInventory, R
 		
 		//Custom name
 		if(tag.contains("CustomName", 8)) {
-			customName = Text.Serializer.fromJson(tag.getString("CustomName"));
+			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
 		} else {
 			customName = null;
 		}

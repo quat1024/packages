@@ -7,73 +7,73 @@ import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockEntityProvider;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.material.PushReaction;
 
-public class PackageBlock extends Block implements BlockEntityProvider {
-	public PackageBlock(Settings settings) {
+public class PackageBlock extends Block implements EntityBlock {
+	public PackageBlock(Properties settings) {
 		super(settings);
 		
-		setDefaultState(getDefaultState().with(FACING, TwelveDirection.NORTH));
+		registerDefaultState(defaultBlockState().setValue(FACING, TwelveDirection.NORTH));
 	}
 	
 	//States, materials, etc.
-	public static final Property<TwelveDirection> FACING = EnumProperty.of("facing", TwelveDirection.class);
+	public static final Property<TwelveDirection> FACING = EnumProperty.create("facing", TwelveDirection.class);
 	
 	@Override
-	public BlockState getPlacementState(ItemPlacementContext ctx) {
+	public BlockState getStateForPlacement(BlockPlaceContext ctx) {
 		TwelveDirection facing;
 		
-		if(ctx.getPlayer() == null) facing = TwelveDirection.fromDirection(ctx.getSide());
+		if(ctx.getPlayer() == null) facing = TwelveDirection.fromDirection(ctx.getClickedFace());
 		else facing = TwelveDirection.fromEntity(ctx.getPlayer()).getOpposite();
 		
-		return getDefaultState().with(FACING, facing);
+		return defaultBlockState().setValue(FACING, facing);
 	}
 	
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		super.appendProperties(builder.add(FACING));
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+		super.createBlockStateDefinition(builder.add(FACING));
 	}
 	
 	//Block entities.
 	@Override
-	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-		return PBlockEntityTypes.PACKAGE.instantiate(pos, state);
+	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+		return PBlockEntityTypes.PACKAGE.create(pos, state);
 	}
 	
 	//Behaviors.
 	@Override
-	public PistonBehavior getPistonBehavior(BlockState state) {
-		return PistonBehavior.DESTROY;
+	public PushReaction getPistonPushReaction(BlockState state) {
+		return PushReaction.DESTROY;
 	}
 	
 	@Override
-	public void onPlaced(World world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
+	public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if(!(blockEntity instanceof PackageBlockEntity pkg)) return;
 		
-		if(stack.hasCustomName()) {
-			pkg.setCustomName(stack.getName());
+		if(stack.hasCustomHoverName()) {
+			pkg.setCustomName(stack.getHoverName());
 		}
 		
-		if(world.isClient) {
+		if(world.isClientSide) {
 			//This is not *strictly* needed because the sync will take care of it, but this prevents packages flickering the default style after placed.
 			//Client knows the tag, might as well make use of the information
 			pkg.setStyle(PackageStyle.fromItemStack(stack));
@@ -83,51 +83,51 @@ public class PackageBlock extends Block implements BlockEntityProvider {
 	}
 	
 	@Override
-	public boolean hasComparatorOutput(BlockState state) {
+	public boolean hasAnalogOutputSignal(BlockState state) {
 		return true;
 	}
 	
 	@Override
-	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
-		return ScreenHandler.calculateComparatorOutput(world.getBlockEntity(pos));
+	public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
+		return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(world.getBlockEntity(pos));
 	}
 	
 	@Override
-	public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
-		super.onBreak(world, pos, state, player);
+	public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+		super.playerWillDestroy(world, pos, state, player);
 		
-		if(!world.isClient && player.isCreative()) {
-			getDroppedStacks(state, (ServerWorld) world, pos, world.getBlockEntity(pos)).forEach(s -> {
+		if(!world.isClientSide && player.isCreative()) {
+			getDrops(state, (ServerLevel) world, pos, world.getBlockEntity(pos)).forEach(s -> {
 				ItemEntity ent = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, s);
-				ent.setToDefaultPickupDelay();
-				ent.setVelocity(0, 0, 0);
-				world.spawnEntity(ent);
+				ent.setDefaultPickUpDelay();
+				ent.setDeltaMovement(0, 0, 0);
+				world.addFreshEntity(ent);
 			});
 		}
 	}
 	
 	@Override
-	public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
 		if(state.getBlock() != newState.getBlock()) {
-			world.updateComparators(pos, this);
+			world.updateNeighbourForOutputSignal(pos, this);
 		}
 		
-		super.onStateReplaced(state, world, pos, newState, moved);
+		super.onRemove(state, world, pos, newState, moved);
 	}
 	
 	@Override
 	@Environment(EnvType.CLIENT)
-	public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state) {
-		ItemStack stack = super.getPickStack(world, pos, state);
+	public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+		ItemStack stack = super.getCloneItemStack(world, pos, state);
 		PackageBlockEntity be = (PackageBlockEntity)world.getBlockEntity(pos);
 		if(be == null) return stack;
 		
 		Object renderAttach = be.getRenderAttachmentData();
 		if(renderAttach instanceof PackageStyle style) {
 			//just copy the style not the contents (like shulker boxes)
-			NbtCompound tag = new NbtCompound();
+			CompoundTag tag = new CompoundTag();
 			tag.put(PackageStyle.KEY, style.toTag());
-			stack.putSubTag("BlockEntityTag", tag);
+			stack.addTagElement("BlockEntityTag", tag);
 			
 			PackageItem.addFakeContentsTagThisSucks(stack);
 		}

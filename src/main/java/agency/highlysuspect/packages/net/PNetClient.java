@@ -2,28 +2,28 @@ package agency.highlysuspect.packages.net;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.InteractionHand;
 
 public class PNetClient {
-	public static void requestInsert(BlockPos pos, Hand hand, int mode) { //TODO magic ints bad
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+	public static void requestInsert(BlockPos pos, InteractionHand hand, int mode) { //TODO magic ints bad
+		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);
-		buf.writeBoolean(hand == Hand.MAIN_HAND);
+		buf.writeBoolean(hand == InteractionHand.MAIN_HAND);
 		buf.writeByte(mode);
 		ClientSidePacketRegistry.INSTANCE.sendToServer(PMessageTypes.INSERT, buf);
 	}
 	
 	public static void requestTake(BlockPos pos, int mode) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);
 		buf.writeByte(mode);
 		ClientSidePacketRegistry.INSTANCE.sendToServer(PMessageTypes.TAKE, buf);
 	}
 	
 	public static void requestPackageMakerCraft(boolean all) {
-		PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBoolean(all);
 		ClientSidePacketRegistry.INSTANCE.sendToServer(PMessageTypes.PACKAGE_CRAFT, buf);
 	}

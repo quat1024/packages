@@ -3,23 +3,22 @@ package agency.highlysuspect.packages.item;
 import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.PBlocks;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import java.util.function.BiFunction;
 
 public class PItems {
 	public static BlockItem PACKAGE_MAKER;
 	public static PackageItem PACKAGE;
 	
-	public static final ItemGroup GROUP = FabricItemGroupBuilder.create(new Identifier(PackagesInit.MODID, "group"))
+	public static final CreativeModeTab GROUP = FabricItemGroupBuilder.create(new ResourceLocation(PackagesInit.MODID, "group"))
 		.icon(() -> new ItemStack(PACKAGE_MAKER))
 		.appendItems(list -> {
 			list.add(new ItemStack(PACKAGE_MAKER));
@@ -84,9 +83,9 @@ public class PItems {
 		PACKAGE = blockItemYeet(PBlocks.PACKAGE, PackageItem::new);
 	}
 	
-	private static <T extends BlockItem> T blockItemYeet(Block b, BiFunction<Block, Item.Settings, T> constructor) {
-		return Registry.register(Registry.ITEM, Registry.BLOCK.getId(b), constructor.apply(b,
-			new Item.Settings().group(GROUP)
+	private static <T extends BlockItem> T blockItemYeet(Block b, BiFunction<Block, Item.Properties, T> constructor) {
+		return Registry.register(Registry.ITEM, Registry.BLOCK.getKey(b), constructor.apply(b,
+			new Item.Properties().tab(GROUP)
 		));
 	}
 }

@@ -9,33 +9,33 @@ import agency.highlysuspect.packages.junk.PItemTags;
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.SidedInventory;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.DyeItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Nameable;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Nameable;
+import net.minecraft.world.WorldlyContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class PackageMakerBlockEntity extends BlockEntity implements Nameable, SidedInventory, BlockEntityClientSerializable, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
+public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, BlockEntityClientSerializable, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
 	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE_MAKER, pos, state);
 	}
@@ -46,7 +46,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public static final int DYE_SLOT = 2;
 	public static final int OUTPUT_SLOT = 3;
 	
-	private final DefaultedList<ItemStack> inv = DefaultedList.ofSize(size(), ItemStack.EMPTY);
+	private final NonNullList<ItemStack> inv = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
 	
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		Item item = stack.getItem();
@@ -54,8 +54,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		if(PItemTags.BANNED_FROM_PACKAGE_MAKER.contains(item)) return false;
 		
 		Block b = ((BlockItem) item).getBlock();
-		BlockState state = b.getDefaultState();
-		return state.isOpaque();
+		BlockState state = b.defaultBlockState();
+		return state.canOcclude();
 	}
 	
 	public static boolean matchesInnerSlot(ItemStack stack) {
@@ -71,7 +71,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		
 		Block frameBlock = ((BlockItem) inv.get(FRAME_SLOT).getItem()).getBlock();
 		Block innerBlock = ((BlockItem) inv.get(INNER_SLOT).getItem()).getBlock();
-		DyeColor dye = ((DyeItem) inv.get(DYE_SLOT).getItem()).getColor();
+		DyeColor dye = ((DyeItem) inv.get(DYE_SLOT).getItem()).getDyeColor();
 		
 		return PItems.PACKAGE.createCustomizedStack(frameBlock, innerBlock, dye);
 	}
@@ -84,22 +84,22 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		if(currentOutputStack.isEmpty()) {
 			inv.set(OUTPUT_SLOT, wouldCraft);
 		} else {
-			if(currentOutputStack.getCount() != currentOutputStack.getMaxCount() &&
-				 currentOutputStack.isItemEqual(wouldCraft) &&
-				 ItemStack.areTagsEqual(currentOutputStack, wouldCraft)) {
-				currentOutputStack.increment(1);
+			if(currentOutputStack.getCount() != currentOutputStack.getMaxStackSize() &&
+				 currentOutputStack.sameItemStackIgnoreDurability(wouldCraft) &&
+				 ItemStack.tagMatches(currentOutputStack, wouldCraft)) {
+				currentOutputStack.grow(1);
 			} else return;
 		}
 		
-		inv.get(FRAME_SLOT).decrement(1);
-		inv.get(INNER_SLOT).decrement(1);
-		inv.get(DYE_SLOT).decrement(1);
+		inv.get(FRAME_SLOT).shrink(1);
+		inv.get(INNER_SLOT).shrink(1);
+		inv.get(DYE_SLOT).shrink(1);
 		
-		markDirty();
+		setChanged();
 		
 		//doubt it's null, lol
-		if(world != null)	{
-			world.playSound(null, pos, PSoundEvents.PACKAGE_MAKER_CRAFT, SoundCategory.BLOCKS, 0.5f, 1f);
+		if(level != null)	{
+			level.playSound(null, worldPosition, PSoundEvents.PACKAGE_MAKER_CRAFT, SoundSource.BLOCKS, 0.5f, 1f);
 		}
 	}
 	
@@ -129,7 +129,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 		
 		Block frameBlock = !frameStack.isEmpty() && frameStack.getItem() instanceof BlockItem frameItem ? frameItem.getBlock() : null;
 		Block innerBlock = !innerStack.isEmpty() && innerStack.getItem() instanceof BlockItem innerItem ? innerItem.getBlock() : null;
-		DyeColor dyeColor = !dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem dyeItem ? dyeItem.getColor() : null;
+		DyeColor dyeColor = !dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem dyeItem ? dyeItem.getDyeColor() : null;
 		
 		return new PackageMakerRenderAttachment(frameBlock, innerBlock, dyeColor);
 	}
@@ -137,12 +137,12 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	
 	//region ExtendedScreenHandlerFactory
 	@Override
-	public void writeScreenOpeningData(ServerPlayerEntity player, PacketByteBuf buf) {
-		buf.writeBlockPos(pos);
+	public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
+		buf.writeBlockPos(worldPosition);
 	}
 	
 	@Override
-	public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
 		return new PackageMakerScreenHandler(syncId, inv, this);
 	}
 	//endregion
@@ -153,24 +153,24 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	public static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
 	
 	@Override
-	public int[] getAvailableSlots(Direction side) {
+	public int[] getSlotsForFace(Direction side) {
 		if(side == Direction.DOWN) return OUTPUT;
 		else if(side == Direction.UP) return FRAME_AND_DYE;
 		else return INNER_AND_DYE;
 	}
 	
 	@Override
-	public boolean canInsert(int slot, ItemStack stack, Direction dir) {
-		return isValid(slot, stack);
+	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction dir) {
+		return canPlaceItem(slot, stack);
 	}
 	
 	@Override
-	public boolean canExtract(int slot, ItemStack stack, Direction dir) {
+	public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir) {
 		return slot == OUTPUT_SLOT;
 	}
 	
 	@Override
-	public boolean isValid(int slot, ItemStack stack) {
+	public boolean canPlaceItem(int slot, ItemStack stack) {
 		return switch(slot) {
 			case FRAME_SLOT -> matchesFrameSlot(stack);
 			case INNER_SLOT -> matchesInnerSlot(stack);
@@ -180,7 +180,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public int size() {
+	public int getContainerSize() {
 		return 4;
 	}
 	
@@ -194,42 +194,42 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public ItemStack getStack(int slot) {
+	public ItemStack getItem(int slot) {
 		return inv.get(slot);
 	}
 	
 	@Override
-	public ItemStack removeStack(int slot, int amount) {
-		return Inventories.splitStack(inv, slot, amount);
+	public ItemStack removeItem(int slot, int amount) {
+		return ContainerHelper.removeItem(inv, slot, amount);
 	}
 	
 	@Override
-	public ItemStack removeStack(int slot) {
-		return Inventories.removeStack(inv, slot);
+	public ItemStack removeItemNoUpdate(int slot) {
+		return ContainerHelper.takeItem(inv, slot);
 	}
 	
 	@Override
-	public void setStack(int slot, ItemStack stack) {
+	public void setItem(int slot, ItemStack stack) {
 		inv.set(slot, stack);
 	}
 	
 	@Override
-	public boolean canPlayerUse(PlayerEntity player) {
-		return player.squaredDistanceTo(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64;
+	public boolean stillValid(Player player) {
+		return player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64;
 	}
 	
 	@Override
-	public void clear() {
+	public void clearContent() {
 		inv.clear();
 	}
 	//endregion
 	
 	//region Custom name cruft
-	private Text customName;
+	private Component customName;
 	
 	@Override
-	public Text getName() {
-		return hasCustomName() ? customName : new TranslatableText(PBlocks.PACKAGE_MAKER.getTranslationKey());
+	public Component getName() {
+		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE_MAKER.getDescriptionId());
 	}
 	
 	@Override
@@ -238,67 +238,67 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Si
 	}
 	
 	@Override
-	public Text getDisplayName() {
+	public Component getDisplayName() {
 		return getName();
 	}
 	
 	@Override
-	public Text getCustomName() {
+	public Component getCustomName() {
 		return customName;
 	}
 	
-	public void setCustomName(Text customName) {
+	public void setCustomName(Component customName) {
 		this.customName = customName;
 	}
 	//endregion
 	
 	//region Serialization
 	@Override
-	public NbtCompound toClientTag(NbtCompound tag) {
+	public CompoundTag toClientTag(CompoundTag tag) {
 		if(customName != null) {
-			tag.putString("CustomName", Text.Serializer.toJson(customName));
+			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
 		
-		Inventories.writeNbt(tag, inv);
+		ContainerHelper.saveAllItems(tag, inv);
 		return tag;
 	}
 	
 	@Override
-	public void fromClientTag(NbtCompound tag) {
+	public void fromClientTag(CompoundTag tag) {
 		fromClientTag0(tag);
 		
-		if(world != null && world.isClient) {
+		if(level != null && level.isClientSide) {
 			//this cast and method call is safe; fromClientTag itself is never referenced on the server.
 			//shared ser/de logic goes in fromClientTag0 below.
 			//god i hate raw nbt lmao
-			((ClientWorld) world).scheduleBlockRenders(pos.getX() >> 4, pos.getY() >> 4, pos.getZ() >> 4);
+			((ClientLevel) level).setSectionDirtyWithNeighbors(worldPosition.getX() >> 4, worldPosition.getY() >> 4, worldPosition.getZ() >> 4);
 		}
 	}
 	
-	private void fromClientTag0(NbtCompound tag) {
+	private void fromClientTag0(CompoundTag tag) {
 		if(tag.contains("CustomName", 8)) {
-			customName = Text.Serializer.fromJson(tag.getString("CustomName"));
+			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
 		} else {
 			customName = null;
 		}
 		
-		Inventories.readNbt(tag, inv);
+		ContainerHelper.loadAllItems(tag, inv);
 	}
 	
 	@Override
-	public void markDirty() {
-		if(world != null && !world.isClient) sync();
-		super.markDirty();
+	public void setChanged() {
+		if(level != null && !level.isClientSide) sync();
+		super.setChanged();
 	}
 	
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
-		return super.writeNbt(toClientTag(tag));
+	public CompoundTag save(CompoundTag tag) {
+		return super.save(toClientTag(tag));
 	}
 	
 	@Override
-	public void readNbt(NbtCompound tag) {
-		super.readNbt(tag);
+	public void load(CompoundTag tag) {
+		super.load(tag);
 		fromClientTag0(tag);
 	}
 	//endregion

@@ -3,53 +3,53 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.TwelveDirection;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.model.json.ModelTransformation;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.world.World;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 
 public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBlockEntity> {
-	public PackageBlockEntityRenderer(BlockEntityRendererFactory.Context context) {
-		textRenderer = context.getTextRenderer();
+	public PackageBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+		textRenderer = context.getFont();
 	}
 	
-	private final TextRenderer textRenderer;
+	private final Font textRenderer;
 	
 	@Override
-	public void render(PackageBlockEntity blockEntity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
-		if(blockEntity == null || blockEntity.getWorld() == null) return;
+	public void render(PackageBlockEntity blockEntity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
+		if(blockEntity == null || blockEntity.getLevel() == null) return;
 		
 		//Gather some data
-		World world = blockEntity.getWorld();
-		MinecraftClient client = MinecraftClient.getInstance();
+		Level world = blockEntity.getLevel();
+		Minecraft client = Minecraft.getInstance();
 		
-		BlockState packageState = blockEntity.getCachedState();
+		BlockState packageState = blockEntity.getBlockState();
 		if(!(packageState.getBlock() instanceof PackageBlock)) return;
 		
-		TwelveDirection packageTwelveDir = packageState.get(PackageBlock.FACING);
+		TwelveDirection packageTwelveDir = packageState.getValue(PackageBlock.FACING);
 		
 		//get the light level of whatever's in front
 		//Quick fix for my block being solid so it has no light inside...
-		light = WorldRenderer.getLightmapCoordinates(world, blockEntity.getPos().offset(packageTwelveDir.primaryDirection));
+		light = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
 		
 		int count = blockEntity.countItems();
 		ItemStack icon = blockEntity.findFirstNonemptyStack();
 		
-		matrices.push();
+		matrices.pushPose();
 		matrices.translate(0.5, 0.5, 0.5);
 		applyRotation(matrices, packageTwelveDir);
 		
@@ -62,20 +62,20 @@ public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBl
 		boolean showText = false, showDetailedText = false;
 		
 		if(client.getCameraEntity() == null) return;
-		HitResult ray = client.getCameraEntity().raycast(8, 0, false);
+		HitResult ray = client.getCameraEntity().pick(8, 0, false);
 		
-		if(ray.getType() == HitResult.Type.BLOCK && blockEntity.getPos().equals(((BlockHitResult) ray).getBlockPos())) {
+		if(ray.getType() == HitResult.Type.BLOCK && blockEntity.getBlockPos().equals(((BlockHitResult) ray).getBlockPos())) {
 			showText = true;
 		}
 		
-		double distance = client.getCameraEntity().getCameraPosVec(1).distanceTo(Vec3d.ofCenter(blockEntity.getPos()));
+		double distance = client.getCameraEntity().getEyePosition(1).distanceTo(Vec3.atCenterOf(blockEntity.getBlockPos()));
 		
 		//This isn't a perfectly accurate distance estimator, but works pretty well
 		//The intention is to grey out the text a bit when you're too far away to actually click
 		@SuppressWarnings("ConstantConditions")
-		boolean aBitFar = distance - 0.5 >= client.interactionManager.getReachDistance();
+		boolean aBitFar = distance - 0.5 >= client.gameMode.getPickRange();
 		
-		if(client.getCameraEntity().isSneaking()) {
+		if(client.getCameraEntity().isShiftKeyDown()) {
 			if(showText) showDetailedText = true;
 			
 			if(!showText && distance <= 8) {
@@ -105,66 +105,66 @@ public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBl
 			else if(count < 100) scale = 1/23f;
 			else scale = 1/30f;
 			
-			matrices.push();
+			matrices.pushPose();
 			
 			matrices.translate(6 / 16d + 0.05, 0, 0);
 			matrices.scale(-1, -scale, scale);
 			matrices.translate(0, -4, 0);
 			//todo figure out what that normal call does in the original
-			matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
+			matrices.mulPose(Vector3f.YP.rotationDegrees(90));
 			
-			int minusHalfWidth = -textRenderer.getWidth(text) / 2;
-			textRenderer.draw(text, minusHalfWidth + 1, 1, (color & 0xFCFCFC) >> 2, false, matrices.peek().getModel(), vertexConsumers, false, 0, light);
+			int minusHalfWidth = -textRenderer.width(text) / 2;
+			textRenderer.drawInBatch(text, minusHalfWidth + 1, 1, (color & 0xFCFCFC) >> 2, false, matrices.last().pose(), vertexConsumers, false, 0, light);
 			matrices.translate(0, 0, -0.001);
-			textRenderer.draw(text, minusHalfWidth, 0, color, false, matrices.peek().getModel(), vertexConsumers, false, 0, light);
+			textRenderer.drawInBatch(text, minusHalfWidth, 0, color, false, matrices.last().pose(), vertexConsumers, false, 0, light);
 			
-			matrices.pop();
+			matrices.popPose();
 		}
 		
-		matrices.pop();
+		matrices.popPose();
 	}
 	
 	private static int depth = 0;
 	
-	public static void applyRotation(MatrixStack matrices, TwelveDirection dir) {
+	public static void applyRotation(PoseStack matrices, TwelveDirection dir) {
 		//Rotate into position.
 		//This might be jank, just blindly copied from Worse Barrels really
 		//Only move the model matrix not the normal matrix, to ensure items are lit uniformly
-		Matrix4f modelMatrix = matrices.peek().getModel();
+		Matrix4f modelMatrix = matrices.last().pose();
 		
-		if(dir.primaryDirection.getHorizontal() == -1) { //up/down
-			modelMatrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-dir.secondaryDirection.asRotation() + 90));
-			modelMatrix.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(dir.primaryDirection == Direction.UP ? 90 : -90));
+		if(dir.primaryDirection.get2DDataValue() == -1) { //up/down
+			modelMatrix.multiply(Vector3f.YP.rotationDegrees(-dir.secondaryDirection.toYRot() + 90));
+			modelMatrix.multiply(Vector3f.ZP.rotationDegrees(dir.primaryDirection == Direction.UP ? 90 : -90));
 		} else {
-			modelMatrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-dir.primaryDirection.asRotation() - 90));
+			modelMatrix.multiply(Vector3f.YP.rotationDegrees(-dir.primaryDirection.toYRot() - 90));
 		}
 	}
 	
-	public static void drawItem(MatrixStack matrices, VertexConsumerProvider vertexConsumers, ItemStack stack, int light) {
-		MinecraftClient client = MinecraftClient.getInstance();
+	public static void drawItem(PoseStack matrices, MultiBufferSource vertexConsumers, ItemStack stack, int light) {
+		Minecraft client = Minecraft.getInstance();
 		
-		matrices.push();
+		matrices.pushPose();
 		
-		Matrix4f modelMatrix2 = matrices.peek().getModel();
+		Matrix4f modelMatrix2 = matrices.last().pose();
 		
 		if(depth == 0) {
-			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.006f, 0, 0));
-			modelMatrix2.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
-			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
+			modelMatrix2.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.006f, 0, 0));
+			modelMatrix2.multiply(Vector3f.YP.rotationDegrees(90));
+			modelMatrix2.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
 		} else {
 			//Don't think about this too hard, just a workaround to slightly space out deeply-nested items.
 			//If I don't do this, situations like packages-inside-packages-inside-packages start zfighting pretty hard.
-			modelMatrix2.multiply(Matrix4f.translate(6 / 16f + 0.07f, 0, 0)); //Lift it out more
-			modelMatrix2.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
-			modelMatrix2.multiply(Matrix4f.scale(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
+			modelMatrix2.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.07f, 0, 0)); //Lift it out more
+			modelMatrix2.multiply(Vector3f.YP.rotationDegrees(90));
+			modelMatrix2.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
 		}
 		
 		depth++;
 		if(depth < 5) {
-			client.getItemRenderer().renderItem(stack, ModelTransformation.Mode.GUI, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, 0);
+			client.getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.GUI, light, OverlayTexture.NO_OVERLAY, matrices, vertexConsumers, 0);
 		}
 		depth--;
 		
-		matrices.pop();
+		matrices.popPose();
 	}
 }

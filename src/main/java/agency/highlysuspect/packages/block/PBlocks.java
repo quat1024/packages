@@ -3,10 +3,10 @@ package agency.highlysuspect.packages.block;
 import agency.highlysuspect.packages.PackagesInit;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
-import net.minecraft.block.Material;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
 
 public class PBlocks {
 	public static PackageMakerBlock PACKAGE_MAKER;
@@ -14,19 +14,19 @@ public class PBlocks {
 	public static PackageBlock PACKAGE;
 	
 	public static void onInitialize() {
-		PACKAGE_MAKER = Registry.register(Registry.BLOCK, new Identifier(PackagesInit.MODID, "package_maker"), new PackageMakerBlock(
+		PACKAGE_MAKER = Registry.register(Registry.BLOCK, new ResourceLocation(PackagesInit.MODID, "package_maker"), new PackageMakerBlock(
 			FabricBlockSettings.of(Material.WOOD)
 				.breakByTool(FabricToolTags.AXES)
-				.sounds(BlockSoundGroup.WOOD)
+				.sound(SoundType.WOOD)
 				.strength(1f, 1f)
 		));
 		
-		PACKAGE = Registry.register(Registry.BLOCK, new Identifier(PackagesInit.MODID, "package"), new PackageBlock(
+		PACKAGE = Registry.register(Registry.BLOCK, new ResourceLocation(PackagesInit.MODID, "package"), new PackageBlock(
 			FabricBlockSettings.of(Material.WOOD)
 				.breakByTool(FabricToolTags.AXES)
-				.sounds(BlockSoundGroup.WOOD)
+				.sound(SoundType.WOOD)
 				.strength(1f, 1f)
-				.nonOpaque()
+				.noOcclusion()
 		));
 	}
 }

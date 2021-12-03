@@ -1,14 +1,13 @@
 package agency.highlysuspect.packages.junk;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.math.Direction;
-
 import java.util.EnumMap;
 import java.util.Locale;
+import net.minecraft.core.Direction;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.entity.Entity;
 
 //Cut and paste this from Carved Melons without looking too closely at it lmao
-public enum TwelveDirection implements StringIdentifiable {
+public enum TwelveDirection implements StringRepresentable {
 		UP_NORTH(Direction.UP, Direction.NORTH),
 		UP_SOUTH(Direction.UP, Direction.SOUTH),
 		UP_EAST(Direction.UP, Direction.EAST),
@@ -54,7 +53,7 @@ public enum TwelveDirection implements StringIdentifiable {
 		}
 		
 		@Override
-		public String asString() {
+		public String getSerializedName() {
 			return name().toLowerCase(Locale.ROOT);
 		}
 		
@@ -67,13 +66,13 @@ public enum TwelveDirection implements StringIdentifiable {
 		}
 		
 		public static TwelveDirection fromEntity(Entity ent) {
-			Direction d = Direction.getEntityFacingOrder(ent)[0];
+			Direction d = Direction.orderedByNearest(ent)[0];
 			TwelveDirection td = byPrimary.get(d);
 			
 			if(d.getAxis() != Direction.Axis.Y) {
 				return td;
 			} else {
-				return td.withSecondary(ent.getHorizontalFacing().getOpposite());
+				return td.withSecondary(ent.getDirection().getOpposite());
 			}
 		}
 		

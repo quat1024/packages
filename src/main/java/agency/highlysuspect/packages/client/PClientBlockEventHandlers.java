@@ -7,11 +7,11 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 @Environment(EnvType.CLIENT)
 public class PClientBlockEventHandlers {
@@ -20,51 +20,51 @@ public class PClientBlockEventHandlers {
 	
 	public static void onInitializeClient() {
 		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
-			if(player.isSpectator()) return ActionResult.PASS;
+			if(player.isSpectator()) return InteractionResult.PASS;
 			
 			BlockState state = world.getBlockState(pos);
 			if(state.getBlock() instanceof PackageBlock) {
-				if(player.getStackInHand(hand).isSuitableFor(state)) return ActionResult.PASS;
+				if(player.getItemInHand(hand).isCorrectToolForDrops(state)) return InteractionResult.PASS;
 				
-				Direction frontDir = state.get(PackageBlock.FACING).primaryDirection;
+				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 				if(direction == frontDir) {
-					if(world.isClient) {
+					if(world.isClientSide) {
 						//Hack to work around AttackBlockCallback getting fired way too often (every tick, plus an extra time when you first punch)
 						//TODO this is ass figure out how to fix it actually
-						if (pos.equals(lastPunchPos) && (world.getTime() - lastPunchTick < 4)) return ActionResult.SUCCESS;
+						if (pos.equals(lastPunchPos) && (world.getGameTime() - lastPunchTick < 4)) return InteractionResult.SUCCESS;
 						lastPunchPos = pos;
-						lastPunchTick = world.getTime();
+						lastPunchTick = world.getGameTime();
 						
-						PNetClient.requestTake(pos, player.isSneaking() ? 1 : 0);
+						PNetClient.requestTake(pos, player.isShiftKeyDown() ? 1 : 0);
 					}
 					
-					return ActionResult.SUCCESS;
+					return InteractionResult.SUCCESS;
 				}
 			}
 			
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 		
 		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-			if(player.isSpectator()) return ActionResult.PASS;
+			if(player.isSpectator()) return InteractionResult.PASS;
 			
 			BlockPos pos = hitResult.getBlockPos();
-			Direction direction = hitResult.getSide();
-			if(pos == null || direction == null) return ActionResult.PASS; //is this even needed lmao
+			Direction direction = hitResult.getDirection();
+			if(pos == null || direction == null) return InteractionResult.PASS; //is this even needed lmao
 			
 			BlockState state = world.getBlockState(pos);
 			BlockEntity pkg = world.getBlockEntity(pos);
 			if(state.getBlock() instanceof PackageBlock && pkg instanceof PackageBlockEntity) {
-				Direction frontDir = state.get(PackageBlock.FACING).primaryDirection;
+				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 				if(direction == frontDir) {
-					if(world.isClient) {
-						PNetClient.requestInsert(pos, hand, player.isSneaking() ? 1 : 0);
+					if(world.isClientSide) {
+						PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? 1 : 0);
 					}
-					return ActionResult.SUCCESS;
+					return InteractionResult.SUCCESS;
 				}
 			}
 			
-			return ActionResult.PASS;
+			return InteractionResult.PASS;
 		});
 	}
 }

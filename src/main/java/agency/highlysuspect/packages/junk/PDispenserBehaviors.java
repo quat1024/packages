@@ -1,16 +1,16 @@
 package agency.highlysuspect.packages.junk;
 
 import agency.highlysuspect.packages.item.PItems;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.dispenser.FallibleItemDispenserBehavior;
-import net.minecraft.item.AutomaticItemPlacementContext;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPointer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.BlockSource;
+import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.DirectionalPlaceContext;
+import net.minecraft.world.level.block.DispenserBlock;
 
 public class PDispenserBehaviors {
 	public static void onInitialize() {
@@ -18,16 +18,16 @@ public class PDispenserBehaviors {
 	}
 	
 	//Copy-paste of blockplacementdispenserbehavior, but it doesn't try to be smart about placing "on the ground"
-	public static class SimpleBlockPlacementDispenserBehavior extends FallibleItemDispenserBehavior {
+	public static class SimpleBlockPlacementDispenserBehavior extends OptionalDispenseItemBehavior {
 		@Override
-		protected ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+		protected ItemStack execute(BlockSource pointer, ItemStack stack) {
 			this.setSuccess(false);
 			Item item = stack.getItem();
 			if (item instanceof BlockItem) {
-				Direction direction = pointer.getBlockState().get(DispenserBlock.FACING);
-				BlockPos blockPos = pointer.getPos().offset(direction);
+				Direction direction = pointer.getBlockState().getValue(DispenserBlock.FACING);
+				BlockPos blockPos = pointer.getPos().relative(direction);
 				//Direction direction2 = pointer.getWorld().isAir(blockPos.down()) ? direction : Direction.UP;
-				this.setSuccess(((BlockItem)item).place(new AutomaticItemPlacementContext(pointer.getWorld(), blockPos, direction, stack, direction/*2*/)) == ActionResult.SUCCESS);
+				this.setSuccess(((BlockItem)item).place(new DirectionalPlaceContext(pointer.getLevel(), blockPos, direction, stack, direction/*2*/)) == InteractionResult.SUCCESS);
 			}
 			
 			return stack;

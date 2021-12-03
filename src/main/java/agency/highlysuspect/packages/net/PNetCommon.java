@@ -4,23 +4,23 @@ import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class PNetCommon {
 	public static void onInitialize() {
 		ServerSidePacketRegistry.INSTANCE.register(PMessageTypes.INSERT, (ctx, buf) -> {
 			BlockPos pos = buf.readBlockPos();
-			Hand hand = buf.readBoolean() ? Hand.MAIN_HAND : Hand.OFF_HAND;
+			InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 			int mode = buf.readByte();
 			
 			ctx.getTaskQueue().execute(() -> {
-				PlayerEntity player = ctx.getPlayer();
-				World world = player.world;
+				Player player = ctx.getPlayer();
+				Level world = player.level;
 				
 				if(!packageSanityCheck(world, ctx.getPlayer(), pos)) return;
 				
@@ -37,8 +37,8 @@ public class PNetCommon {
 			int mode = buf.readByte();
 			
 			ctx.getTaskQueue().execute(() -> {
-				PlayerEntity player = ctx.getPlayer();
-				World world = player.world;
+				Player player = ctx.getPlayer();
+				Level world = player.level;
 				
 				if (!packageSanityCheck(world, ctx.getPlayer(), pos)) return;
 				
@@ -52,11 +52,11 @@ public class PNetCommon {
 		ServerSidePacketRegistry.INSTANCE.register(PMessageTypes.PACKAGE_CRAFT, (ctx, buf) -> {
 			boolean all = buf.readBoolean();
 			ctx.getTaskQueue().execute(() -> {
-				PlayerEntity player = ctx.getPlayer();
+				Player player = ctx.getPlayer();
 				
-				if(player.currentScreenHandler instanceof PackageMakerScreenHandler) {
+				if(player.containerMenu instanceof PackageMakerScreenHandler) {
 					for(int i = 0; i < 64; i++) { //Janky hack mate
-						((PackageMakerScreenHandler) player.currentScreenHandler).be.performCraft();
+						((PackageMakerScreenHandler) player.containerMenu).be.performCraft();
 						if(!all) return;
 					}
 				}
@@ -65,9 +65,9 @@ public class PNetCommon {
 	}
 	
 	@SuppressWarnings({"RedundantIfStatement", "deprecation", "BooleanMethodIsAlwaysInverted"})
-	private static boolean packageSanityCheck(World world, PlayerEntity player, BlockPos pos) {
-		if(!world.isChunkLoaded(pos)) return false;
-		if(player.getBlockPos().getSquaredDistance(pos) > 8 * 8) return false;
+	private static boolean packageSanityCheck(Level world, Player player, BlockPos pos) {
+		if(!world.hasChunkAt(pos)) return false;
+		if(player.blockPosition().distSqr(pos) > 8 * 8) return false;
 		
 		BlockState state = world.getBlockState(pos);
 		if(!(state.getBlock() instanceof PackageBlock)) return false;

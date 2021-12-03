@@ -1,18 +1,17 @@
 package agency.highlysuspect.packages.item;
 
 import agency.highlysuspect.packages.junk.PackageStyle;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.DyeColor;
-
 import java.util.Optional;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
 
 public class PackageItem extends BlockItem {
-	public PackageItem(Block block, Settings settings) {
+	public PackageItem(Block block, Properties settings) {
 		super(block, settings);
 	}
 	
@@ -24,25 +23,25 @@ public class PackageItem extends BlockItem {
 	
 	public static void addFakeContentsTagThisSucks(ItemStack stack) {
 		//Add a blank contents tag TODO this hack sucks ass, find a better way to make crafted pkgs and dropped empty pkgs stack
-		NbtCompound bad = new NbtCompound();
+		CompoundTag bad = new CompoundTag();
 		bad.putInt("realCount", 0);
-		stack.getSubTag("BlockEntityTag").put("PackageContents", bad);
+		stack.getTagElement("BlockEntityTag").put("PackageContents", bad);
 	}
 	
 	@Override
-	public Text getName(ItemStack stack) {
+	public Component getName(ItemStack stack) {
 		//TODO FIX THIS LMAO THIS SUCKS
-		NbtCompound beTag = stack.getSubTag("BlockEntityTag");
+		CompoundTag beTag = stack.getTagElement("BlockEntityTag");
 		if(beTag != null) {
-			NbtCompound contentsTag = beTag.getCompound("PackageContents");
+			CompoundTag contentsTag = beTag.getCompound("PackageContents");
 			if(!contentsTag.isEmpty()) {
 				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.fromNbt(contentsTag.getCompound("stack"));
+				ItemStack containedStack = ItemStack.of(contentsTag.getCompound("stack"));
 				if(count != 0 && !containedStack.isEmpty()) {
-					return new TranslatableText("block.packages.package.nonempty",
+					return new TranslatableComponent("block.packages.package.nonempty",
 						super.getName(stack),
 						count,
-						containedStack.getName()
+						containedStack.getHoverName()
 					);
 				}
 			}
@@ -52,11 +51,11 @@ public class PackageItem extends BlockItem {
 	}
 	
 	public Optional<ItemStack> getContainedStack(ItemStack stack) {
-		NbtCompound beTag = stack.getSubTag("BlockEntityTag");
+		CompoundTag beTag = stack.getTagElement("BlockEntityTag");
 		if(beTag != null) {
-			NbtCompound contentsTag = beTag.getCompound("PackageContents");
+			CompoundTag contentsTag = beTag.getCompound("PackageContents");
 			if (!contentsTag.isEmpty()) {
-				return Optional.of(ItemStack.fromNbt(contentsTag.getCompound("stack"))).filter(s -> !s.isEmpty());
+				return Optional.of(ItemStack.of(contentsTag.getCompound("stack"))).filter(s -> !s.isEmpty());
 			}
 		}
 		return Optional.empty();
