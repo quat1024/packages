@@ -1,0 +1,7 @@
+{
+	"replace": false,
+	"values": [
+		"packages:package_maker",
+		"packages:package"
+	]
+}
