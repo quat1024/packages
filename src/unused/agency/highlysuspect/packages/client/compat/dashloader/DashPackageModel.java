@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.client.compat.dashloader;
 
-
 import agency.highlysuspect.packages.client.model.PackageModel;
 import io.activej.serializer.annotations.Deserialize;
 import io.activej.serializer.annotations.Serialize;

@@ -9,7 +9,9 @@ public class FrexCompat {
 	static {
 		FrexProxy p;
 		
-		if(FabricLoader.getInstance().isModLoaded("frex")) {
+		//TODO: Readd Frex compat in 1.18
+		//noinspection PointlessBooleanExpression,ConstantConditions
+		if(false && FabricLoader.getInstance().isModLoaded("frex")) {
 			try {
 				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.client.compat.frex.YesFrex").getDeclaredConstructor().newInstance();
 			} catch (ReflectiveOperationException e) {

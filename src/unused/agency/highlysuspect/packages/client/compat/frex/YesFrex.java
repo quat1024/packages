@@ -6,7 +6,6 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class YesFrex implements FrexProxy {
-	
 	@Override
 	public void fancifyPackageQuad(QuadEmitter emitter, BlockState state, TextureAtlasSprite sprite) {
 		emitter.material(MaterialMap.get(state).getMapped(sprite));

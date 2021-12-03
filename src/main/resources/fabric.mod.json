@@ -26,7 +26,7 @@
     "packages.mixins.json"
   ],
   "custom": {
-    "dashloader:customobject": [
+    "todo-reenable-this---dashloader:customobject": [
       "agency.highlysuspect.packages.client.compat.dashloader.DashPackageModel",
       "agency.highlysuspect.packages.client.compat.dashloader.DashPackageMakerModel"
     ]

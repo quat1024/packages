@@ -40,15 +40,14 @@ dependencies {
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	
+	// TODO: Readd Frex and Dashloader compat
 	// run with dashloader
 	// modImplementation 'net.oskarstrom:DashLoader:2.0'
-	modCompileOnly "grondag:frex-mc117:5.2.223"
+	// modCompileOnly "grondag:frex-mc117:5.2.223"
 	
 	// run with frexiepoo
 	// modImplementation "grondag:canvas-mc117-1.17:1.0.1598"
-	modCompileOnly 'net.oskarstrom:DashLoader:2.0'
-	
-	//god i wish there was a better way to do this lol
+	// modCompileOnly 'net.oskarstrom:DashLoader:2.0'
 }
 
 processResources {
