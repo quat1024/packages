@@ -77,8 +77,6 @@ public class PackageBlock extends Block implements EntityBlock {
 			//This is not *strictly* needed because the sync will take care of it, but this prevents packages flickering the default style after placed.
 			//Client knows the tag, might as well make use of the information
 			pkg.setStyle(PackageStyle.fromItemStack(stack));
-		} else {
-			pkg.sync();
 		}
 	}
 	
@@ -97,6 +95,7 @@ public class PackageBlock extends Block implements EntityBlock {
 		super.playerWillDestroy(world, pos, state, player);
 		
 		if(!world.isClientSide && player.isCreative()) {
+			//Spawn a drop, even in creative mode. This echoes what shulker boxes do.
 			getDrops(state, (ServerLevel) world, pos, world.getBlockEntity(pos)).forEach(s -> {
 				ItemEntity ent = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, s);
 				ent.setDefaultPickUpDelay();
@@ -108,6 +107,7 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
+		//TODO is it needed
 		if(state.getBlock() != newState.getBlock()) {
 			world.updateNeighbourForOutputSignal(pos, this);
 		}
@@ -118,6 +118,8 @@ public class PackageBlock extends Block implements EntityBlock {
 	@Override
 	@Environment(EnvType.CLIENT)
 	public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+		//middle-click pick block, without holding Ctrl in creative
+		
 		ItemStack stack = super.getCloneItemStack(world, pos, state);
 		PackageBlockEntity be = (PackageBlockEntity)world.getBlockEntity(pos);
 		if(be == null) return stack;

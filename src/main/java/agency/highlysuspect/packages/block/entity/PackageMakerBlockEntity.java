@@ -6,10 +6,8 @@ import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
 import agency.highlysuspect.packages.junk.PItemTags;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -17,6 +15,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, BlockEntityClientSerializable, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
+public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
 	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE_MAKER, pos, state);
 	}
@@ -254,28 +255,16 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	//region Serialization
 	@Override
-	public CompoundTag toClientTag(CompoundTag tag) {
-		if(customName != null) {
+	public void saveAdditional(CompoundTag tag) {
+		if(hasCustomName()) {
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
 		
 		ContainerHelper.saveAllItems(tag, inv);
-		return tag;
 	}
 	
 	@Override
-	public void fromClientTag(CompoundTag tag) {
-		fromClientTag0(tag);
-		
-		if(level != null && level.isClientSide) {
-			//this cast and method call is safe; fromClientTag itself is never referenced on the server.
-			//shared ser/de logic goes in fromClientTag0 below.
-			//god i hate raw nbt lmao
-			((ClientLevel) level).setSectionDirtyWithNeighbors(worldPosition.getX() >> 4, worldPosition.getY() >> 4, worldPosition.getZ() >> 4);
-		}
-	}
-	
-	private void fromClientTag0(CompoundTag tag) {
+	public void load(CompoundTag tag) {
 		if(tag.contains("CustomName", 8)) {
 			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
 		} else {
@@ -285,21 +274,19 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		ContainerHelper.loadAllItems(tag, inv);
 	}
 	
+	//TODO kind of a hack
 	@Override
 	public void setChanged() {
-		if(level != null && !level.isClientSide) sync();
 		super.setChanged();
+		if(level != null) {
+			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+		}
 	}
 	
+	@Nullable
 	@Override
-	public CompoundTag save(CompoundTag tag) {
-		return super.save(toClientTag(tag));
-	}
-	
-	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
-		fromClientTag0(tag);
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
 	}
 	//endregion
 }

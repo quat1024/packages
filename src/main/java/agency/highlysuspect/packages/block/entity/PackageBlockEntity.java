@@ -5,7 +5,6 @@ import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +12,9 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
@@ -21,11 +23,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-public class PackageBlockEntity extends BlockEntity implements WorldlyContainer, RenderAttachmentBlockEntity, BlockEntityClientSerializable, Nameable {
+public class PackageBlockEntity extends BlockEntity implements WorldlyContainer, RenderAttachmentBlockEntity, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE, pos, state);
 	}
@@ -46,23 +50,23 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		return style;
 	}
 	
-	@Override
-	public CompoundTag toClientTag(CompoundTag tag) {
-		tag.put(PackageStyle.KEY, style.toTag());
-		tag.put(CONTENTS_KEY, writeContents());
-		return tag;
-	}
-	
-	@Override
-	public void fromClientTag(CompoundTag tag) {
-		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
-		readContents(tag.getCompound(CONTENTS_KEY));
-		
-		if(level != null) { //Which it probably never is, but IntelliJ is having a fit
-			BlockState help = level.getBlockState(worldPosition);
-			level.sendBlockUpdated(worldPosition, help, help, 8);
-		}
-	}
+//	@Override
+//	public CompoundTag toClientTag(CompoundTag tag) {
+//		tag.put(PackageStyle.KEY, style.toTag());
+//		tag.put(CONTENTS_KEY, writeContents());
+//		return tag;
+//	}
+//	
+//	@Override
+//	public void fromClientTag(CompoundTag tag) {
+//		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
+//		readContents(tag.getCompound(CONTENTS_KEY));
+//		
+//		if(level != null) { //Which it probably never is, but IntelliJ is having a fit
+//			BlockState help = level.getBlockState(worldPosition);
+//			level.sendBlockUpdated(worldPosition, help, help, 8);
+//		}
+//	}
 	
 	public void setStyle(PackageStyle style) {
 		this.style = style;
@@ -227,12 +231,6 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	//</editor-fold>
 	
 	//<editor-fold desc="SidedInventory interface">
-	@Override
-	public void setChanged() {
-		if(level != null && !level.isClientSide) sync();
-		super.setChanged();
-	}
-	
 	//More inventory bullshit
 	@Override
 	public int[] getSlotsForFace(Direction side) {
@@ -348,7 +346,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	
 	//Serialization
 	@Override
-	public CompoundTag save(CompoundTag tag) {
+	public void saveAdditional(CompoundTag tag) {
 		//Contents
 		tag.put(CONTENTS_KEY, writeContents());
 		
@@ -360,7 +358,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
 		
-		return super.save(tag);
+		super.saveAdditional(tag);
 	}
 	
 	@Override
@@ -379,5 +377,24 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		} else {
 			customName = null;
 		}
+	}
+	
+	@Override
+	public void setChanged() {
+		super.setChanged();
+		if(level != null && !level.isClientSide) {
+			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+		}
+	}
+	
+	@Nullable
+	@Override
+	public Packet<ClientGamePacketListener> getUpdatePacket() {
+		return ClientboundBlockEntityDataPacket.create(this);
+	}
+	
+	@Override
+	public CompoundTag getUpdateTag() {
+		return saveWithoutMetadata();
 	}
 }
