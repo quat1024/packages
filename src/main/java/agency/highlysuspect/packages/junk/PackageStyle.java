@@ -9,7 +9,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 
-public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
+import java.util.Objects;
+
+public final class PackageStyle {
 	public static PackageStyle fromTag(NbtCompound tag) {
 		return new PackageStyle(
 			Registry.BLOCK.getOrEmpty(Identifier.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
@@ -27,6 +29,15 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 	}
 	
 	public static final String KEY = "PackageStyle";
+	private final @NotNull Block frameBlock;
+	private final @NotNull Block innerBlock;
+	private final @NotNull DyeColor color;
+	
+	public PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
+		this.frameBlock = frameBlock;
+		this.innerBlock = innerBlock;
+		this.color = color;
+	}
 	
 	public NbtCompound toTag() {
 		return toTag(new NbtCompound());
@@ -43,4 +54,34 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 		stack.getOrCreateSubTag("BlockEntityTag").put(KEY, toTag());
 		return stack;
 	}
+	
+	public @NotNull Block frameBlock() {return frameBlock;}
+	
+	public @NotNull Block innerBlock() {return innerBlock;}
+	
+	public @NotNull DyeColor color() {return color;}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) return true;
+		if(obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (PackageStyle) obj;
+		return Objects.equals(this.frameBlock, that.frameBlock) &&
+			Objects.equals(this.innerBlock, that.innerBlock) &&
+			Objects.equals(this.color, that.color);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(frameBlock, innerBlock, color);
+	}
+	
+	@Override
+	public String toString() {
+		return "PackageStyle[" +
+			"frameBlock=" + frameBlock + ", " +
+			"innerBlock=" + innerBlock + ", " +
+			"color=" + color + ']';
+	}
+	
 }

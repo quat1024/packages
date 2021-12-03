@@ -29,11 +29,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public record PackageModelBakery(BakedModel baseModel, Sprite specialFrameSprite, Sprite specialInnerSprite) {
+public final class PackageModelBakery {
 	private static final SpriteIdentifier SPECIAL_FRAME = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, new Identifier(PackagesInit.MODID, "special/frame"));
 	private static final SpriteIdentifier SPECIAL_INNER = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, new Identifier(PackagesInit.MODID, "special/inner"));
+	private final BakedModel baseModel;
+	private final Sprite specialFrameSprite;
+	private final Sprite specialInnerSprite;
 	
-	public static record Spec(Identifier blockModelId) {
+	public PackageModelBakery(BakedModel baseModel, Sprite specialFrameSprite, Sprite specialInnerSprite) {
+		this.baseModel = baseModel;
+		this.specialFrameSprite = specialFrameSprite;
+		this.specialInnerSprite = specialInnerSprite;
+	}
+	
+	public static final class Spec {
+		private final Identifier blockModelId;
+		
+		public Spec(Identifier blockModelId) {this.blockModelId = blockModelId;}
+		
 		public Collection<Identifier> modelDependencies() {
 			return ImmutableList.of(blockModelId);
 		}
@@ -52,6 +65,28 @@ public record PackageModelBakery(BakedModel baseModel, Sprite specialFrameSprite
 				textureGetter.apply(SPECIAL_INNER)
 			);
 		}
+		
+		public Identifier blockModelId() {return blockModelId;}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(obj == this) return true;
+			if(obj == null || obj.getClass() != this.getClass()) return false;
+			var that = (Spec) obj;
+			return Objects.equals(this.blockModelId, that.blockModelId);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(blockModelId);
+		}
+		
+		@Override
+		public String toString() {
+			return "Spec[" +
+				"blockModelId=" + blockModelId + ']';
+		}
+		
 	}
 	
 	public Mesh bake(PackageStyle style) {
@@ -118,7 +153,49 @@ public record PackageModelBakery(BakedModel baseModel, Sprite specialFrameSprite
 		return meshBuilder.build();
 	}
 	
-	static record SpriteUvBounds(float minU, float maxU, float minV, float maxV) {
+	public BakedModel baseModel() {return baseModel;}
+	
+	public Sprite specialFrameSprite() {return specialFrameSprite;}
+	
+	public Sprite specialInnerSprite() {return specialInnerSprite;}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) return true;
+		if(obj == null || obj.getClass() != this.getClass()) return false;
+		var that = (PackageModelBakery) obj;
+		return Objects.equals(this.baseModel, that.baseModel) &&
+			Objects.equals(this.specialFrameSprite, that.specialFrameSprite) &&
+			Objects.equals(this.specialInnerSprite, that.specialInnerSprite);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(baseModel, specialFrameSprite, specialInnerSprite);
+	}
+	
+	@Override
+	public String toString() {
+		return "PackageModelBakery[" +
+			"baseModel=" + baseModel + ", " +
+			"specialFrameSprite=" + specialFrameSprite + ", " +
+			"specialInnerSprite=" + specialInnerSprite + ']';
+	}
+	
+	
+	static final class SpriteUvBounds {
+		private final float minU;
+		private final float maxU;
+		private final float minV;
+		private final float maxV;
+		
+		SpriteUvBounds(float minU, float maxU, float minV, float maxV) {
+			this.minU = minU;
+			this.maxU = maxU;
+			this.minV = minV;
+			this.maxV = maxV;
+		}
+		
 		static SpriteUvBounds readOff(QuadEmitter emitter) {
 			float minU = Float.POSITIVE_INFINITY;
 			float maxU = Float.NEGATIVE_INFINITY;
@@ -156,5 +233,39 @@ public record PackageModelBakery(BakedModel baseModel, Sprite specialFrameSprite
 				emitter.sprite(i, 0, writeU, writeV);
 			}
 		}
+		
+		public float minU() {return minU;}
+		
+		public float maxU() {return maxU;}
+		
+		public float minV() {return minV;}
+		
+		public float maxV() {return maxV;}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(obj == this) return true;
+			if(obj == null || obj.getClass() != this.getClass()) return false;
+			var that = (SpriteUvBounds) obj;
+			return Float.floatToIntBits(this.minU) == Float.floatToIntBits(that.minU) &&
+				Float.floatToIntBits(this.maxU) == Float.floatToIntBits(that.maxU) &&
+				Float.floatToIntBits(this.minV) == Float.floatToIntBits(that.minV) &&
+				Float.floatToIntBits(this.maxV) == Float.floatToIntBits(that.maxV);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(minU, maxU, minV, maxV);
+		}
+		
+		@Override
+		public String toString() {
+			return "SpriteUvBounds[" +
+				"minU=" + minU + ", " +
+				"maxU=" + maxU + ", " +
+				"minV=" + minV + ", " +
+				"maxV=" + maxV + ']';
+		}
+		
 	}
 }
