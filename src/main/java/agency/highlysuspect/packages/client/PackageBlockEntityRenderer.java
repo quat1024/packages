@@ -46,8 +46,8 @@ public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBl
 		//Quick fix for my block being solid so it has no light inside...
 		light = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
 		
-		int count = blockEntity.countItems();
-		ItemStack icon = blockEntity.findFirstNonemptyStack();
+		int count = blockEntity.getItemStorage().count();
+		ItemStack icon = blockEntity.getItemStorage().icon();
 		
 		matrices.pushPose();
 		matrices.translate(0.5, 0.5, 0.5);
@@ -85,17 +85,17 @@ public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBl
 		
 		if(showText) {
 			String text;
-			int max = PackageBlockEntity.maxStackAmountAllowed(icon);
+			int maxStackSize = blockEntity.getItemStorage().getResource().getItem().getMaxStackSize();
 			
 			if(showDetailedText) {
-				int stacks = count / max;
-				int leftover = count % max;
-				text = stacks + "x" + max + " + " + leftover;
+				int stacks = count / maxStackSize;
+				int leftover = count % maxStackSize;
+				text = stacks + "x" + maxStackSize + " + " + leftover;
 			} else {
 				text = String.valueOf(count);
 			}
 			
-			boolean completelyFull = max * PackageBlockEntity.SLOT_COUNT == count;
+			boolean completelyFull = maxStackSize * 8 == count;
 			int color = completelyFull ? 0x00FF6600 : 0x00FFFFFF;
 			color |= aBitFar ? 0x55000000 : 0xFF000000;
 			

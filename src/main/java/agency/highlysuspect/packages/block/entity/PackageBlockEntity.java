@@ -2,48 +2,173 @@ package agency.highlysuspect.packages.block.entity;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlock;
-import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.item.PackageItem;
+import agency.highlysuspect.packages.container.Overstack;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.StoragePreconditions;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
+import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
+import net.fabricmc.fabric.api.transfer.v1.transaction.base.SnapshotParticipant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-
-public class PackageBlockEntity extends BlockEntity implements WorldlyContainer, RenderAttachmentBlockEntity, Nameable {
+public class PackageBlockEntity extends BlockEntity implements RenderAttachmentBlockEntity, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE, pos, state);
 	}
 	
-	public static final String CONTENTS_KEY = "PackageContents";
-	public static final int SLOT_COUNT = 8;
+	public static final String STORAGE_KEY = "Storage";
 	public static final int RECURSION_LIMIT = 3;
 	
-	private static final int[] NO_SLOTS = {};
-	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
-	
-	private final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	private PackageStyle style = PackageStyle.ERROR_LOL;
+	private final PackageStorage storage = new PackageStorage();
 	private Component customName;
+	
+	//Nbt tag used in 1.17 versions that didn't use fabric transfer API.
+	public static final String LEGACY_CONTENTS_KEY = "PackageContents";
+	
+	@SuppressWarnings("UnstableApiUsage")
+	public class PackageStorage extends SnapshotParticipant<Overstack> implements SingleSlotStorage<ItemVariant> {
+		private Overstack contents = Overstack.EMPTY;
+		
+		private CompoundTag save() {
+			return contents.save();
+		}
+		
+		private void load(CompoundTag tag) {
+			contents = Overstack.load(tag);
+		}
+		
+		private void loadLegacy(CompoundTag tag) {
+			contents = Overstack.loadFromLegacyPackageData(tag);
+		}
+		
+		private void clear() {
+			contents = Overstack.EMPTY;
+			PackageBlockEntity.this.setChanged();
+		}
+		
+		public ItemStack icon() {
+			return contents.variant().toStack();
+		}
+		
+		public int count() {
+			return (int) contents.count();
+		}
+		
+		// Modeled after SingleStackStorage, a little. I don't know what I'm doing lol
+		@Override
+		public long insert(ItemVariant insertedVariant, long maxAmount, TransactionContext transaction) {
+			StoragePreconditions.notBlankNotNegative(insertedVariant, maxAmount);
+			
+			if(contents.isEmpty() || contents.matches(insertedVariant)) {
+				long insertedAmount = Math.min(maxAmount, getCapacityFor(insertedVariant) - contents.count());
+				if(insertedAmount > 0) {
+					updateSnapshots(transaction);
+					contents = contents.isEmpty() ? Overstack.of(insertedVariant, maxAmount) : contents.bumpedBy(insertedAmount);
+				}
+				return insertedAmount;
+			}
+			
+			return 0;
+		}
+		
+		@Override
+		public long extract(ItemVariant extractedVariant, long maxAmount, TransactionContext transaction) {
+			StoragePreconditions.notBlankNotNegative(extractedVariant, maxAmount);
+			
+			if(contents.isEmpty()) return 0; //uhh
+			
+			if(contents.matches(extractedVariant)) {
+				long extractedAmount = Math.min(contents.count(), maxAmount);
+				if(extractedAmount > 0) {
+					updateSnapshots(transaction);
+					contents = contents.bumpedBy(-extractedAmount);
+				}
+				return extractedAmount;
+			}
+			
+			return 0;
+		}
+		
+		@Override
+		public boolean isResourceBlank() {
+			return contents.isEmpty();
+		}
+		
+		@Override
+		public ItemVariant getResource() {
+			return contents.variant();
+		}
+		
+		@Override
+		public long getAmount() {
+			return contents.count();
+		}
+		
+		@Override
+		public long getCapacity() {
+			return getCapacityFor(contents.variant());
+		}
+		
+		private long getCapacityFor(ItemVariant variant) {
+			//Packages hold up to 8 stacks of an item.
+			//TODO: Reimpl recursion restriction
+			//	public static int maxStackAmountAllowed(ItemStack stack) {
+//		if(stack.isEmpty()) return 64;
+//		else if(stack.getItem() instanceof PackageItem) {
+//			//TODO clean this up
+//			if(!stack.hasTag()) return 64;
+//			CompoundTag beTag = stack.getTagElement("BlockEntityTag");
+//			if(beTag == null) return 64;
+//			CompoundTag contentsTag = beTag.getCompound(LEGACY_CONTENTS_KEY);
+//			if(contentsTag.getInt("realCount") > 0) return 1;
+//			else return 64;
+//		}
+//		else return Math.min(stack.getMaxStackSize(), 64); //just in case
+//	}
+			return variant.getItem().getMaxStackSize() * 8L;
+		}
+		
+		@Override
+		protected Overstack createSnapshot() {
+			return contents; //Immutable object
+		}
+		
+		@Override
+		protected void readSnapshot(Overstack snapshot) {
+			this.contents = snapshot;
+		}
+		
+		@Override
+		protected void onFinalCommit() {
+			PackageBlockEntity.this.setChanged();
+		}
+	}
+	
+	@SuppressWarnings("UnstableApiUsage")
+	public @Nullable Storage<ItemVariant> getSidedItemStorage(Direction dir) {
+		Direction packageFacing = getBlockState().getValue(PackageBlock.FACING).primaryDirection;
+		if(dir == packageFacing) return null;
+		else return storage;
+	}
+	
+	public PackageStorage getItemStorage() {
+		return storage;
+	}
 	
 	@Override
 	public Object getRenderAttachmentData() {
@@ -52,38 +177,6 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	
 	public void setStyle(PackageStyle style) {
 		this.style = style;
-	}
-	
-	public CompoundTag writeContents() {
-		CompoundTag tag = new CompoundTag();
-		
-		ItemStack first = findFirstNonemptyStack();
-		if(!first.isEmpty()) {
-			CompoundTag stackTag = findFirstNonemptyStack().save(new CompoundTag());
-			stackTag.putByte("Count", (byte) 1);
-			
-			tag.put("stack", stackTag);
-			tag.putInt("realCount", countItems());
-		} else {
-			tag.putInt("realCount", 0);
-		}
-		
-		return tag;
-	}
-	
-	public void readContents(CompoundTag tag) {
-		clearContent();
-		int count = tag.getInt("realCount");
-		if(count != 0) {
-			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
-			int maxPerSlot = maxStackAmountAllowed(stack);
-			
-			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
-				ItemStack toInsert = stack.copy();
-				toInsert.setCount(Math.min(remaining, maxPerSlot));
-				setItem(slot, toInsert);
-			}
-		}
 	}
 	
 	//<editor-fold desc="Name cruft">
@@ -112,225 +205,11 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	}
 	//</editor-fold>
 	
-	//Inventory stuff.
-	public ItemStack findFirstNonemptyStack() {
-		for(ItemStack stack : inv) {
-			if(!stack.isEmpty()) return stack;
-		}
-		return ItemStack.EMPTY;
-	}
-	
-	public int countItems() {
-		int count = 0;
-		for(ItemStack stack : inv) count += stack.getCount();
-		return count;
-	}
-	
-	public static int maxStackAmountAllowed(ItemStack stack) {
-		if(stack.isEmpty()) return 64;
-		else if(stack.getItem() instanceof PackageItem) {
-			//TODO clean this up
-			if(!stack.hasTag()) return 64;
-			CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-			if(beTag == null) return 64;
-			CompoundTag contentsTag = beTag.getCompound(CONTENTS_KEY);
-			if(contentsTag.getInt("realCount") > 0) return 1;
-			else return 64;
-		}
-		else return Math.min(stack.getMaxStackSize(), 64); //just in case
-	}
-	
-	//custom package-specific inventory wrappers, for external use
-	public boolean matches(ItemStack stack) {
-		return !stack.isEmpty() && canPlaceItem(0, stack);
-	}
-	
-	//<editor-fold desc="Interactions">
-	//Does not mutate 'held', always returns a different item stack.
-	//kinda like forge item handlers lol...
-	public void insert(Player player, InteractionHand hand, boolean fullStack) {
-		ItemStack held = player.getItemInHand(hand);
-		
-		if(held.isEmpty() || !matches(held)) return;
-		
-		//Will never be more than one stack
-		int amountToInsert = Math.min(maxStackAmountAllowed(held), fullStack ? held.getCount() : 1);
-		int insertedAmount = 0;
-		
-		ListIterator<ItemStack> stackerator = inv.listIterator();
-		while(amountToInsert > 0 && stackerator.hasNext()) {
-			ItemStack stack = stackerator.next();
-			
-			if(stack.isEmpty()) {
-				ItemStack newStack = held.copy();
-				newStack.setCount(amountToInsert);
-				insertedAmount += amountToInsert;
-				stackerator.set(newStack);
-				break;
-			} else {
-				int increaseAmount = Math.min(maxStackAmountAllowed(stack) - stack.getCount(), amountToInsert);
-				if(increaseAmount > 0) {
-					stack.grow(increaseAmount);
-					amountToInsert -= increaseAmount;
-					insertedAmount += increaseAmount;
-				}
-			}
-		}
-		
-		ItemStack leftover = held.copy();
-		leftover.shrink(insertedAmount);
-		
-		player.setItemInHand(hand, leftover);
-		
-		setChanged();
-	}
-	
-	public void take(Player player, boolean fullStack) {
-		ItemStack contained = findFirstNonemptyStack();
-		if(contained.isEmpty()) return;
-		
-		int removeTotal = fullStack ? maxStackAmountAllowed(contained) : 1;
-		List<ItemStack> stacksToGive = new ArrayList<>();
-		
-		ListIterator<ItemStack> stackerator = inv.listIterator();
-		while(removeTotal > 0 && stackerator.hasNext()) {
-			ItemStack stack = stackerator.next();
-			if(stack.isEmpty()) continue;
-			
-			int remove = Math.min(stack.getCount(), removeTotal);
-			stacksToGive.add(stack.split(remove));
-			removeTotal -= remove;
-		}
-		
-		stacksToGive.forEach(stack -> {
-			if(!player.getInventory().add(stack)) {
-				player.drop(stack, false);
-			}
-		});
-		
-		setChanged();
-	}
-	//</editor-fold>
-	
-	//<editor-fold desc="SidedInventory interface">
-	//More inventory bullshit
-	@Override
-	public int[] getSlotsForFace(Direction side) {
-		if(level == null) return NO_SLOTS;
-		
-		BlockState state = level.getBlockState(worldPosition);
-		if(state.getBlock() instanceof PackageBlock) {
-			return state.getValue(PackageBlock.FACING).primaryDirection == side ? NO_SLOTS : ALL_SLOTS;
-		}
-		
-		return NO_SLOTS;
-	}
-	
-	@Override
-	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction dir) {
-		return canPlaceItem(slot, stack);
-	}
-	
-	@Override
-	public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir) {
-		return true;
-	}
-	
-	@Override
-	public int getContainerSize() {
-		return SLOT_COUNT;
-	}
-	
-	@Override
-	public boolean isEmpty() {
-		for(ItemStack stack : inv) {
-			if(!stack.isEmpty()) return false;
-		}
-		return true;
-	}
-	
-	@Override
-	public ItemStack getItem(int slot) {
-		return inv.get(slot);
-	}
-	
-	@Override
-	public ItemStack removeItem(int slot, int amount) {
-		setChanged();
-		return ContainerHelper.removeItem(inv, slot, amount);
-	}
-	
-	@Override
-	public ItemStack removeItemNoUpdate(int slot) {
-		setChanged();
-		return ContainerHelper.takeItem(inv, slot);
-	}
-	
-	@Override
-	public void setItem(int slot, ItemStack stack) {
-		inv.set(slot, stack);
-		setChanged();
-	}
-	
-	@Override
-	public int getMaxStackSize() {
-		return maxStackAmountAllowed(findFirstNonemptyStack());
-	}
-	
-	@Override
-	public boolean stillValid(Player player) {
-		return true;
-	}
-	
-	@Override
-	public boolean canPlaceItem(int slot, ItemStack stack) {
-		if(stack.getItem() == PItems.PACKAGE && calcPackageRecursion(stack) > RECURSION_LIMIT) return false;
-		
-		return canMergeItems(findFirstNonemptyStack(), stack);
-	}
-	
-	private int calcPackageRecursion(ItemStack stack) {
-		CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-		if(beTag != null) {
-			CompoundTag contentsTag = beTag.getCompound("PackageContents");
-			if(!contentsTag.isEmpty()) {
-				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.of(contentsTag.getCompound("stack"));
-				if(count != 0 && !containedStack.isEmpty()) {
-					return 1 + calcPackageRecursion(containedStack);
-				}
-			}
-		}
-		
-		return 0;
-	}
-	
-	@Override
-	public void clearContent() {
-		inv.clear();
-	}
-	//</editor-fold>
-	
-	//HopperBlockEntity.canMergeItems copy, with a modification
-	private static boolean canMergeItems(ItemStack first, ItemStack second) {
-		if(first.isEmpty() || second.isEmpty()) return true; //My modification
-		
-		if (first.getItem() != second.getItem()) {
-			return false;
-		} else if (first.getDamageValue() != second.getDamageValue()) {
-			return false;
-		} else if (first.getCount() > first.getMaxStackSize()) {
-			return false;
-		} else {
-			return ItemStack.tagMatches(first, second);
-		}
-	}
-	
 	//Serialization
 	@Override
 	public void saveAdditional(CompoundTag tag) {
 		//Contents
-		tag.put(CONTENTS_KEY, writeContents());
+		tag.put(STORAGE_KEY, storage.save());
 		
 		//Style
 		tag.put(PackageStyle.KEY, style.toTag());
@@ -348,7 +227,11 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		super.load(tag);
 		
 		//Contents
-		readContents(tag.getCompound(CONTENTS_KEY));
+		if(tag.contains(LEGACY_CONTENTS_KEY)) {
+			storage.loadLegacy(tag.getCompound(LEGACY_CONTENTS_KEY));
+		} else {
+			storage.load(tag.getCompound(STORAGE_KEY));
+		}
 		
 		//Style
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));

@@ -4,9 +4,12 @@ import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,8 +30,19 @@ public class PNetCommon {
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
 				
-				//TODO: fix this insertion logic, probably move it out of the BE (just needed somewhere to put it for now)
-				be.insert(player, hand, mode == 1);
+				ItemVariant variant = ItemVariant.of(player.getItemInHand(hand));
+				if(variant.isBlank()) return;
+				
+				long howMuch = mode == 1 ? player.getItemInHand(hand).getCount() : 1;
+				
+				try(Transaction tx = Transaction.openOuter()) {
+					int leftover = (int) be.getItemStorage().insert(variant, howMuch, tx);
+					tx.addCloseCallback((transaction, result) -> {
+						if(result.wasCommitted()) player.setItemInHand(hand, variant.toStack(leftover));
+					});
+					
+					tx.commit();
+				}
 			});
 		});
 		
@@ -45,7 +59,16 @@ public class PNetCommon {
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
 				
-				be.take(player, mode == 1);
+				ItemVariant variant = be.getItemStorage().getResource();
+				long howMuch = mode == 1 ? variant.getItem().getMaxStackSize() : 1;
+				
+				try(Transaction tx = Transaction.openOuter()) {
+					int howMuchRemoved = (int) be.getItemStorage().extract(variant, howMuch, tx);
+					tx.addCloseCallback((transaction, result) -> {
+						if(result.wasCommitted()) giveStackToPlayer(player, variant.toStack(howMuchRemoved));
+					});
+					tx.commit();
+				}
 			});
 		});
 		
@@ -62,6 +85,12 @@ public class PNetCommon {
 				}
 			});
 		});
+	}
+	
+	private static void giveStackToPlayer(Player player, ItemStack stack) {
+		if(!player.getInventory().add(stack)) {
+			player.drop(stack, false);
+		}
 	}
 	
 	@SuppressWarnings({"RedundantIfStatement", "deprecation", "BooleanMethodIsAlwaysInverted"})
