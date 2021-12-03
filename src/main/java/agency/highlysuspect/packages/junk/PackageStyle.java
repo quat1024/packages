@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
-public final class PackageStyle {
+public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
 	public static PackageStyle fromTag(CompoundTag tag) {
 		return new PackageStyle(
 			Registry.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
@@ -29,9 +29,6 @@ public final class PackageStyle {
 	}
 	
 	public static final String KEY = "PackageStyle";
-	private final @NotNull Block frameBlock;
-	private final @NotNull Block innerBlock;
-	private final @NotNull DyeColor color;
 	
 	public PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
 		this.frameBlock = frameBlock;
@@ -54,34 +51,4 @@ public final class PackageStyle {
 		stack.getOrCreateTagElement("BlockEntityTag").put(KEY, toTag());
 		return stack;
 	}
-	
-	public @NotNull Block frameBlock() {return frameBlock;}
-	
-	public @NotNull Block innerBlock() {return innerBlock;}
-	
-	public @NotNull DyeColor color() {return color;}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) return true;
-		if(obj == null || obj.getClass() != this.getClass()) return false;
-		var that = (PackageStyle) obj;
-		return Objects.equals(this.frameBlock, that.frameBlock) &&
-			Objects.equals(this.innerBlock, that.innerBlock) &&
-			Objects.equals(this.color, that.color);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(frameBlock, innerBlock, color);
-	}
-	
-	@Override
-	public String toString() {
-		return "PackageStyle[" +
-			"frameBlock=" + frameBlock + ", " +
-			"innerBlock=" + innerBlock + ", " +
-			"color=" + color + ']';
-	}
-	
 }

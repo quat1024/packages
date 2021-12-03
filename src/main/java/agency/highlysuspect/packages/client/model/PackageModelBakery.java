@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.renderer.v1.mesh.MeshBuilder;
 import net.fabricmc.fabric.api.renderer.v1.mesh.MutableQuadView;
 import net.fabricmc.fabric.api.renderer.v1.mesh.QuadEmitter;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.render.model.*;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -34,24 +33,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
-public final class PackageModelBakery {
+public record PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
 	private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(PackagesInit.MODID, "special/frame"));
 	private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(PackagesInit.MODID, "special/inner"));
-	private final BakedModel baseModel;
-	private final TextureAtlasSprite specialFrameSprite;
-	private final TextureAtlasSprite specialInnerSprite;
 	
-	public PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
-		this.baseModel = baseModel;
-		this.specialFrameSprite = specialFrameSprite;
-		this.specialInnerSprite = specialInnerSprite;
-	}
-	
-	public static final class Spec {
-		private final ResourceLocation blockModelId;
-		
-		public Spec(ResourceLocation blockModelId) {this.blockModelId = blockModelId;}
-		
+	public record Spec(ResourceLocation blockModelId) {
 		public Collection<ResourceLocation> modelDependencies() {
 			return ImmutableList.of(blockModelId);
 		}
@@ -70,28 +56,6 @@ public final class PackageModelBakery {
 				textureGetter.apply(SPECIAL_INNER)
 			);
 		}
-		
-		public ResourceLocation blockModelId() {return blockModelId;}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if(obj == this) return true;
-			if(obj == null || obj.getClass() != this.getClass()) return false;
-			var that = (Spec) obj;
-			return Objects.equals(this.blockModelId, that.blockModelId);
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(blockModelId);
-		}
-		
-		@Override
-		public String toString() {
-			return "Spec[" +
-				"blockModelId=" + blockModelId + ']';
-		}
-		
 	}
 	
 	public Mesh bake(PackageStyle style) {
@@ -158,49 +122,7 @@ public final class PackageModelBakery {
 		return meshBuilder.build();
 	}
 	
-	public BakedModel baseModel() {return baseModel;}
-	
-	public TextureAtlasSprite specialFrameSprite() {return specialFrameSprite;}
-	
-	public TextureAtlasSprite specialInnerSprite() {return specialInnerSprite;}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if(obj == this) return true;
-		if(obj == null || obj.getClass() != this.getClass()) return false;
-		var that = (PackageModelBakery) obj;
-		return Objects.equals(this.baseModel, that.baseModel) &&
-			Objects.equals(this.specialFrameSprite, that.specialFrameSprite) &&
-			Objects.equals(this.specialInnerSprite, that.specialInnerSprite);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(baseModel, specialFrameSprite, specialInnerSprite);
-	}
-	
-	@Override
-	public String toString() {
-		return "PackageModelBakery[" +
-			"baseModel=" + baseModel + ", " +
-			"specialFrameSprite=" + specialFrameSprite + ", " +
-			"specialInnerSprite=" + specialInnerSprite + ']';
-	}
-	
-	
-	static final class SpriteUvBounds {
-		private final float minU;
-		private final float maxU;
-		private final float minV;
-		private final float maxV;
-		
-		SpriteUvBounds(float minU, float maxU, float minV, float maxV) {
-			this.minU = minU;
-			this.maxU = maxU;
-			this.minV = minV;
-			this.maxV = maxV;
-		}
-		
+	record SpriteUvBounds(float minU, float maxU, float minV, float maxV) {
 		static SpriteUvBounds readOff(QuadEmitter emitter) {
 			float minU = Float.POSITIVE_INFINITY;
 			float maxU = Float.NEGATIVE_INFINITY;
@@ -238,39 +160,5 @@ public final class PackageModelBakery {
 				emitter.sprite(i, 0, writeU, writeV);
 			}
 		}
-		
-		public float minU() {return minU;}
-		
-		public float maxU() {return maxU;}
-		
-		public float minV() {return minV;}
-		
-		public float maxV() {return maxV;}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if(obj == this) return true;
-			if(obj == null || obj.getClass() != this.getClass()) return false;
-			var that = (SpriteUvBounds) obj;
-			return Float.floatToIntBits(this.minU) == Float.floatToIntBits(that.minU) &&
-				Float.floatToIntBits(this.maxU) == Float.floatToIntBits(that.maxU) &&
-				Float.floatToIntBits(this.minV) == Float.floatToIntBits(that.minV) &&
-				Float.floatToIntBits(this.maxV) == Float.floatToIntBits(that.maxV);
-		}
-		
-		@Override
-		public int hashCode() {
-			return Objects.hash(minU, maxU, minV, maxV);
-		}
-		
-		@Override
-		public String toString() {
-			return "SpriteUvBounds[" +
-				"minU=" + minU + ", " +
-				"maxU=" + maxU + ", " +
-				"minV=" + minV + ", " +
-				"maxV=" + maxV + ']';
-		}
-		
 	}
 }
