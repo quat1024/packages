@@ -148,7 +148,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	}
 	//endregion
 	
-	//region SidedInventory
+	//region WorldlyContainer (f.k.a. SidedInventory)
 	public static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};
 	public static final int[] INNER_AND_DYE = new int[] {INNER_SLOT, DYE_SLOT};
 	public static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
@@ -287,6 +287,11 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	@Override
 	public Packet<ClientGamePacketListener> getUpdatePacket() {
 		return ClientboundBlockEntityDataPacket.create(this);
+	}
+	
+	@Override
+	public CompoundTag getUpdateTag() {
+		return saveWithoutMetadata();
 	}
 	//endregion
 }
