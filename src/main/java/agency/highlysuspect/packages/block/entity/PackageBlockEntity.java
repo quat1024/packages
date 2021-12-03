@@ -50,24 +50,6 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		return style;
 	}
 	
-//	@Override
-//	public CompoundTag toClientTag(CompoundTag tag) {
-//		tag.put(PackageStyle.KEY, style.toTag());
-//		tag.put(CONTENTS_KEY, writeContents());
-//		return tag;
-//	}
-//	
-//	@Override
-//	public void fromClientTag(CompoundTag tag) {
-//		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
-//		readContents(tag.getCompound(CONTENTS_KEY));
-//		
-//		if(level != null) { //Which it probably never is, but IntelliJ is having a fit
-//			BlockState help = level.getBlockState(worldPosition);
-//			level.sendBlockUpdated(worldPosition, help, help, 8);
-//		}
-//	}
-	
 	public void setStyle(PackageStyle style) {
 		this.style = style;
 	}

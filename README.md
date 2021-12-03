@@ -1,11 +1,15 @@
 Packages
 ========
 
-Worse Barrels successor for Fabric ~~1.15.2~~ ~~1.16.4~~ 1.17.0!
+Worse Barrels successor for Fabric ~~1.15.2~~ ~~1.16.4~~ ~~1.17.0~~ ~~1.17.1~~ 1.18!
 
 Package Crafter model by [Kat](https://kat.blue)!
 
-soft dependency on FREX (transfers frex blockstate materials onto the package model) - fucking amazing work by Grondag on these mods
+~~soft dependency on FREX (transfers frex blockstate materials onto the package model) - fucking amazing work by Grondag on these mods~~ disabled for now in 1.18 :B
+
+# 1.18 migration note
+
+Updating 1.17 worlds with Packages in them to 1.18 is *not supported*. Things currently break pretty hard. This may change in the future.
 
 ### Why not port Worse Barrels directly?
 
