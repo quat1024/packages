@@ -25,7 +25,7 @@ public class PackageItem extends BlockItem {
 		//Add a blank contents tag TODO this hack sucks ass, find a better way to make crafted pkgs and dropped empty pkgs stack
 		CompoundTag bad = new CompoundTag();
 		bad.putInt("realCount", 0);
-		stack.getTagElement("BlockEntityTag").put("PackageContents", bad);
+		stack.getOrCreateTagElement("BlockEntityTag").put("PackageContents", bad);
 	}
 	
 	@Override
