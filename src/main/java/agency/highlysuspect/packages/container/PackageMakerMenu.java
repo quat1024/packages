@@ -16,19 +16,20 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jetbrains.annotations.Nullable;
 
-public class PackageMakerScreenHandler extends AbstractContainerMenu {
-	public static PackageMakerScreenHandler constructFromNetwork(int syncId, Inventory inventory, FriendlyByteBuf buf) {
+public class PackageMakerMenu extends AbstractContainerMenu {
+	public static PackageMakerMenu constructFromNetwork(int syncId, Inventory inventory, FriendlyByteBuf buf) {
 		BlockPos pos = buf.readBlockPos();
 		
 		BlockEntity be = inventory.player.level.getBlockEntity(pos);
 		if(!(be instanceof PackageMakerBlockEntity)) throw new IllegalStateException("no package maker at " + pos.toString());
 		
-		return new PackageMakerScreenHandler(syncId, inventory, (PackageMakerBlockEntity) be);
+		return new PackageMakerMenu(syncId, inventory, (PackageMakerBlockEntity) be);
 	}
 	
-	public PackageMakerScreenHandler(int syncId, Inventory playerInventory, PackageMakerBlockEntity be) {
-		super(PScreenHandlers.PACKAGE_MAKER, syncId);
+	public PackageMakerMenu(int syncId, Inventory playerInventory, PackageMakerBlockEntity be) {
+		super(PMenuTypes.PACKAGE_MAKER, syncId);
 		this.be = be;
 		
 		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.OUTPUT_SLOT, 134, 35, null));
@@ -92,25 +93,26 @@ public class PackageMakerScreenHandler extends AbstractContainerMenu {
 	public static final ResourceLocation DYE_BG = new ResourceLocation(PackagesInit.MODID, "gui/slot_dye");
 	
 	public static class WorkingSlot extends Slot {
-		public WorkingSlot(Container inventory, int invSlot, int xPosition, int yPosition, ResourceLocation tex) {
-			super(inventory, invSlot, xPosition, yPosition);
-			this.invSlot2 = invSlot;
-			this.tex = tex;
+		public WorkingSlot(Container inventory, int slot, int x, int y, @Nullable ResourceLocation background) {
+			super(inventory, slot, x, y);
+			this.background = background;
 		}
 		
-		private final int invSlot2;
-		private final ResourceLocation tex;
+		//remember to register this to the block/item texture atlas (see PackageMakerScreen#onInitializeClient)
+		private final ResourceLocation background;
 		
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			return container.canPlaceItem(invSlot2, stack);
+			//Regular Slot doesn't delegate to its Container
+			return container.canPlaceItem(getContainerSlot(), stack);
 		}
 		
 		@Override
 		@Environment(EnvType.CLIENT)
+		@Nullable
 		public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-			if(tex == null) return null;
-			return Pair.of(InventoryMenu.BLOCK_ATLAS, tex);
+			if(background == null) return null;
+			return Pair.of(InventoryMenu.BLOCK_ATLAS, background);
 		}
 	}
 }

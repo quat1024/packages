@@ -2,7 +2,7 @@ package agency.highlysuspect.packages;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
-import agency.highlysuspect.packages.container.PScreenHandlers;
+import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;
 import agency.highlysuspect.packages.junk.PItemTags;
@@ -25,7 +25,7 @@ public class PackagesInit implements ModInitializer {
 		PDispenserBehaviors.onInitialize();
 		PItemTags.onInitialize();
 		
-		PScreenHandlers.onInitialize();
+		PMenuTypes.onInitialize();
 		PNetCommon.onInitialize();
 		
 		PSoundEvents.onInitialize();

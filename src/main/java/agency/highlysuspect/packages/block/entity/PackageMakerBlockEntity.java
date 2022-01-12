@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.block.entity;
 
 import agency.highlysuspect.packages.block.PBlocks;
-import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
+import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
@@ -144,7 +144,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-		return new PackageMakerScreenHandler(syncId, inv, this);
+		return new PackageMakerMenu(syncId, inv, this);
 	}
 	//endregion
 	

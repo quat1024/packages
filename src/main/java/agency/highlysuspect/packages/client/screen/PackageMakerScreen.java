@@ -2,7 +2,7 @@ package agency.highlysuspect.packages.client.screen;
 
 import agency.highlysuspect.packages.PackagesInit;
 import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
-import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
+import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.net.PNetClient;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -18,11 +18,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
-public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerScreenHandler> {
+public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
 	private static final ResourceLocation TEXTURE = new ResourceLocation(PackagesInit.MODID, "textures/gui/package_maker.png");
 	
-	public PackageMakerScreen(PackageMakerScreenHandler sh, Inventory inventory, Component title) {
-		super(sh, inventory, title);
+	public PackageMakerScreen(PackageMakerMenu menu, Inventory inventory, Component title) {
+		super(menu, inventory, title);
 	}
 	
 	private Button buddon;
@@ -64,15 +64,15 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerScre
 	protected void renderLabels(PoseStack matrices, int mouseX, int mouseY) {
 		super.renderLabels(matrices, mouseX, mouseY);
 		
-		PackageMakerScreenHandler screenHandler = getMenu();
+		PackageMakerMenu menu = getMenu();
 		
 		if(!getMenu().slots.get(0).hasItem()) {
 			//draw a preview of the crafted item behind a transparent overlay
 			//I guess this makes sense ?? lmao
-			ItemStack dryRun = screenHandler.be.whatWouldBeCrafted();
+			ItemStack dryRun = menu.be.whatWouldBeCrafted();
 			if (!dryRun.isEmpty()) {
-				int x = screenHandler.slots.get(0).x;
-				int y = screenHandler.slots.get(0).y;
+				int x = menu.slots.get(0).x;
+				int y = menu.slots.get(0).y;
 				itemRenderer.renderAndDecorateFakeItem(dryRun, x, y);
 				
 				RenderSystem.disableDepthTest();
@@ -96,11 +96,10 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerScre
 	}
 	
 	public static void onInitializeClient() {
-		//noinspection deprecation
 		ClientSpriteRegistryCallback.event(TextureAtlas.LOCATION_BLOCKS).register((tex, reg) -> {
-			reg.register(PackageMakerScreenHandler.FRAME_BG);
-			reg.register(PackageMakerScreenHandler.INNER_BG);
-			reg.register(PackageMakerScreenHandler.DYE_BG);
+			reg.register(PackageMakerMenu.FRAME_BG);
+			reg.register(PackageMakerMenu.INNER_BG);
+			reg.register(PackageMakerMenu.DYE_BG);
 		});
 	}
 }
