@@ -14,6 +14,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -74,9 +75,11 @@ public class PackageBlock extends Block implements EntityBlock {
 		}
 		
 		if(world.isClientSide) {
-			//This is not *strictly* needed because the sync will take care of it, but this prevents packages flickering the default style after placed.
-			//Client knows the tag, might as well make use of the information
-			pkg.setStyle(PackageStyle.fromItemStack(stack));
+			//Load the tag clientside.
+			//Fixes some flickering (wrong style/count) when placing the item.
+			//Kinda surprised the game doesn't do this itself; it explicitly only does this server-side.
+			CompoundTag blockEntityTag = BlockItem.getBlockEntityData(stack);
+			if(blockEntityTag != null) pkg.load(BlockItem.getBlockEntityData(stack));
 		}
 	}
 	
