@@ -9,7 +9,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.renderer.RenderType;
 
 @Environment(EnvType.CLIENT)
@@ -24,7 +24,7 @@ public class ClientInit implements ClientModInitializer {
 		PClientBlockEventHandlers.onInitializeClient();
 		
 		//block entity renderers
-		BlockEntityRendererRegistry.INSTANCE.register(PBlockEntityTypes.PACKAGE, PackageBlockEntityRenderer::new);
+		BlockEntityRendererRegistry.register(PBlockEntityTypes.PACKAGE, PackageBlockEntityRenderer::new);
 		
 		//BlockRenderLayerMap entries
 		BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutoutMipped(), PBlocks.PACKAGE_MAKER);

@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.junk;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

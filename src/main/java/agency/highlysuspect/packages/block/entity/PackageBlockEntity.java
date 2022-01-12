@@ -212,8 +212,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	}
 	//</editor-fold>
 	
-	//<editor-fold desc="SidedInventory interface">
-	//More inventory bullshit
+	//<editor-fold desc="WorldlyContainer">
 	@Override
 	public int[] getSlotsForFace(Direction side) {
 		if(level == null) return NO_SLOTS;

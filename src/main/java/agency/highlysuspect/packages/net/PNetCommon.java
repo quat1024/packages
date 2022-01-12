@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.net;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerScreenHandler;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
@@ -13,16 +13,15 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class PNetCommon {
 	public static void onInitialize() {
-		ServerSidePacketRegistry.INSTANCE.register(PMessageTypes.INSERT, (ctx, buf) -> {
+		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.INSERT, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
 			InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 			int mode = buf.readByte();
 			
-			ctx.getTaskQueue().execute(() -> {
-				Player player = ctx.getPlayer();
+			server.submit(() -> {
 				Level world = player.level;
 				
-				if(!packageSanityCheck(world, ctx.getPlayer(), pos)) return;
+				if(!packageSanityCheck(world, player, pos)) return;
 				
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
@@ -32,15 +31,14 @@ public class PNetCommon {
 			});
 		});
 		
-		ServerSidePacketRegistry.INSTANCE.register(PMessageTypes.TAKE, (ctx, buf) -> {
+		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.TAKE, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
 			int mode = buf.readByte();
 			
-			ctx.getTaskQueue().execute(() -> {
-				Player player = ctx.getPlayer();
+			server.submit(() -> {
 				Level world = player.level;
 				
-				if (!packageSanityCheck(world, ctx.getPlayer(), pos)) return;
+				if (!packageSanityCheck(world, player, pos)) return;
 				
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
@@ -49,11 +47,9 @@ public class PNetCommon {
 			});
 		});
 		
-		ServerSidePacketRegistry.INSTANCE.register(PMessageTypes.PACKAGE_CRAFT, (ctx, buf) -> {
+		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.PACKAGE_CRAFT, (server, player, handler, buf, resp) -> {
 			boolean all = buf.readBoolean();
-			ctx.getTaskQueue().execute(() -> {
-				Player player = ctx.getPlayer();
-				
+			server.submit(() -> {
 				if(player.containerMenu instanceof PackageMakerScreenHandler) {
 					for(int i = 0; i < 64; i++) { //Janky hack mate
 						((PackageMakerScreenHandler) player.containerMenu).be.performCraft();

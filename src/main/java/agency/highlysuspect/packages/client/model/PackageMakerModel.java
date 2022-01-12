@@ -1,9 +1,7 @@
 package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.junk.PUtil;
 import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
-import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
