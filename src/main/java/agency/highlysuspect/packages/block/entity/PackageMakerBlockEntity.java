@@ -52,7 +52,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		Item item = stack.getItem();
 		if(!(item instanceof BlockItem)) return false;
-		if(PItemTags.BANNED_FROM_PACKAGE_MAKER.contains(item)) return false;
+		if(stack.is(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
 		
 		Block b = ((BlockItem) item).getBlock();
 		BlockState state = b.defaultBlockState();
@@ -64,7 +64,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	}
 	
 	public static boolean matchesDyeSlot(ItemStack stack) {
-		return stack.getItem() instanceof DyeItem && !PItemTags.BANNED_FROM_PACKAGE_MAKER.contains(stack.getItem());
+		if(stack.is(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
+		return stack.getItem() instanceof DyeItem;
 	}
 	
 	public ItemStack whatWouldBeCrafted() {
