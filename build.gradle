@@ -6,12 +6,7 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
-archivesBaseName = "${project.archives_base_name}-${project.minecraft_version}"
-version = project.mod_version
-group = project.maven_group
-
-minecraft {
-}
+archivesBaseName = "${project.archivesBaseName}-${project.minecraftVersion}"
 
 repositories {
 	//Used for Frex and Dashloader but compat with those is turned off right now .
@@ -36,10 +31,10 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
 	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
 	
 	// TODO: Readd Frex and Dashloader compat
 	// run with dashloader
