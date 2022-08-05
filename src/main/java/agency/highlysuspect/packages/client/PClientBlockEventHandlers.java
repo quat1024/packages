@@ -60,7 +60,7 @@ public class PClientBlockEventHandlers {
 					if(world.isClientSide) {
 						PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? 1 : 0);
 					}
-					return InteractionResult.SUCCESS;
+					return InteractionResult.CONSUME;
 				}
 			}
 			
