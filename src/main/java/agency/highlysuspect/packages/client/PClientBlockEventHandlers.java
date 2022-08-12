@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.net.PNetClient;
+import agency.highlysuspect.packages.net.PSneakingStatus;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -35,7 +36,7 @@ public class PClientBlockEventHandlers {
 						lastPunchPos = pos;
 						lastPunchTick = world.getGameTime();
 						
-						PNetClient.requestTake(pos, player.isShiftKeyDown() ? 1 : 0);
+						PNetClient.requestTake(pos, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
 					}
 					
 					return InteractionResult.SUCCESS;
@@ -58,7 +59,7 @@ public class PClientBlockEventHandlers {
 				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 				if(direction == frontDir) {
 					if(world.isClientSide) {
-						PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? 1 : 0);
+						PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
 					}
 					return InteractionResult.CONSUME;
 				}
