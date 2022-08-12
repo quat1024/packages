@@ -11,6 +11,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -57,12 +58,18 @@ public class PClientBlockEventHandlers {
 			BlockEntity pkg = world.getBlockEntity(pos);
 			if(state.getBlock() instanceof PackageBlock && pkg instanceof PackageBlockEntity) {
 				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
-				if(direction == frontDir) {
-					if(world.isClientSide) {
-						PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
-					}
-					return InteractionResult.CONSUME;
-				}
+				if(direction == frontDir)
+                {
+                    if (world.isClientSide)
+                    {
+                        final ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
+                        if (contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand)))
+                        {
+                            PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
+                            return InteractionResult.CONSUME;
+                        }
+                    }
+                }
 			}
 			
 			return InteractionResult.PASS;
