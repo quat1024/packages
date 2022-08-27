@@ -33,12 +33,12 @@ public class PNetCommon {
 		
 		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.TAKE, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
-            PSneakingStatus mode = PSneakingStatus.safeGetStatusFromByte(buf.readByte());
+			PSneakingStatus mode = PSneakingStatus.safeGetStatusFromByte(buf.readByte());
 			
 			server.submit(() -> {
 				Level world = player.level;
 				
-				if (!packageSanityCheck(world, player, pos)) return;
+				if(!packageSanityCheck(world, player, pos)) return;
 				
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked

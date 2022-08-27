@@ -151,52 +151,49 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	public void insert(Player player, InteractionHand hand, boolean fullStack) {
 		ItemStack held = player.getItemInHand(hand);
 		
-		if(held.isEmpty() || !matches(held))
-        {
-            int matchingSlot = player.getInventory().findSlotMatchingItem(findFirstNonemptyStack());
-            if(matchingSlot == -1)
-            {
-                return;
-            }
-            held = player.getInventory().getItem(matchingSlot);
-            ItemStack leftover = placeIntoPackage(held, fullStack);
-            player.getInventory().setItem(matchingSlot, leftover);
-            return;
-        }
-        ItemStack leftover = placeIntoPackage(held, fullStack);
+		if(held.isEmpty() || !matches(held)) {
+			int matchingSlot = player.getInventory().findSlotMatchingItem(findFirstNonemptyStack());
+			if(matchingSlot == -1) {
+				return;
+			}
+			held = player.getInventory().getItem(matchingSlot);
+			ItemStack leftover = placeIntoPackage(held, fullStack);
+			player.getInventory().setItem(matchingSlot, leftover);
+			return;
+		}
+		ItemStack leftover = placeIntoPackage(held, fullStack);
 		player.setItemInHand(hand, leftover);
 	}
 
-    private ItemStack placeIntoPackage(ItemStack insertStack, boolean fullStack)
-    {
-        //Will never be more than one stack
-        int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), fullStack ? insertStack.getCount() : 1);
-        int insertedAmount = 0;
-
-        ListIterator<ItemStack> stackerator = inv.listIterator();
-        while(amountToInsert > 0 && stackerator.hasNext()) {
-            ItemStack stack = stackerator.next();
-
-            if(stack.isEmpty()) {
-                ItemStack newStack = insertStack.copy();
-                newStack.setCount(amountToInsert);
-                insertedAmount += amountToInsert;
-                stackerator.set(newStack);
-                break;
-            } else {
-                int increaseAmount = Math.min(maxStackAmountAllowed(stack) - stack.getCount(), amountToInsert);
-                if(increaseAmount > 0) {
-                    stack.grow(increaseAmount);
-                    amountToInsert -= increaseAmount;
-                    insertedAmount += increaseAmount;
-                }
-            }
-        }
-        setChanged();
-        ItemStack leftover = insertStack.copy();
-        leftover.shrink(insertedAmount);
-        return leftover;
-    }
+	private ItemStack placeIntoPackage(ItemStack insertStack, boolean fullStack) {
+		//Will never be more than one stack
+		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), fullStack ? insertStack.getCount() : 1);
+		int insertedAmount = 0;
+		
+		ListIterator<ItemStack> stackerator = inv.listIterator();
+		while(amountToInsert > 0 && stackerator.hasNext()) {
+			ItemStack stack = stackerator.next();
+			
+			if(stack.isEmpty()) {
+				ItemStack newStack = insertStack.copy();
+				newStack.setCount(amountToInsert);
+				insertedAmount += amountToInsert;
+				stackerator.set(newStack);
+				break;
+			} else {
+				int increaseAmount = Math.min(maxStackAmountAllowed(stack) - stack.getCount(), amountToInsert);
+				if(increaseAmount > 0) {
+					stack.grow(increaseAmount);
+					amountToInsert -= increaseAmount;
+					insertedAmount += increaseAmount;
+				}
+			}
+		}
+		setChanged();
+		ItemStack leftover = insertStack.copy();
+		leftover.shrink(insertedAmount);
+		return leftover;
+	}
 	
 	public void take(Player player, boolean fullStack) {
 		ItemStack contained = findFirstNonemptyStack();

@@ -33,7 +33,7 @@ public class PClientBlockEventHandlers {
 					if(world.isClientSide) {
 						//Hack to work around AttackBlockCallback getting fired way too often (every tick, plus an extra time when you first punch)
 						//TODO this is ass figure out how to fix it actually
-						if (pos.equals(lastPunchPos) && (world.getGameTime() - lastPunchTick < 4)) return InteractionResult.SUCCESS;
+						if(pos.equals(lastPunchPos) && (world.getGameTime() - lastPunchTick < 4)) return InteractionResult.SUCCESS;
 						lastPunchPos = pos;
 						lastPunchTick = world.getGameTime();
 						
@@ -58,28 +58,23 @@ public class PClientBlockEventHandlers {
 			BlockEntity pkg = world.getBlockEntity(pos);
 			if(state.getBlock() instanceof PackageBlock && pkg instanceof PackageBlockEntity) {
 				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
-				if(direction == frontDir)
-                {
-                    if (world.isClientSide)
-                    {
-                        final ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
-                        if (contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand)))
-                        {
-                            PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
-                            return InteractionResult.CONSUME;
-                        }
-                        if(!contentsOrEmpty.isEmpty())
-                        {
-                            int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
-                            if(slot != -1)
-                            {
-                                // This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
-                                PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
-                                return InteractionResult.CONSUME;
-                            }
-                        }
-                    }
-                }
+				if(direction == frontDir) {
+					if(world.isClientSide) {
+						final ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
+						if(contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand))) {
+							PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
+							return InteractionResult.CONSUME;
+						}
+						if(!contentsOrEmpty.isEmpty()) {
+							int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
+							if(slot != -1) {
+								// This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
+								PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
+								return InteractionResult.CONSUME;
+							}
+						}
+					}
+				}
 			}
 			
 			return InteractionResult.PASS;
