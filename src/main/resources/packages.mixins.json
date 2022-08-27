@@ -5,7 +5,9 @@
   "mixins": [
   ],
   "client": [
-    "client.ItemRendererMixin"
+    "client.ItemRendererMixin",
+		"client.MixinMinecraft",
+		"client.MixinMultiPlayerGameMode"
   ],
   "injectors": {
     "defaultRequire": 1
