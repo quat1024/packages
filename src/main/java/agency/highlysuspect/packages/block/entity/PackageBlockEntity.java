@@ -5,6 +5,7 @@ import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
+import agency.highlysuspect.packages.net.BarrelAction;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -148,7 +149,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	//<editor-fold desc="Interactions">
 	//Does not mutate 'held', always returns a different item stack.
 	//kinda like forge item handlers lol...
-	public void insert(Player player, InteractionHand hand, boolean fullStack) {
+	public void insert(Player player, InteractionHand hand, BarrelAction action) {
 		ItemStack held = player.getItemInHand(hand);
 		
 		if(held.isEmpty() || !matches(held)) {
@@ -157,17 +158,17 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 				return;
 			}
 			held = player.getInventory().getItem(matchingSlot);
-			ItemStack leftover = placeIntoPackage(held, fullStack);
+			ItemStack leftover = placeIntoPackage(held, action);
 			player.getInventory().setItem(matchingSlot, leftover);
 			return;
 		}
-		ItemStack leftover = placeIntoPackage(held, fullStack);
+		ItemStack leftover = placeIntoPackage(held, action);
 		player.setItemInHand(hand, leftover);
 	}
 
-	private ItemStack placeIntoPackage(ItemStack insertStack, boolean fullStack) {
+	private ItemStack placeIntoPackage(ItemStack insertStack, BarrelAction action) {
 		//Will never be more than one stack
-		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), fullStack ? insertStack.getCount() : 1);
+		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == BarrelAction.STACK ? insertStack.getCount() : 1);
 		int insertedAmount = 0;
 		
 		ListIterator<ItemStack> stackerator = inv.listIterator();
@@ -195,11 +196,11 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		return leftover;
 	}
 	
-	public void take(Player player, boolean fullStack) {
+	public void take(Player player, BarrelAction action) {
 		ItemStack contained = findFirstNonemptyStack();
 		if(contained.isEmpty()) return;
 		
-		int removeTotal = fullStack ? maxStackAmountAllowed(contained) : 1;
+		int removeTotal = action == BarrelAction.STACK ? maxStackAmountAllowed(contained) : 1;
 		List<ItemStack> stacksToGive = new ArrayList<>();
 		
 		ListIterator<ItemStack> stackerator = inv.listIterator();

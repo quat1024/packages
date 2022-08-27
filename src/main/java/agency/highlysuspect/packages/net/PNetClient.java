@@ -7,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 
 public class PNetClient {
-	public static void requestInsert(BlockPos pos, InteractionHand hand, PSneakingStatus mode) {
+	public static void requestInsert(BlockPos pos, InteractionHand hand, BarrelAction mode) {
 		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);
 		buf.writeBoolean(hand == InteractionHand.MAIN_HAND);
@@ -15,7 +15,7 @@ public class PNetClient {
 		ClientPlayNetworking.send(PMessageTypes.INSERT, buf);
 	}
 	
-	public static void requestTake(BlockPos pos, PSneakingStatus mode) {
+	public static void requestTake(BlockPos pos, BarrelAction mode) {
 		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);
 		buf.writeByte(mode.netValue);

@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.net.PNetClient;
-import agency.highlysuspect.packages.net.PSneakingStatus;
+import agency.highlysuspect.packages.net.BarrelAction;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -37,7 +37,7 @@ public class PClientBlockEventHandlers {
 						lastPunchPos = pos;
 						lastPunchTick = world.getGameTime();
 						
-						PNetClient.requestTake(pos, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
+						PNetClient.requestTake(pos, player.isShiftKeyDown() ? BarrelAction.STACK : BarrelAction.ONE);
 					}
 					
 					return InteractionResult.SUCCESS;
@@ -62,14 +62,14 @@ public class PClientBlockEventHandlers {
 					if(world.isClientSide) {
 						final ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
 						if(contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand))) {
-							PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
+							PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? BarrelAction.STACK : BarrelAction.ONE);
 							return InteractionResult.CONSUME;
 						}
 						if(!contentsOrEmpty.isEmpty()) {
 							int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
 							if(slot != -1) {
 								// This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
-								PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? PSneakingStatus.IS_SNEAKING : PSneakingStatus.NOT_SNEAKING);
+								PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? BarrelAction.STACK : BarrelAction.ONE);
 								return InteractionResult.CONSUME;
 							}
 						}
