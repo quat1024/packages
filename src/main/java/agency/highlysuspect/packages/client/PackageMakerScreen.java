@@ -27,11 +27,12 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	
 	private Button buddon;
 	
-	private static final String[] SLOTS_TO_TOOLTIPS = Util.make(new String[3], (m) -> {
-		m[PackageMakerBlockEntity.FRAME_SLOT] = Init.MODID + ".package_maker.frame";
-		m[PackageMakerBlockEntity.INNER_SLOT] = Init.MODID + ".package_maker.inner";
-		m[PackageMakerBlockEntity.DYE_SLOT] = Init.MODID + ".package_maker.dye";
-	});
+	private static final String[] SLOTS_TO_TOOLTIPS = new String[3];
+	static {
+		SLOTS_TO_TOOLTIPS[PackageMakerBlockEntity.FRAME_SLOT] = Init.MODID + ".package_maker.frame";
+		SLOTS_TO_TOOLTIPS[PackageMakerBlockEntity.INNER_SLOT] = Init.MODID + ".package_maker.inner";
+		SLOTS_TO_TOOLTIPS[PackageMakerBlockEntity.DYE_SLOT] = Init.MODID + ".package_maker.dye";
+	}
 	
 	@Override
 	protected void init() {
@@ -66,10 +67,10 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		
 		PackageMakerMenu menu = getMenu();
 		
-		if(!getMenu().slots.get(0).hasItem()) {
+		if(!getMenu().slots.get(0).hasItem() && menu.container instanceof PackageMakerBlockEntity be) {
 			//draw a preview of the crafted item behind a transparent overlay
 			//I guess this makes sense ?? lmao
-			ItemStack dryRun = menu.be.whatWouldBeCrafted();
+			ItemStack dryRun = be.whatWouldBeCrafted();
 			if (!dryRun.isEmpty()) {
 				int x = menu.slots.get(0).x;
 				int y = menu.slots.get(0).y;

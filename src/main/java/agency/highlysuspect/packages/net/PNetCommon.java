@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.net;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
+import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
@@ -50,9 +51,9 @@ public class PNetCommon {
 		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.PACKAGE_CRAFT, (server, player, handler, buf, resp) -> {
 			boolean all = buf.readBoolean();
 			server.submit(() -> {
-				if(player.containerMenu instanceof PackageMakerMenu) {
+				if(player.containerMenu instanceof PackageMakerMenu menu && menu.container instanceof PackageMakerBlockEntity be) {
 					for(int i = 0; i < 64; i++) { //Janky hack mate
-						((PackageMakerMenu) player.containerMenu).be.performCraft();
+						be.performCraft();
 						if(!all) return;
 					}
 				}

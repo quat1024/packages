@@ -9,6 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -19,42 +20,36 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class PackageMakerMenu extends AbstractContainerMenu {
-	public static PackageMakerMenu constructFromNetwork(int syncId, Inventory inventory, FriendlyByteBuf buf) {
-		BlockPos pos = buf.readBlockPos();
-		
-		BlockEntity be = inventory.player.level.getBlockEntity(pos);
-		if(!(be instanceof PackageMakerBlockEntity)) throw new IllegalStateException("no package maker at " + pos.toString());
-		
-		return new PackageMakerMenu(syncId, inventory, (PackageMakerBlockEntity) be);
+	public PackageMakerMenu(int syncId, Inventory playerInventory) {
+		this(syncId, playerInventory, new SimpleContainer(4));
 	}
 	
-	public PackageMakerMenu(int syncId, Inventory playerInventory, PackageMakerBlockEntity be) {
+	public PackageMakerMenu(int syncId, Inventory playerInventory, Container container) {
 		super(PMenuTypes.PACKAGE_MAKER, syncId);
-		this.be = be;
+		this.container = container;
 		
-		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.OUTPUT_SLOT, 134, 35, null));
-		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.FRAME_SLOT, 26, 17, FRAME_BG));
-		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.INNER_SLOT, 26, 35, INNER_BG));
-		addSlot(new WorkingSlot(be, PackageMakerBlockEntity.DYE_SLOT, 26, 53, DYE_BG));
+		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.OUTPUT_SLOT, 134, 35, null));
+		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.FRAME_SLOT, 26, 17, FRAME_BG));
+		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.INNER_SLOT, 26, 35, INNER_BG));
+		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.DYE_SLOT, 26, 53, DYE_BG));
 		
 		//lazy cut-paste from Generic3x3Container
-		int m, l;
-		for(m = 0; m < 3; ++m) {
-			for(l = 0; l < 9; ++l) {
-				this.addSlot(new Slot(playerInventory, l + m * 9 + 9, 8 + l * 18, 84 + m * 18));
+		for(int row = 0; row < 3; ++row) {
+			for(int col = 0; col < 9; ++col) {
+				this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
 			}
 		}
 		
-		for(m = 0; m < 9; ++m) {
-			this.addSlot(new Slot(playerInventory, m, 8 + m * 18, 142));
+		for(int col = 0; col < 9; ++col) {
+			this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
 		}
 	}
 	
-	public final PackageMakerBlockEntity be;
+	public final Container container;
 	
 	@Override
 	public boolean stillValid(Player player) {
-		return be.stillValid(player);
+		return container.stillValid(player);
 	}
 	
 	public ItemStack quickMoveStack(Player player, int invSlot) {
@@ -92,8 +87,8 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 	public static final ResourceLocation INNER_BG = Init.id("gui/slot_inner");
 	public static final ResourceLocation DYE_BG = Init.id("gui/slot_dye");
 	
-	public static class WorkingSlot extends Slot {
-		public WorkingSlot(Container inventory, int slot, int x, int y, @Nullable ResourceLocation background) {
+	public static class CanPlaceItemRespectingSlot extends Slot {
+		public CanPlaceItemRespectingSlot(Container inventory, int slot, int x, int y, @Nullable ResourceLocation background) {
 			super(inventory, slot, x, y);
 			this.background = background;
 		}
@@ -103,7 +98,7 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		
 		@Override
 		public boolean mayPlace(ItemStack stack) {
-			//Regular Slot doesn't delegate to its Container
+			//Regular Slot doesn't delegate to Container#canPlaceItem
 			return container.canPlaceItem(getContainerSlot(), stack);
 		}
 		

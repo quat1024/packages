@@ -6,20 +6,18 @@ import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
 import agency.highlysuspect.packages.junk.PItemTags;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,7 +33,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, ExtendedScreenHandlerFactory, RenderAttachmentBlockEntity {
+public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, MenuProvider, RenderAttachmentBlockEntity {
 	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE_MAKER, pos, state);
 	}
@@ -136,18 +134,6 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	}
 	//endregion
 	
-	//region ExtendedScreenHandlerFactory
-	@Override
-	public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
-		buf.writeBlockPos(worldPosition);
-	}
-	
-	@Override
-	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-		return new PackageMakerMenu(syncId, inv, this);
-	}
-	//endregion
-	
 	//region WorldlyContainer (f.k.a. SidedInventory)
 	public static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};
 	public static final int[] INNER_AND_DYE = new int[] {INNER_SLOT, DYE_SLOT};
@@ -225,7 +211,12 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	}
 	//endregion
 	
-	//region Custom name cruft
+	//region MenuProvider
+	@Override
+	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
+		return new PackageMakerMenu(syncId, inv, this);
+	}
+	
 	private Component customName;
 	
 	@Override
