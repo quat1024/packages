@@ -47,18 +47,6 @@ public class PNetCommon {
 				be.take(player, action);
 			});
 		});
-		
-		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.PACKAGE_CRAFT, (server, player, handler, buf, resp) -> {
-			boolean all = buf.readBoolean();
-			server.submit(() -> {
-				if(player.containerMenu instanceof PackageMakerMenu menu && menu.container instanceof PackageMakerBlockEntity be) {
-					for(int i = 0; i < 64; i++) { //Janky hack mate
-						be.performCraft();
-						if(!all) return;
-					}
-				}
-			});
-		});
 	}
 	
 	@SuppressWarnings({"RedundantIfStatement", "deprecation", "BooleanMethodIsAlwaysInverted"})

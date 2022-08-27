@@ -21,7 +21,7 @@ public class ClientInit implements ClientModInitializer {
 		PModelStuff.onInitializeClient();
 		
 		MenuScreens.register(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
-		PackageMakerScreen.onInitializeClient();
+		PackageMakerScreen.initIcons();
 		
 		PClientBlockEventHandlers.onInitializeClient();
 		

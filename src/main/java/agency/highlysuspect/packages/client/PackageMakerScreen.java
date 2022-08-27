@@ -3,11 +3,9 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.Init;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
-import agency.highlysuspect.packages.net.PNetClient;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
-import net.minecraft.Util;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -18,6 +16,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
 	private static final ResourceLocation TEXTURE = Init.id("textures/gui/package_maker.png");
 	
@@ -25,20 +26,29 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		super(menu, inventory, title);
 	}
 	
-	private Button buddon;
+	private Button craftButton;
 	
-	private static final String[] SLOTS_TO_TOOLTIPS = new String[3];
+	private static final Map<Integer, String> SLOTS_TO_TOOLTIPS = new HashMap<>();
 	static {
-		SLOTS_TO_TOOLTIPS[PackageMakerBlockEntity.FRAME_SLOT] = Init.MODID + ".package_maker.frame";
-		SLOTS_TO_TOOLTIPS[PackageMakerBlockEntity.INNER_SLOT] = Init.MODID + ".package_maker.inner";
-		SLOTS_TO_TOOLTIPS[PackageMakerBlockEntity.DYE_SLOT] = Init.MODID + ".package_maker.dye";
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.FRAME_SLOT, Init.MODID + ".package_maker.frame");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.INNER_SLOT, Init.MODID + ".package_maker.inner");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.DYE_SLOT, Init.MODID + ".package_maker.dye");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.OUTPUT_SLOT, Init.MODID + ".package_maker.result");
 	}
 	
 	@Override
 	protected void init() {
 		super.init();
-		buddon = new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> PNetClient.requestPackageMakerCraft(hasShiftDown()));
-		addWidget(buddon);
+		craftButton = addWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> {
+			if(hasShiftDown()) sendButtonClick(1);
+			else sendButtonClick(0);
+		}));
+	}
+	
+	private void sendButtonClick(int id) {
+		assert this.minecraft != null;
+		assert this.minecraft.gameMode != null;
+		this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, id);
 	}
 	
 	public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
@@ -49,17 +59,11 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		//End copy paste
 		
 		if(hoveredSlot != null && !hoveredSlot.hasItem()) {
-			//This is jank as hell but it works good enough
-			//TODO what the hec
-			for(int i = PackageMakerBlockEntity.FRAME_SLOT; i <= PackageMakerBlockEntity.DYE_SLOT; i++) {
-				if(hoveredSlot.index == i + 1) {
-					renderTooltip(matrices, new TranslatableComponent(SLOTS_TO_TOOLTIPS[i]), mouseX, mouseY);
-					break;
-				}
-			}
+			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
+			if(tooltip != null) renderTooltip(matrices, new TranslatableComponent(tooltip), mouseX, mouseY);
 		}
 		
-		buddon.render(matrices, mouseX, mouseY, delta);
+		craftButton.render(matrices, mouseX, mouseY, delta);
 	}
 	
 	protected void renderLabels(PoseStack matrices, int mouseX, int mouseY) {
@@ -96,7 +100,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		this.blit(matrices, i, j, 0, 0, this.imageWidth, this.imageHeight);
 	}
 	
-	public static void onInitializeClient() {
+	public static void initIcons() {
 		ClientSpriteRegistryCallback.event(TextureAtlas.LOCATION_BLOCKS).register((tex, reg) -> {
 			reg.register(PackageMakerMenu.FRAME_BG);
 			reg.register(PackageMakerMenu.INNER_BG);

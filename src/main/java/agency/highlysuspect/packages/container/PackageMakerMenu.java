@@ -5,8 +5,6 @@ import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -16,7 +14,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class PackageMakerMenu extends AbstractContainerMenu {
@@ -28,10 +25,10 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		super(PMenuTypes.PACKAGE_MAKER, syncId);
 		this.container = container;
 		
-		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.OUTPUT_SLOT, 134, 35, null));
 		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.FRAME_SLOT, 26, 17, FRAME_BG));
 		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.INNER_SLOT, 26, 35, INNER_BG));
 		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.DYE_SLOT, 26, 53, DYE_BG));
+		addSlot(new CanPlaceItemRespectingSlot(container, PackageMakerBlockEntity.OUTPUT_SLOT, 134, 35, null));
 		
 		//lazy cut-paste from Generic3x3Container
 		for(int row = 0; row < 3; ++row) {
@@ -43,6 +40,21 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		for(int col = 0; col < 9; ++col) {
 			this.addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
 		}
+	}
+	
+	@Override
+	public boolean clickMenuButton(Player player, int id) {
+		if(id == 0 || id == 1) {
+			if(container instanceof PackageMakerBlockEntity be) {
+				boolean all = id == 1;
+				for(int i = 0; i < (all ? 64 : 1); i++) { //Janky hack mate
+					be.performCraft();
+				}
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public final Container container;

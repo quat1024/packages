@@ -21,10 +21,4 @@ public class PNetClient {
 		buf.writeByte(mode.netValue);
 		ClientPlayNetworking.send(PMessageTypes.TAKE, buf);
 	}
-	
-	public static void requestPackageMakerCraft(boolean all) {
-		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
-		buf.writeBoolean(all);
-		ClientPlayNetworking.send(PMessageTypes.PACKAGE_CRAFT, buf);
-	}
 }
