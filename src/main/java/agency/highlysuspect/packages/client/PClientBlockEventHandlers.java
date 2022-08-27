@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.net.PNetClient;
+import agency.highlysuspect.packages.net.BarrelAction;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -10,6 +11,7 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -31,11 +33,11 @@ public class PClientBlockEventHandlers {
 					if(world.isClientSide) {
 						//Hack to work around AttackBlockCallback getting fired way too often (every tick, plus an extra time when you first punch)
 						//TODO this is ass figure out how to fix it actually
-						if (pos.equals(lastPunchPos) && (world.getGameTime() - lastPunchTick < 4)) return InteractionResult.SUCCESS;
+						if(pos.equals(lastPunchPos) && (world.getGameTime() - lastPunchTick < 4)) return InteractionResult.SUCCESS;
 						lastPunchPos = pos;
 						lastPunchTick = world.getGameTime();
 						
-						PNetClient.requestTake(pos, player.isShiftKeyDown() ? 1 : 0);
+						PNetClient.requestTake(pos, player.isShiftKeyDown() ? BarrelAction.STACK : BarrelAction.ONE);
 					}
 					
 					return InteractionResult.SUCCESS;
@@ -58,9 +60,20 @@ public class PClientBlockEventHandlers {
 				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 				if(direction == frontDir) {
 					if(world.isClientSide) {
-						PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? 1 : 0);
+						final ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
+						if(contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand))) {
+							PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? BarrelAction.STACK : BarrelAction.ONE);
+							return InteractionResult.CONSUME;
+						}
+						if(!contentsOrEmpty.isEmpty()) {
+							int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
+							if(slot != -1) {
+								// This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
+								PNetClient.requestInsert(pos, hand, player.isShiftKeyDown() ? BarrelAction.STACK : BarrelAction.ONE);
+								return InteractionResult.CONSUME;
+							}
+						}
 					}
-					return InteractionResult.SUCCESS;
 				}
 			}
 			

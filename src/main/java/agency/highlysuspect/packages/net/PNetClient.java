@@ -7,18 +7,18 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 
 public class PNetClient {
-	public static void requestInsert(BlockPos pos, InteractionHand hand, int mode) { //TODO magic ints bad
+	public static void requestInsert(BlockPos pos, InteractionHand hand, BarrelAction mode) {
 		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);
 		buf.writeBoolean(hand == InteractionHand.MAIN_HAND);
-		buf.writeByte(mode);
+		buf.writeByte(mode.netValue);
 		ClientPlayNetworking.send(PMessageTypes.INSERT, buf);
 	}
 	
-	public static void requestTake(BlockPos pos, int mode) {
+	public static void requestTake(BlockPos pos, BarrelAction mode) {
 		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		buf.writeBlockPos(pos);
-		buf.writeByte(mode);
+		buf.writeByte(mode.netValue);
 		ClientPlayNetworking.send(PMessageTypes.TAKE, buf);
 	}
 	

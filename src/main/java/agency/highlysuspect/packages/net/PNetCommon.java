@@ -16,7 +16,7 @@ public class PNetCommon {
 		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.INSERT, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
 			InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-			int mode = buf.readByte();
+			BarrelAction action = BarrelAction.get(buf.readByte());
 			
 			server.submit(() -> {
 				Level world = player.level;
@@ -27,23 +27,23 @@ public class PNetCommon {
 				assert be != null; //sanity checked
 				
 				//TODO: fix this insertion logic, probably move it out of the BE (just needed somewhere to put it for now)
-				be.insert(player, hand, mode == 1);
+				be.insert(player, hand, action);
 			});
 		});
 		
 		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.TAKE, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
-			int mode = buf.readByte();
+			BarrelAction action = BarrelAction.get(buf.readByte());
 			
 			server.submit(() -> {
 				Level world = player.level;
 				
-				if (!packageSanityCheck(world, player, pos)) return;
+				if(!packageSanityCheck(world, player, pos)) return;
 				
 				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
 				assert be != null; //sanity checked
 				
-				be.take(player, mode == 1);
+				be.take(player, action);
 			});
 		});
 		
