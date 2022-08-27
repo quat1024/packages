@@ -226,14 +226,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	//<editor-fold desc="WorldlyContainer">
 	@Override
 	public int[] getSlotsForFace(Direction side) {
-		if(level == null) return NO_SLOTS;
-		
-		BlockState state = level.getBlockState(worldPosition);
-		if(state.getBlock() instanceof PackageBlock) {
-			return state.getValue(PackageBlock.FACING).primaryDirection == side ? NO_SLOTS : ALL_SLOTS;
-		}
-		
-		return NO_SLOTS;
+		return level == null ? NO_SLOTS : ALL_SLOTS;
 	}
 	
 	@Override
