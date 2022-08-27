@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.net;
 
 import agency.highlysuspect.packages.block.PackageBlock;
-import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
+import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;

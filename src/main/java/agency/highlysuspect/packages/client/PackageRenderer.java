@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PackageBlock;
-import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
+import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
@@ -22,8 +22,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-public class PackageBlockEntityRenderer implements BlockEntityRenderer<PackageBlockEntity> {
-	public PackageBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> {
+	public PackageRenderer(BlockEntityRendererProvider.Context context) {
 		textRenderer = context.getFont();
 	}
 	

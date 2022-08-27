@@ -1,10 +1,8 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PBlocks;
-import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
+import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
-import agency.highlysuspect.packages.client.screen.PScreens;
-import agency.highlysuspect.packages.client.screen.PackageMakerScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -24,7 +22,7 @@ public class ClientInit implements ClientModInitializer {
 		PClientBlockEventHandlers.onInitializeClient();
 		
 		//block entity renderers
-		BlockEntityRendererRegistry.register(PBlockEntityTypes.PACKAGE, PackageBlockEntityRenderer::new);
+		BlockEntityRendererRegistry.register(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
 		
 		//BlockRenderLayerMap entries
 		BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutoutMipped(), PBlocks.PACKAGE_MAKER);

@@ -1,6 +1,6 @@
-package agency.highlysuspect.packages.client.model;
+package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.PackagesInit;
+import agency.highlysuspect.packages.Init;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.junk.PUtil;
@@ -34,8 +34,8 @@ import java.util.*;
 import java.util.function.Function;
 
 public record PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
-	private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(PackagesInit.MODID, "special/frame"));
-	private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, new ResourceLocation(PackagesInit.MODID, "special/inner"));
+	private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/frame"));
+	private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/inner"));
 	
 	public record Spec(ResourceLocation blockModelId) {
 		public Collection<ResourceLocation> modelDependencies() {

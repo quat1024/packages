@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PackageBlock;
-import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
+import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.BarrelAction;
 import net.fabricmc.api.EnvType;

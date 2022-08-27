@@ -1,7 +1,7 @@
-package agency.highlysuspect.packages.client.screen;
+package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.block.entity.PackageMakerBlockEntity;
+import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.net.PNetClient;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -19,7 +19,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
-	private static final ResourceLocation TEXTURE = new ResourceLocation(PackagesInit.MODID, "textures/gui/package_maker.png");
+	private static final ResourceLocation TEXTURE = Init.id("textures/gui/package_maker.png");
 	
 	public PackageMakerScreen(PackageMakerMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
@@ -28,15 +28,15 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	private Button buddon;
 	
 	private static final String[] SLOTS_TO_TOOLTIPS = Util.make(new String[3], (m) -> {
-		m[PackageMakerBlockEntity.FRAME_SLOT] = PackagesInit.MODID + ".package_maker.frame";
-		m[PackageMakerBlockEntity.INNER_SLOT] = PackagesInit.MODID + ".package_maker.inner";
-		m[PackageMakerBlockEntity.DYE_SLOT] = PackagesInit.MODID + ".package_maker.dye";
+		m[PackageMakerBlockEntity.FRAME_SLOT] = Init.MODID + ".package_maker.frame";
+		m[PackageMakerBlockEntity.INNER_SLOT] = Init.MODID + ".package_maker.inner";
+		m[PackageMakerBlockEntity.DYE_SLOT] = Init.MODID + ".package_maker.dye";
 	});
 	
 	@Override
 	protected void init() {
 		super.init();
-		buddon = new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(PackagesInit.MODID + ".package_maker.craft_button"), (button) -> PNetClient.requestPackageMakerCraft(hasShiftDown()));
+		buddon = new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> PNetClient.requestPackageMakerCraft(hasShiftDown()));
 		addWidget(buddon);
 	}
 	

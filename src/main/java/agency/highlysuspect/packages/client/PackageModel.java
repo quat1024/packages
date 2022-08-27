@@ -1,7 +1,7 @@
-package agency.highlysuspect.packages.client.model;
+package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
+import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.junk.PackageStyle;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
@@ -23,10 +23,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class PackageMakerModel implements UnbakedModel {
-	public static final ResourceLocation PACKAGE_MAKER_SPECIAL = new ResourceLocation(PackagesInit.MODID, "special/package_maker");
-	public static final ResourceLocation ITEM_SPECIAL = new ResourceLocation(PackagesInit.MODID, "item/package_maker");
-	private static final PackageModelBakery.Spec modelBakerySpec = new PackageModelBakery.Spec(new ResourceLocation(PackagesInit.MODID, "block/package_maker"));
+public class PackageModel implements UnbakedModel {
+	public static final ResourceLocation PACKAGE_SPECIAL = Init.id("special/package");
+	public static final ResourceLocation ITEM_SPECIAL = Init.id("item/package");
+	private static final PackageModelBakery.Spec modelBakerySpec = new PackageModelBakery.Spec(Init.id("block/package"));
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
@@ -58,15 +58,19 @@ public class PackageMakerModel implements UnbakedModel {
 		
 		@Override
 		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
-			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageMakerRenderAttachment attachment) {
-				context.meshConsumer().accept(bakery.bake(attachment.color(), attachment.frameBlock(), attachment.innerBlock()));
+			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageStyle style) {
+				emitFrame(context, style);
 			}
 		}
 		
 		@Override
 		public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-			//filters out all the special quads
-			context.meshConsumer().accept(bakery.bake(null, null, null));
+			emitFrame(context, PackageStyle.fromItemStack(stack));
+		}
+		
+		private void emitFrame(RenderContext context, PackageStyle style) {
+			//TODO: Reimplement model caching.
+			context.meshConsumer().accept(bakery.bake(style));
 		}
 	}
 }

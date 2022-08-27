@@ -1,7 +1,5 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.block.entity.PBlockEntityTypes;
-import agency.highlysuspect.packages.block.entity.PackageBlockEntity;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;

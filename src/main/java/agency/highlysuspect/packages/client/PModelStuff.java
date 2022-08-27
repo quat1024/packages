@@ -1,8 +1,6 @@
 package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.PackagesInit;
-import agency.highlysuspect.packages.client.model.PackageMakerModel;
-import agency.highlysuspect.packages.client.model.PackageModel;
+import agency.highlysuspect.packages.Init;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
@@ -29,7 +27,7 @@ public class PModelStuff {
 			return null;
 		});
 		
-		ResourceLocation id = new ResourceLocation(PackagesInit.MODID, "dump_caches");
+		ResourceLocation id = Init.id("dump_caches");
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
 			new SimpleSynchronousResourceReloadListener() {
 				@Override

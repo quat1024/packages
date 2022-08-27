@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.mixin.client;
 
-import agency.highlysuspect.packages.client.PackageBlockEntityRenderer;
+import agency.highlysuspect.packages.client.PackageRenderer;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -28,8 +28,8 @@ public class ItemRendererMixin {
 			PItems.PACKAGE.getContainedStack(stack).ifPresent(inner -> {
 					matrixStack.pushPose();
 					model.getTransforms().getTransform(transformMode).apply(invert, matrixStack);
-					PackageBlockEntityRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);
-					PackageBlockEntityRenderer.drawItem(matrixStack, vertexConsumerProvider, inner, light);
+					PackageRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);
+					PackageRenderer.drawItem(matrixStack, vertexConsumerProvider, inner, light);
 					matrixStack.popPose();
 				}
 			);
