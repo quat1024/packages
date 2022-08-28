@@ -40,17 +40,17 @@ public class PClientBlockEventHandlers {
 		if(player.isSpectator()) return false;
 		if(!level.isClientSide) return false; //Integrated server sometimes calls startDestroyBlock too
 		
-		if(causeOfPunch == Hell.CONTINUE_ATTACK) {
-			return true;
-		} else if(causeOfPunch != Hell.START_ATTACK) return false;
-		causeOfPunch = null;
-		
 		BlockState state = level.getBlockState(pos);
 		if(!(state.getBlock() instanceof PackageBlock)) return false;
-		if(player.getItemInHand(InteractionHand.MAIN_HAND).isCorrectToolForDrops(state)) return false; //So it's easier to break the package
 		
 		Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 		if(direction != frontDir) return false;
+		
+		if(player.getItemInHand(InteractionHand.MAIN_HAND).isCorrectToolForDrops(state)) return false; //So it's easier to break the package
+		
+		if(causeOfPunch == Hell.CONTINUE_ATTACK) return true; //Cancels further mining of the block
+		else if(causeOfPunch != Hell.START_ATTACK) return false;
+		causeOfPunch = null;
 		
 		PNetClient.performAction(pos, InteractionHand.MAIN_HAND, player.isShiftKeyDown() ? PackageAction.TAKE_STACK : PackageAction.TAKE_ONE);
 		return true;
