@@ -145,6 +145,11 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	}
 	
 	//<editor-fold desc="Interactions">
+	public void performAction(Player player, InteractionHand hand, PackageAction action) {
+		if(action.isInsert()) insert(player, hand, action);
+		else take(player, action);
+	}
+	
 	//Does not mutate 'held', always returns a different item stack.
 	//kinda like forge item handlers lol...
 	public void insert(Player player, InteractionHand hand, PackageAction action) {
@@ -166,7 +171,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 
 	private ItemStack placeIntoPackage(ItemStack insertStack, PackageAction action) {
 		//Will never be more than one stack
-		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == PackageAction.STACK ? insertStack.getCount() : 1);
+		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == PackageAction.INSERT_STACK ? insertStack.getCount() : 1);
 		int insertedAmount = 0;
 		
 		ListIterator<ItemStack> stackerator = inv.listIterator();
@@ -198,7 +203,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		ItemStack contained = findFirstNonemptyStack();
 		if(contained.isEmpty()) return;
 		
-		int removeTotal = action == PackageAction.STACK ? maxStackAmountAllowed(contained) : 1;
+		int removeTotal = action == PackageAction.TAKE_STACK ? maxStackAmountAllowed(contained) : 1;
 		List<ItemStack> stacksToGive = new ArrayList<>();
 		
 		ListIterator<ItemStack> stackerator = inv.listIterator();
