@@ -2,8 +2,6 @@ package agency.highlysuspect.packages.net;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
-import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
-import agency.highlysuspect.packages.container.PackageMakerMenu;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
@@ -17,7 +15,7 @@ public class PNetCommon {
 		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.INSERT, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
 			InteractionHand hand = buf.readBoolean() ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
-			BarrelAction action = BarrelAction.get(buf.readByte());
+			PackageAction action = PackageAction.get(buf.readByte());
 			
 			server.submit(() -> {
 				Level world = player.level;
@@ -34,7 +32,7 @@ public class PNetCommon {
 		
 		ServerPlayNetworking.registerGlobalReceiver(PMessageTypes.TAKE, (server, player, handler, buf, resp) -> {
 			BlockPos pos = buf.readBlockPos();
-			BarrelAction action = BarrelAction.get(buf.readByte());
+			PackageAction action = PackageAction.get(buf.readByte());
 			
 			server.submit(() -> {
 				Level world = player.level;

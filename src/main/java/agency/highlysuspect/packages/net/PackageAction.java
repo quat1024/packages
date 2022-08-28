@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.net;
 
-public enum BarrelAction {
+public enum PackageAction {
 	//Insert or remove one item from the barrel.
 	STACK((byte) 0),
 	
@@ -9,12 +9,12 @@ public enum BarrelAction {
 	
 	public final byte netValue;
 	
-	BarrelAction(byte netValue) {
+	PackageAction(byte netValue) {
 		this.netValue = netValue;
 	}
 	
-	static BarrelAction get(byte netValue) {
-		if(netValue < BarrelAction.values().length) return BarrelAction.values()[netValue];
+	static PackageAction get(byte netValue) {
+		if(netValue < PackageAction.values().length) return PackageAction.values()[netValue];
 		else return ONE;
 	}
 }

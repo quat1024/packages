@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.block;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageStyle;
-import agency.highlysuspect.packages.net.BarrelAction;
+import agency.highlysuspect.packages.net.PackageAction;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -147,7 +147,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	//<editor-fold desc="Interactions">
 	//Does not mutate 'held', always returns a different item stack.
 	//kinda like forge item handlers lol...
-	public void insert(Player player, InteractionHand hand, BarrelAction action) {
+	public void insert(Player player, InteractionHand hand, PackageAction action) {
 		ItemStack held = player.getItemInHand(hand);
 		
 		if(held.isEmpty() || !matches(held)) {
@@ -164,9 +164,9 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		player.setItemInHand(hand, leftover);
 	}
 
-	private ItemStack placeIntoPackage(ItemStack insertStack, BarrelAction action) {
+	private ItemStack placeIntoPackage(ItemStack insertStack, PackageAction action) {
 		//Will never be more than one stack
-		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == BarrelAction.STACK ? insertStack.getCount() : 1);
+		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == PackageAction.STACK ? insertStack.getCount() : 1);
 		int insertedAmount = 0;
 		
 		ListIterator<ItemStack> stackerator = inv.listIterator();
@@ -194,11 +194,11 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		return leftover;
 	}
 	
-	public void take(Player player, BarrelAction action) {
+	public void take(Player player, PackageAction action) {
 		ItemStack contained = findFirstNonemptyStack();
 		if(contained.isEmpty()) return;
 		
-		int removeTotal = action == BarrelAction.STACK ? maxStackAmountAllowed(contained) : 1;
+		int removeTotal = action == PackageAction.STACK ? maxStackAmountAllowed(contained) : 1;
 		List<ItemStack> stacksToGive = new ArrayList<>();
 		
 		ListIterator<ItemStack> stackerator = inv.listIterator();
