@@ -26,8 +26,6 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		super(menu, inventory, title);
 	}
 	
-	private Button craftButton;
-	
 	private static final Map<Integer, String> SLOTS_TO_TOOLTIPS = new HashMap<>();
 	static {
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.FRAME_SLOT, Init.MODID + ".package_maker.frame");
@@ -39,7 +37,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	@Override
 	protected void init() {
 		super.init();
-		craftButton = addWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> {
+		addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> {
 			if(hasShiftDown()) sendButtonClick(1);
 			else sendButtonClick(0);
 		}));
@@ -62,8 +60,6 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
 			if(tooltip != null) renderTooltip(matrices, new TranslatableComponent(tooltip), mouseX, mouseY);
 		}
-		
-		craftButton.render(matrices, mouseX, mouseY, delta);
 	}
 	
 	protected void renderLabels(PoseStack matrices, int mouseX, int mouseY) {
@@ -71,13 +67,13 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		
 		PackageMakerMenu menu = getMenu();
 		
-		if(!getMenu().slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).hasItem()) {
+		if(!menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).hasItem()) {
 			//draw a preview of the crafted item behind a transparent overlay
 			//I guess this makes sense ?? lmao
 			ItemStack dryRun = PackageMakerBlockEntity.whatWouldBeCrafted(
-				getMenu().slots.get(PackageMakerBlockEntity.FRAME_SLOT).getItem(),
-				getMenu().slots.get(PackageMakerBlockEntity.INNER_SLOT).getItem(),
-				getMenu().slots.get(PackageMakerBlockEntity.DYE_SLOT).getItem()
+				menu.slots.get(PackageMakerBlockEntity.FRAME_SLOT).getItem(),
+				menu.slots.get(PackageMakerBlockEntity.INNER_SLOT).getItem(),
+				menu.slots.get(PackageMakerBlockEntity.DYE_SLOT).getItem()
 			);
 			if (!dryRun.isEmpty()) {
 				int x = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).x;
