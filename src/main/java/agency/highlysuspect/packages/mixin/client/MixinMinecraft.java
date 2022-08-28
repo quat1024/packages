@@ -2,25 +2,32 @@ package agency.highlysuspect.packages.mixin.client;
 
 import agency.highlysuspect.packages.client.PClientBlockEventHandlers;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.phys.BlockHitResult;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
- * This is as kludgy as it looks, yes
  * @see PClientBlockEventHandlers
  */
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
-	@Inject(method = "startAttack", at = @At("HEAD"))
-	private void packages$startAttack(CallbackInfoReturnable<Boolean> cir) {
-		PClientBlockEventHandlers.causeOfPunch = PClientBlockEventHandlers.Hell.START_ATTACK;
-	}
+	@Shadow @Nullable public LocalPlayer player;
+	@Shadow @Nullable public ClientLevel level;
 	
-	@Inject(method = "continueAttack", at = @At("HEAD"))
-	private void packages$continueAttack(boolean bl, CallbackInfo ci) {
-		PClientBlockEventHandlers.causeOfPunch = PClientBlockEventHandlers.Hell.CONTINUE_ATTACK;
+	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
+	private void packages$startAttack$beforeStartDestroyingBlock(CallbackInfoReturnable<Boolean> cir, boolean miscLocal, BlockHitResult hit, BlockPos hitPos) {
+		if(PClientBlockEventHandlers.superEarlyStartAttack(player, level, hitPos, hit.getDirection())) {
+			player.swing(InteractionHand.MAIN_HAND);
+			cir.setReturnValue(true);
+		}
 	}
 }

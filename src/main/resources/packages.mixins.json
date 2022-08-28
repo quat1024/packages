@@ -6,8 +6,7 @@
   ],
   "client": [
     "client.ItemRendererMixin",
-		"client.MixinMinecraft",
-		"client.MixinMultiPlayerGameMode"
+		"client.MixinMinecraft"
   ],
   "injectors": {
     "defaultRequire": 1
