@@ -18,21 +18,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 	value = ItemRenderer.class,
 	priority = 990 //Earlier than Indigo's MixinItemRenderer, which uses the default of 1000
 )
-public class ItemRendererMixin {
+public class MixinItemRenderer {
 	@Inject(
 		method = "render",
 		at = @At("HEAD")
 	)
-	public void onRenderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType transformMode, boolean invert, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light, int overlay, BakedModel model, CallbackInfo ci) {
+	public void packages$renderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType transformMode, boolean invert, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light, int overlay, BakedModel model, CallbackInfo ci) {
 		if(stack.getItem() == PItems.PACKAGE) {
 			PItems.PACKAGE.getContainedStack(stack).ifPresent(inner -> {
-					matrixStack.pushPose();
-					model.getTransforms().getTransform(transformMode).apply(invert, matrixStack);
-					PackageRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);
-					PackageRenderer.drawItem(matrixStack, vertexConsumerProvider, inner, light);
-					matrixStack.popPose();
-				}
-			);
+				matrixStack.pushPose();
+				model.getTransforms().getTransform(transformMode).apply(invert, matrixStack);
+				PackageRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);
+				PackageRenderer.drawItem(matrixStack, vertexConsumerProvider, inner, light);
+				matrixStack.popPose();
+			});
 		}
 	}
 }

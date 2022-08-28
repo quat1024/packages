@@ -6,7 +6,7 @@
 		"MixinEntity"
   ],
   "client": [
-    "client.ItemRendererMixin",
+		"client.MixinItemRenderer",
 		"client.MixinMinecraft"
   ],
   "injectors": {
