@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.mixin.client;
 
 import agency.highlysuspect.packages.client.PClientBlockEventHandlers;
+import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,7 +26,7 @@ public class MixinMinecraft {
 	
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
 	private void packages$startAttack$beforeStartDestroyingBlock(CallbackInfoReturnable<Boolean> cir, boolean miscLocal, BlockHitResult hit, BlockPos hitPos) {
-		if(PClientBlockEventHandlers.superEarlyStartAttack(player, level, hitPos, hit.getDirection())) {
+		if(EarlyClientsideAttackBlockCallback.EVENT.invoker().interact(player, level, hitPos, hit.getDirection())) {
 			player.swing(InteractionHand.MAIN_HAND);
 			cir.setReturnValue(true);
 		}

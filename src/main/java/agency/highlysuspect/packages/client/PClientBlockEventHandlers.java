@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
+import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
 import net.fabricmc.api.EnvType;
@@ -20,13 +21,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 @Environment(EnvType.CLIENT)
 public class PClientBlockEventHandlers {
-	//Returning true will prevent MultiPlayerGameMode#startDestroyBlock from being called at all
-	public static boolean superEarlyStartAttack(Player player, Level level, BlockPos pos, Direction direction) {
-		if(!actionApplicable(player, level, pos, direction)) return false;
-		PNetClient.performAction(pos, InteractionHand.MAIN_HAND, player.isShiftKeyDown() ? PackageAction.TAKE_STACK : PackageAction.TAKE_ONE);
-		return true;
-	}
-	
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean actionApplicable(Player player, Level level, BlockPos pos, Direction direction) {
 		if(player.isSpectator()) return false;
@@ -39,8 +33,17 @@ public class PClientBlockEventHandlers {
 	}
 	
 	public static void onInitializeClient() {
+		EarlyClientsideAttackBlockCallback.EVENT.register((player, level, pos, direction) -> {
+			if(!actionApplicable(player, level, pos, direction)) return false;
+			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, player.isShiftKeyDown() ? PackageAction.TAKE_STACK : PackageAction.TAKE_ONE);
+			return true;
+		});
+		
+		//This callback is usually fired when you start left-clicking a block, but also every tick while you continue to left click it.
+		//EarlyClientsideAttackBlockCallback will prevent the start-left-clicking one from being fired. This regular callback will
+		//also help prevent the block from being mined.
 		AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
-			if(actionApplicable(player, level, pos, direction)) return InteractionResult.CONSUME_PARTIAL;
+			if(actionApplicable(player, level, pos, direction)) return InteractionResult.CONSUME;
 			else return InteractionResult.PASS;
 		});
 		
