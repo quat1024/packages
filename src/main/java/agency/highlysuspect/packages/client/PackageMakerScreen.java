@@ -33,7 +33,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.FRAME_SLOT, Init.MODID + ".package_maker.frame");
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.INNER_SLOT, Init.MODID + ".package_maker.inner");
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.DYE_SLOT, Init.MODID + ".package_maker.dye");
-		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.OUTPUT_SLOT, Init.MODID + ".package_maker.result");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.OUTPUT_SLOT, Init.MODID + ".package_maker.output");
 	}
 	
 	@Override
@@ -71,13 +71,17 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		
 		PackageMakerMenu menu = getMenu();
 		
-		if(!getMenu().slots.get(0).hasItem() && menu.container instanceof PackageMakerBlockEntity be) {
+		if(!getMenu().slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).hasItem()) {
 			//draw a preview of the crafted item behind a transparent overlay
 			//I guess this makes sense ?? lmao
-			ItemStack dryRun = be.whatWouldBeCrafted();
+			ItemStack dryRun = PackageMakerBlockEntity.whatWouldBeCrafted(
+				getMenu().slots.get(PackageMakerBlockEntity.FRAME_SLOT).getItem(),
+				getMenu().slots.get(PackageMakerBlockEntity.INNER_SLOT).getItem(),
+				getMenu().slots.get(PackageMakerBlockEntity.DYE_SLOT).getItem()
+			);
 			if (!dryRun.isEmpty()) {
-				int x = menu.slots.get(0).x;
-				int y = menu.slots.get(0).y;
+				int x = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).x;
+				int y = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).y;
 				itemRenderer.renderAndDecorateFakeItem(dryRun, x, y);
 				
 				RenderSystem.disableDepthTest();

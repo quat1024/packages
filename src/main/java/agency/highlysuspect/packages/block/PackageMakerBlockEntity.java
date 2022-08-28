@@ -16,6 +16,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
@@ -43,10 +44,13 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	public static final int INNER_SLOT = 1;
 	public static final int DYE_SLOT = 2;
 	public static final int OUTPUT_SLOT = 3;
+	public static final int SIZE = OUTPUT_SLOT + 1;
 	
 	private final NonNullList<ItemStack> inv = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
 	
 	public static boolean matchesFrameSlot(ItemStack stack) {
+		if(stack.isEmpty()) return false;
+		
 		Item item = stack.getItem();
 		if(!(item instanceof BlockItem)) return false;
 		if(stack.is(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
@@ -61,18 +65,28 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	}
 	
 	public static boolean matchesDyeSlot(ItemStack stack) {
+		if(stack.isEmpty()) return false;
 		if(stack.is(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
 		return stack.getItem() instanceof DyeItem;
 	}
 	
+	//Static because it's called from PackageMakerScreen, which doesn't have a blockentity available, to show the preview slot
+	public static ItemStack whatWouldBeCrafted(ItemStack frame, ItemStack inner, ItemStack dye) {
+		if(!matchesFrameSlot(frame)) return ItemStack.EMPTY;
+		if(!matchesInnerSlot(inner)) return ItemStack.EMPTY;
+		if(!matchesDyeSlot(dye)) return ItemStack.EMPTY;
+		
+		Block frameBlock = ((BlockItem) frame.getItem()).getBlock();
+		Block innerBlock = ((BlockItem) inner.getItem()).getBlock();
+		DyeColor dyeColor = ((DyeItem) dye.getItem()).getDyeColor();
+		
+		return PItems.PACKAGE.createCustomizedStack(frameBlock, innerBlock, dyeColor);
+	}
+	
+	///
+	
 	public ItemStack whatWouldBeCrafted() {
-		if(!(hasFrame() && hasInner() && hasDye())) return ItemStack.EMPTY;
-		
-		Block frameBlock = ((BlockItem) inv.get(FRAME_SLOT).getItem()).getBlock();
-		Block innerBlock = ((BlockItem) inv.get(INNER_SLOT).getItem()).getBlock();
-		DyeColor dye = ((DyeItem) inv.get(DYE_SLOT).getItem()).getDyeColor();
-		
-		return PItems.PACKAGE.createCustomizedStack(frameBlock, innerBlock, dye);
+		return whatWouldBeCrafted(getItem(FRAME_SLOT), getItem(INNER_SLOT), getItem(DYE_SLOT));
 	}
 	
 	public void performCraft() {

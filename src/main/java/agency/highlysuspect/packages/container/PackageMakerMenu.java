@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class PackageMakerMenu extends AbstractContainerMenu {
 	public PackageMakerMenu(int syncId, Inventory playerInventory) {
-		this(syncId, playerInventory, new SimpleContainer(4));
+		this(syncId, playerInventory, new SimpleContainer(PackageMakerBlockEntity.SIZE));
 	}
 	
 	public PackageMakerMenu(int syncId, Inventory playerInventory, Container container) {
