@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 @Environment(EnvType.CLIENT)
 public class PClientBlockEventHandlers {
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public static boolean actionApplicable(Player player, Level level, BlockPos pos, Direction direction) {
+	public static boolean canAttack(Player player, Level level, BlockPos pos, Direction direction) {
 		if(player.isSpectator()) return false;
 		BlockState state = level.getBlockState(pos);
 		if(!(state.getBlock() instanceof PackageBlock)) return false;
@@ -34,7 +34,7 @@ public class PClientBlockEventHandlers {
 	
 	public static void onInitializeClient() {
 		EarlyClientsideAttackBlockCallback.EVENT.register((player, level, pos, direction) -> {
-			if(!actionApplicable(player, level, pos, direction)) return false;
+			if(!canAttack(player, level, pos, direction)) return false;
 			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, player.isShiftKeyDown() ? PackageAction.TAKE_STACK : PackageAction.TAKE_ONE);
 			return true;
 		});
@@ -43,37 +43,38 @@ public class PClientBlockEventHandlers {
 		//EarlyClientsideAttackBlockCallback will prevent the start-left-clicking one from being fired. This regular callback will
 		//also help prevent the block from being mined.
 		AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
-			if(actionApplicable(player, level, pos, direction)) return InteractionResult.CONSUME;
+			if(canAttack(player, level, pos, direction)) return InteractionResult.CONSUME;
 			else return InteractionResult.PASS;
 		});
 		
-		UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
-			if(player.isSpectator()) return InteractionResult.PASS;
+		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {
+			if(!level.isClientSide || player.isSpectator()) return InteractionResult.PASS;
 			
 			BlockPos pos = hitResult.getBlockPos();
 			Direction direction = hitResult.getDirection();
 			if(pos == null || direction == null) return InteractionResult.PASS; //is this even needed lmao
 			
-			BlockState state = world.getBlockState(pos);
-			BlockEntity pkg = world.getBlockEntity(pos);
-			if(state.getBlock() instanceof PackageBlock && pkg instanceof PackageBlockEntity) {
-				Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
-				if(direction == frontDir) {
-					if(world.isClientSide) {
-						final ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
-						if(contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand))) {
-							PNetClient.performAction(pos, hand, player.isShiftKeyDown() ? PackageAction.INSERT_STACK : PackageAction.INSERT_ONE);
-							return InteractionResult.CONSUME;
-						}
-						if(!contentsOrEmpty.isEmpty()) {
-							int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
-							if(slot != -1) {
-								// This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
-								PNetClient.performAction(pos, hand, player.isShiftKeyDown() ? PackageAction.INSERT_STACK : PackageAction.INSERT_ONE);
-								return InteractionResult.CONSUME;
-							}
-						}
-					}
+			BlockState state = level.getBlockState(pos);
+			BlockEntity pkg = level.getBlockEntity(pos);
+			if(!(state.getBlock() instanceof PackageBlock) || !(pkg instanceof PackageBlockEntity)) return InteractionResult.PASS;
+			
+			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
+			if(direction != frontDir) return InteractionResult.PASS;
+			
+			ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
+			//Player is holding something matching the pkg (where an empty package counts as matching everything)
+			if(contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand))) {
+				PNetClient.performAction(pos, hand, player.isShiftKeyDown() ? PackageAction.INSERT_STACK : PackageAction.INSERT_ONE);
+				return InteractionResult.CONSUME;
+			}
+			
+			//Player is holding something else but there's some other item in the package
+			if(!contentsOrEmpty.isEmpty()) {
+				int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
+				if(slot != -1) {
+					//This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
+					PNetClient.performAction(pos, hand, player.isShiftKeyDown() ? PackageAction.INSERT_STACK : PackageAction.INSERT_ONE);
+					return InteractionResult.CONSUME;
 				}
 			}
 			
