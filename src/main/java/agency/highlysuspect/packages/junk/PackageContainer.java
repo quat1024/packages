@@ -9,6 +9,7 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ContainerListener;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
@@ -17,11 +18,12 @@ import java.util.List;
 public class PackageContainer implements Container {
 	public static final int SLOT_COUNT = 8;
 	public static final int RECURSION_LIMIT = 3;
+	public static final String KEY = "PackageContents";
 	
 	@VisibleForTesting
 	public final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	
-	private List<ContainerListener> listeners = new ArrayList<>();
+	private final List<ContainerListener> listeners = new ArrayList<>();
 	
 	/// listeners
 	
@@ -165,26 +167,28 @@ public class PackageContainer implements Container {
 		setChanged();
 	}
 	
-	/// NBT
+	/// NBT guts
 	
-	public CompoundTag writeContents() {
-		CompoundTag tag = new CompoundTag();
-		
+	public CompoundTag toTag() {
+		return toTag(new CompoundTag());
+	}
+	
+	public CompoundTag toTag(CompoundTag writeTo) {
 		ItemStack first = findFirstNonemptyStack();
 		if(!first.isEmpty()) {
 			CompoundTag stackTag = findFirstNonemptyStack().save(new CompoundTag());
 			stackTag.putByte("Count", (byte) 1);
 			
-			tag.put("stack", stackTag);
-			tag.putInt("realCount", countItems());
+			writeTo.put("stack", stackTag);
+			writeTo.putInt("realCount", countItems());
 		} else {
-			tag.putInt("realCount", 0);
+			writeTo.putInt("realCount", 0);
 		}
 		
-		return tag;
+		return writeTo;
 	}
 	
-	public void readContents(CompoundTag tag) {
+	public void fromTag(CompoundTag tag) {
 		clearContent();
 		int count = tag.getInt("realCount");
 		if(count != 0) {
@@ -197,5 +201,19 @@ public class PackageContainer implements Container {
 				setItem(slot, toInsert);
 			}
 		}
+	}
+	
+	public static @Nullable PackageContainer fromItemStack(ItemStack stack) {
+		CompoundTag tag = stack.getTag();
+		if(tag == null) return null;
+		
+		PackageContainer r = new PackageContainer();
+		r.fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
+		return r;
+	}
+	
+	public ItemStack writeToStackTag(ItemStack stack) {
+		stack.getOrCreateTagElement("BlockEntityTag").put(KEY, toTag());
+		return stack;
 	}
 }

@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.item.PackageItem;
+import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.fabricmc.api.EnvType;
@@ -33,7 +34,7 @@ public class PackageBlock extends Block implements EntityBlock {
 		registerDefaultState(defaultBlockState().setValue(FACING, TwelveDirection.NORTH));
 	}
 	
-	//States, materials, etc.
+	//States.
 	public static final Property<TwelveDirection> FACING = EnumProperty.create("facing", TwelveDirection.class);
 	
 	@Override
@@ -51,7 +52,6 @@ public class PackageBlock extends Block implements EntityBlock {
 		super.createBlockStateDefinition(builder.add(FACING));
 	}
 	
-	//Block entities.
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return PBlockEntityTypes.PACKAGE.create(pos, state);
@@ -73,11 +73,10 @@ public class PackageBlock extends Block implements EntityBlock {
 		}
 		
 		if(world.isClientSide) {
-			//Load the tag clientside.
-			//Fixes some flickering (wrong style/count) when placing the item.
+			//Load the tag clientside. Fixes some flickering (wrong style/count) when placing the item.
 			//Kinda surprised the game doesn't do this itself; it explicitly only does this server-side.
 			CompoundTag blockEntityTag = BlockItem.getBlockEntityData(stack);
-			if(blockEntityTag != null) pkg.load(BlockItem.getBlockEntityData(stack));
+			if(blockEntityTag != null) pkg.load(blockEntityTag);
 		}
 	}
 	
@@ -116,23 +115,16 @@ public class PackageBlock extends Block implements EntityBlock {
 		super.onRemove(state, world, pos, newState, moved);
 	}
 	
+	//middle-click pick block, without holding Ctrl in creative
 	@Override
 	@Environment(EnvType.CLIENT)
 	public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
-		//middle-click pick block, without holding Ctrl in creative
-		
 		ItemStack stack = super.getCloneItemStack(world, pos, state);
-		PackageBlockEntity be = (PackageBlockEntity)world.getBlockEntity(pos);
-		if(be == null) return stack;
 		
-		Object renderAttach = be.getRenderAttachmentData();
-		if(renderAttach instanceof PackageStyle style) {
-			//just copy the style not the contents (like shulker boxes)
-			CompoundTag tag = new CompoundTag();
-			tag.put(PackageStyle.KEY, style.toTag());
-			stack.addTagElement("BlockEntityTag", tag);
-			
-			PackageItem.addFakeContentsTagThisSucks(stack);
+		if(world.getBlockEntity(pos) instanceof PackageBlockEntity be) {
+			//just copy the style, not the contents (like shulker boxes). Vanilla ctrl-pick will handle the other case.
+			be.getStyle().writeToStackTag(stack);
+			new PackageContainer().writeToStackTag(stack); //but write an empty tag anyway, so it stacks with block drops :thinking:
 		}
 		
 		return stack;

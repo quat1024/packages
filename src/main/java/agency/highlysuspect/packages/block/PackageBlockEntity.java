@@ -43,8 +43,6 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		super(PBlockEntityTypes.PACKAGE, pos, state);
 	}
 	
-	private static final String CONTAINER_KEY = "PackageContents";
-	
 	private PackageStyle style = PackageStyle.ERROR_LOL;
 	private final PackageContainer container = new PackageContainer();
 	{ container.addListener(c -> this.setChanged()); }
@@ -304,7 +302,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	//Serialization
 	@Override
 	public void saveAdditional(CompoundTag tag) {
-		tag.put(CONTAINER_KEY, container.writeContents());
+		tag.put(PackageContainer.KEY, container.toTag());
 		tag.put(PackageStyle.KEY, style.toTag());
 		if(customName != null) {
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
@@ -315,7 +313,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		container.readContents(tag.getCompound(CONTAINER_KEY));
+		container.fromTag(tag.getCompound(PackageContainer.KEY));
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
 		if(tag.contains("CustomName", 8)) {
 			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
