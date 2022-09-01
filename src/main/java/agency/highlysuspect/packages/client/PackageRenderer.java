@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
+import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
@@ -85,7 +86,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		
 		if(showText) {
 			String text;
-			int max = PackageBlockEntity.maxStackAmountAllowed(icon);
+			int max = blockEntity.maxStackAmountAllowed(icon);
 			
 			if(showDetailedText) {
 				int stacks = count / max;
@@ -95,7 +96,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 				text = String.valueOf(count);
 			}
 			
-			boolean completelyFull = max * PackageBlockEntity.SLOT_COUNT == count;
+			boolean completelyFull = max * PackageContainer.SLOT_COUNT == count;
 			int color = completelyFull ? 0x00FF6600 : 0x00FFFFFF;
 			color |= aBitFar ? 0x55000000 : 0xFF000000;
 			

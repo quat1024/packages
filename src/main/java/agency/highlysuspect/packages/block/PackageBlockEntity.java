@@ -1,23 +1,19 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.item.PackageItem;
+import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.net.PackageAction;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,24 +24,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-public class PackageBlockEntity extends BlockEntity implements WorldlyContainer, RenderAttachmentBlockEntity, Nameable {
+/**
+ * Hi, you caught me in the middle of a big refactor.
+ * So one of the big things with inventory mods is that inventories can live inside of real block entities, but
+ * on ItemStacks they are ephemeral; the best you can do is read the inventory off the NBT tag, modify it however
+ * you need, then write the result back to the NBT tag. This leads to blobs of ad-hoc NBT handling code gumming
+ * up the codebase. It's already annoying, and for the features I want to add (like being able to click items into
+ * the package from your inventory), it is untenable, and I need a new system.
+ * 
+ * Ideally I will be able to inintialize PackageContainer from a raw NBT tag, interface with it the same way I
+ * can interface witht he package block entity (all the interaction-heavy code should live there), then write back
+ * to the item stack. And have the same API surface that I do with the block entity.
+ * 
+ * But it's late and I'm pretty tired, so I'm doing the refactor piecemeal.
+ */
+public class PackageBlockEntity extends BlockEntity implements Container, RenderAttachmentBlockEntity, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE, pos, state);
 	}
 	
-	public static final String CONTENTS_KEY = "PackageContents";
-	public static final int SLOT_COUNT = 8;
-	public static final int RECURSION_LIMIT = 3;
+	private static final String CONTAINER_KEY = "PackageContents";
 	
-	private static final int[] NO_SLOTS = {};
-	private static final int[] ALL_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7};
-	
-	private final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	private PackageStyle style = PackageStyle.ERROR_LOL;
+	private final PackageContainer container = new PackageContainer();
+	{ container.addListener(c -> this.setChanged()); }
+	
 	private Component customName;
 	
 	@Override
 	public Object getRenderAttachmentData() {
+		return getStyle();
+	}
+	
+	public PackageStyle getStyle() {
 		return style;
 	}
 	
@@ -53,36 +64,8 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		this.style = style;
 	}
 	
-	public CompoundTag writeContents() {
-		CompoundTag tag = new CompoundTag();
-		
-		ItemStack first = findFirstNonemptyStack();
-		if(!first.isEmpty()) {
-			CompoundTag stackTag = findFirstNonemptyStack().save(new CompoundTag());
-			stackTag.putByte("Count", (byte) 1);
-			
-			tag.put("stack", stackTag);
-			tag.putInt("realCount", countItems());
-		} else {
-			tag.putInt("realCount", 0);
-		}
-		
-		return tag;
-	}
-	
-	public void readContents(CompoundTag tag) {
-		clearContent();
-		int count = tag.getInt("realCount");
-		if(count != 0) {
-			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
-			int maxPerSlot = maxStackAmountAllowed(stack);
-			
-			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
-				ItemStack toInsert = stack.copy();
-				toInsert.setCount(Math.min(remaining, maxPerSlot));
-				setItem(slot, toInsert);
-			}
-		}
+	public PackageContainer getContainer() {
+		return container;
 	}
 	
 	//<editor-fold desc="Name cruft">
@@ -111,37 +94,37 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	}
 	//</editor-fold>
 	
-	//Inventory stuff.
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	public ItemStack findFirstNonemptyStack() {
-		for(ItemStack stack : inv) {
-			if(!stack.isEmpty()) return stack;
-		}
-		return ItemStack.EMPTY;
+		return container.findFirstNonemptyStack();
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	public int countItems() {
-		int count = 0;
-		for(ItemStack stack : inv) count += stack.getCount();
-		return count;
+		return container.countItems();
 	}
 	
-	public static int maxStackAmountAllowed(ItemStack stack) {
-		if(stack.isEmpty()) return 64;
-		else if(stack.getItem() instanceof PackageItem) {
-			//TODO clean this up
-			if(!stack.hasTag()) return 64;
-			CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-			if(beTag == null) return 64;
-			CompoundTag contentsTag = beTag.getCompound(CONTENTS_KEY);
-			if(contentsTag.getInt("realCount") > 0) return 1;
-			else return 64;
-		}
-		else return Math.min(stack.getMaxStackSize(), 64); //just in case
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
+	public int maxStackAmountAllowed(ItemStack stack) {
+		return container.maxStackAmountAllowed(stack);
 	}
 	
 	//custom package-specific inventory wrappers, for external use
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	public boolean matches(ItemStack stack) {
-		return !stack.isEmpty() && canPlaceItem(0, stack);
+		return container.matches(stack);
 	}
 	
 	//<editor-fold desc="Interactions">
@@ -174,7 +157,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == PackageAction.INSERT_STACK ? insertStack.getCount() : 1);
 		int insertedAmount = 0;
 		
-		ListIterator<ItemStack> stackerator = inv.listIterator();
+		ListIterator<ItemStack> stackerator = container.inv.listIterator();
 		while(amountToInsert > 0 && stackerator.hasNext()) {
 			ItemStack stack = stackerator.next();
 			
@@ -206,7 +189,7 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 		int removeTotal = action == PackageAction.TAKE_STACK ? maxStackAmountAllowed(contained) : 1;
 		List<ItemStack> stacksToGive = new ArrayList<>();
 		
-		ListIterator<ItemStack> stackerator = inv.listIterator();
+		ListIterator<ItemStack> stackerator = container.inv.listIterator();
 		while(removeTotal > 0 && stackerator.hasNext()) {
 			ItemStack stack = stackerator.next();
 			if(stack.isEmpty()) continue;
@@ -226,151 +209,124 @@ public class PackageBlockEntity extends BlockEntity implements WorldlyContainer,
 	}
 	//</editor-fold>
 	
-	//<editor-fold desc="WorldlyContainer">
-	@Override
-	public int[] getSlotsForFace(Direction side) {
-		return level == null ? NO_SLOTS : ALL_SLOTS;
-	}
-	
-	@Override
-	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction dir) {
-		return canPlaceItem(slot, stack);
-	}
-	
-	@Override
-	public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction dir) {
-		return true;
-	}
-	
+	//<editor-fold desc="Container">
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public int getContainerSize() {
-		return SLOT_COUNT;
+		return container.getContainerSize();
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public boolean isEmpty() {
-		for(ItemStack stack : inv) {
-			if(!stack.isEmpty()) return false;
-		}
-		return true;
+		return container.isEmpty();
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public ItemStack getItem(int slot) {
-		return inv.get(slot);
+		return container.getItem(slot);
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public ItemStack removeItem(int slot, int amount) {
-		setChanged();
-		return ContainerHelper.removeItem(inv, slot, amount);
+		return container.removeItem(slot, amount);
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public ItemStack removeItemNoUpdate(int slot) {
-		setChanged();
-		return ContainerHelper.takeItem(inv, slot);
+		return container.removeItemNoUpdate(slot);
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public void setItem(int slot, ItemStack stack) {
-		inv.set(slot, stack);
-		setChanged();
+		container.setItem(slot, stack);
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public int getMaxStackSize() {
-		return maxStackAmountAllowed(findFirstNonemptyStack());
+		return container.getMaxStackSize();
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public boolean stillValid(Player player) {
-		return true;
+		return container.stillValid(player);
 	}
 	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
-		if(stack.getItem() == PItems.PACKAGE && calcPackageRecursion(stack) > RECURSION_LIMIT) return false;
-		
-		return canMergeItems(findFirstNonemptyStack(), stack);
+		return container.canPlaceItem(slot, stack);
 	}
 	
-	private int calcPackageRecursion(ItemStack stack) {
-		CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-		if(beTag != null) {
-			CompoundTag contentsTag = beTag.getCompound("PackageContents");
-			if(!contentsTag.isEmpty()) {
-				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.of(contentsTag.getCompound("stack"));
-				if(count != 0 && !containedStack.isEmpty()) {
-					return 1 + calcPackageRecursion(containedStack);
-				}
-			}
-		}
-		
-		return 0;
-	}
-	
+	/**
+	 * @deprecated Migrate to PackageContainer instead
+	 */
+	@Deprecated
 	@Override
 	public void clearContent() {
-		inv.clear();
+		container.clearContent();
 	}
 	//</editor-fold>
-	
-	//HopperBlockEntity.canMergeItems copy, with a modification
-	private static boolean canMergeItems(ItemStack first, ItemStack second) {
-		if(first.isEmpty() || second.isEmpty()) return true; //My modification
-		
-		if (first.getItem() != second.getItem()) {
-			return false;
-		} else if (first.getDamageValue() != second.getDamageValue()) {
-			return false;
-		} else if (first.getCount() > first.getMaxStackSize()) {
-			return false;
-		} else {
-			return ItemStack.tagMatches(first, second);
-		}
-	}
 	
 	//Serialization
 	@Override
 	public void saveAdditional(CompoundTag tag) {
-		//Contents
-		tag.put(CONTENTS_KEY, writeContents());
-		
-		//Style
+		tag.put(CONTAINER_KEY, container.writeContents());
 		tag.put(PackageStyle.KEY, style.toTag());
-		
-		//Custom name
 		if(customName != null) {
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
-		
 		super.saveAdditional(tag);
 	}
 	
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		
-		//Contents
-		readContents(tag.getCompound(CONTENTS_KEY));
-		
-		//Style
+		container.readContents(tag.getCompound(CONTAINER_KEY));
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
-		
-		//Custom name
 		if(tag.contains("CustomName", 8)) {
 			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
-		} else {
-			customName = null;
-		}
+		} else customName = null;
 	}
 	
 	@Override
 	public void setChanged() {
 		super.setChanged();
 		if(level != null && !level.isClientSide) {
+			//TODO: What does it do
 			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 		}
 	}
