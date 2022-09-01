@@ -20,7 +20,7 @@ public class PackageContainer implements Container {
 	public static final int RECURSION_LIMIT = 3;
 	public static final String KEY = "PackageContents";
 	
-	@VisibleForTesting
+	@VisibleForTesting //"the visibility of this field is deprecated, and it will be made private". Just havent migrated the clicking-on-pkg logic yet
 	public final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	
 	private final List<ContainerListener> listeners = new ArrayList<>();
