@@ -34,9 +34,10 @@ public class PackageContainer implements Container {
 	@VisibleForTesting //"the visibility of this field is deprecated, and it will be made private". Just havent migrated the clicking-on-pkg logic yet
 	public final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	
-	private final List<ContainerListener> listeners = new ArrayList<>();
+	/// Listeners
 	
-	/// listeners
+	//Things that will be alerted when this PackageContainer changes. (As in SimpleContainer.)
+	private final List<ContainerListener> listeners = new ArrayList<>();
 	
 	public PackageContainer addListener(ContainerListener listener) {
 		listeners.add(listener);
@@ -47,7 +48,7 @@ public class PackageContainer implements Container {
 		listeners.remove(listener);
 	}
 	
-	/// helpers
+	/// Helpers
 	
 	//The item currently inside the Package.
 	public ItemStack getFilterStack() {
@@ -64,8 +65,17 @@ public class PackageContainer implements Container {
 		return count;
 	}
 	
-	//The amount of items per-internal-slot that this Package is allowed to hold.
+	//Whether you're ever allowed to put this item into a Package.
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public boolean allowedInPackageAtAll(ItemStack stack) {
+		PackageContainer cont = PackageContainer.fromItemStack(stack);
+		if(cont != null && cont.calcRecursionLevel() >= RECURSION_LIMIT) return false;
+		else return !stack.is(PItemTags.BANNED_FROM_PACKAGE);
+	}
+	
+	//The amount of items per-internal-slot that a Package is allowed to hold, if it contained `stack`.
 	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight packages.
+	//TODO: leaky abstraction, see comment in canPlaceItem
 	public int maxStackAmountAllowed(ItemStack stack) {
 		PackageContainer recur = fromItemStack(stack);
 		if(recur != null && recur.getCount() > 0) return 1;
@@ -73,6 +83,7 @@ public class PackageContainer implements Container {
 	}
 	
 	//The amount of layers of nested Packages.
+	//TODO: This looks expensive, cache it maybe. Invalidation...
 	private int calcRecursionLevel() {
 		PackageContainer recur = fromItemStack(getFilterStack());
 		if(recur == null) return 0;
@@ -101,7 +112,7 @@ public class PackageContainer implements Container {
 	 */
 	public ItemStack insert(ItemStack toInsert, int maxAmountToInsert, boolean simulate) {
 		//Check that the item fits in the Package at all
-		if(toInsert.isEmpty() || !matches(toInsert)) return toInsert;
+		if(toInsert.isEmpty() || !matches(toInsert) || !allowedInPackageAtAll(toInsert)) return toInsert;
 		
 		int remainingAmountToInsert = Math.min(toInsert.getCount(), maxAmountToInsert);
 		int amountInserted = 0;
@@ -292,13 +303,13 @@ public class PackageContainer implements Container {
 	
 	@Override
 	public boolean stillValid(Player player) {
+		//Doesn't have a GUI in the first place
 		return true;
 	}
 	
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
-		PackageContainer containerToInsert = fromItemStack(stack);
-		if(containerToInsert != null && containerToInsert.calcRecursionLevel() >= RECURSION_LIMIT) return false;
+		if(!allowedInPackageAtAll(stack)) return false;
 		
 		//Hoppers don't seem to check Container#getMaxStackSize? Like, at all? Ok whatever.
 		//Bandaid fix for them eating packages-with-items, then, which have a custom maxStackAmountAllowed
