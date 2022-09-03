@@ -3,11 +3,14 @@
   "package": "agency.highlysuspect.packages.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-		"MixinEntity"
+		"particleslol.MixinEntity",
+		"particleslol.MixinLivingEntity"
   ],
   "client": [
 		"client.MixinItemRenderer",
-		"client.MixinMinecraft"
+		"client.MixinMinecraft",
+		"particleslol.AccessorTextureSheetParticle",
+		"particleslol.MixinTerrainParticle"
   ],
   "injectors": {
     "defaultRequire": 1
