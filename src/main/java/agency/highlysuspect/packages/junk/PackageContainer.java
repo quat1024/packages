@@ -10,13 +10,20 @@ import net.minecraft.world.ContainerListener;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
 public class PackageContainer implements Container {
@@ -156,8 +163,13 @@ public class PackageContainer implements Container {
 		
 		if(action == PackageAction.INSERT_ALL) {
 			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
+			//If the player and package is not holding anything, look for the item type the player has the most of, and choose that.
+			int favoriteSlot;
+			if(player.getItemInHand(hand).isEmpty() && isEmpty()) favoriteSlot = slotWithALot(player).orElse(handSlot);
+			else favoriteSlot = handSlot;
+			
 			boolean didAnything = false;
-			for(int slotToTry : handSlotFirst(player, handSlot).boxed().toList()) {
+			for(int slotToTry : handSlotFirst(player, favoriteSlot).boxed().toList()) {
 				int inserted = insert0(player, slotToTry, Integer.MAX_VALUE, simulate);
 				if(inserted != 0) didAnything = true;
 			}
@@ -233,7 +245,6 @@ public class PackageContainer implements Container {
 	 * The Player takes items from the PackageContainer.
 	 */
 	public PlayerTakeResult take(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
-		int handSlot = handToSlotId(player, hand);
 		int maxAmountToTake = switch(action) {
 			case TAKE_ONE -> 1;
 			case TAKE_STACK -> {
@@ -297,6 +308,29 @@ public class PackageContainer implements Container {
 			//3 segments: handSlot, [0..handSlot), [handSlot + 1..size)
 			return IntStream.concat(IntStream.of(handSlot), IntStream.concat(IntStream.range(0, handSlot), IntStream.range(handSlot + 1, size)));
 		}
+	}
+	
+	//Pick one of the slots containing the item type that the player has the most of.
+	private Optional<Integer> slotWithALot(Player player) {
+		//Make a histogram of items
+		Map<Item, MutableInt> runningTotal = new HashMap<>();
+		for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
+			ItemStack here = player.getInventory().getItem(i);
+			if(here.isEmpty()) continue;
+			if(!allowedInPackageAtAll(here)) continue;
+			runningTotal.computeIfAbsent(here.getItem(), __ -> new MutableInt(0)).add(here.getCount());
+		}
+		
+		return runningTotal.entrySet().stream()
+			.max(Map.Entry.comparingByValue())
+			.map(Map.Entry::getKey)
+			.flatMap(item -> {
+				//I forgot which slot the item belonged to, could you remind me?
+				for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
+					if(player.getInventory().getItem(i).getItem() == item) return Optional.of(i); //Thanks
+				}
+				return Optional.empty();
+			});
 	}
 	
 	/// Container
