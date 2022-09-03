@@ -8,18 +8,14 @@ import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ContainerListener;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class PackageContainer implements Container {
@@ -81,16 +77,6 @@ public class PackageContainer implements Container {
 		PackageContainer recur = fromItemStack(getFilterStack());
 		if(recur == null) return 0;
 		else return 1 + recur.calcRecursionLevel();
-	}
-	
-	//HopperBlockEntity.canMergeItems copy, with modifications
-	private boolean canMergeItems(ItemStack first, ItemStack second) {
-		if(first.isEmpty() || second.isEmpty()) return true; //My modification: empty stacks coerce to everything
-		else if(first.getItem() != second.getItem()) return false;
-		else if(first.getDamageValue() != second.getDamageValue()) return false;
-		//else if(first.getCount() > first.getMaxStackSize()) return false; //This is from vanilla, idk what it's all about, yes it's really "first" twice
-		else if(first.getCount() + second.getCount() > maxStackAmountAllowed(second)) return false; //My modification: respect custom maxStackAmountAllowed semantics
-		else return ItemStack.tagMatches(first, second);
 	}
 	
 	//"true" if the itemstack is suitable for insertion into the Package.
@@ -313,6 +299,11 @@ public class PackageContainer implements Container {
 	public boolean canPlaceItem(int slot, ItemStack stack) {
 		PackageContainer containerToInsert = fromItemStack(stack);
 		if(containerToInsert != null && containerToInsert.calcRecursionLevel() >= RECURSION_LIMIT) return false;
+		
+		//Hoppers don't seem to check Container#getMaxStackSize? Like, at all? Ok whatever.
+		//Bandaid fix for them eating packages-with-items, then, which have a custom maxStackAmountAllowed
+		PackageContainer hereContainer = fromItemStack(getItem(slot));
+		if(hereContainer != null && !hereContainer.isEmpty()) return false;
 		
 		return matches(stack);
 	}
