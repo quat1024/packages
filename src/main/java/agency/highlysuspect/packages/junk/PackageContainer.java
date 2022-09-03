@@ -131,7 +131,7 @@ public class PackageContainer implements Container {
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
 		PackageContainer containerToInsert = fromItemStack(stack);
-		if(containerToInsert != null && containerToInsert.calcRecursionLevel() > RECURSION_LIMIT) return false;
+		if(containerToInsert != null && containerToInsert.calcRecursionLevel() >= RECURSION_LIMIT) return false;
 		
 		return canMergeItems(getFilterStack(), stack);
 	}
