@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -92,6 +93,7 @@ public class PackageContainer implements Container {
 	
 	//"true" if the itemstack is suitable for insertion into the Package.
 	//Doesn't check things like "is the Package full". So this method is kind of useless.
+	//Based off HopperBlockEntity#canMergeItems or something
 	public boolean matches(ItemStack stack) {
 		ItemStack filter = getFilterStack();
 		
@@ -183,25 +185,6 @@ public class PackageContainer implements Container {
 		return toInsert.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
 	}
 	
-	private static int handToSlotId(Player player, InteractionHand hand) {
-		return hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
-	}
-	
-	//Star ward refrence???
-	private static IntStream handSlotFirst(Player player, int handSlot) {
-		int size = player.getInventory().getContainerSize();
-		if(handSlot == 0) {
-			//The hand slot is already first, that's pretty convenient.
-			return IntStream.range(0, size);
-		} else if(handSlot == size) {
-			//2 segments: size, then [0..size-1)
-			return IntStream.concat(IntStream.of(handSlot), IntStream.range(0, size));
-		} else {
-			//3 segments: handSlot, [0..handSlot), [handSlot + 1..size)
-			return IntStream.concat(IntStream.of(handSlot), IntStream.concat(IntStream.range(0, handSlot), IntStream.range(handSlot + 1, size)));
-		}
-	}
-	
 	/**
 	 * Removes and returns up to maxAmountToTake items from the PackageContainer.
 	 * @param maxAmountToTake The maximum amount of items to remove from the PackageContainer.
@@ -237,13 +220,52 @@ public class PackageContainer implements Container {
 			
 			remainingAmountToTake -= amountToTakeThisSlot;
 			amountTook += amountToTakeThisSlot;
-			if(!simulate) setItem(0, newStack);
+			if(!simulate) setItem(slot, newStack);
 		}
 		
 		//Finally, construct the itemstack to be returned
 		filter = filter.copy();
 		filter.setCount(amountTook);
 		return filter;
+	}
+	
+	/**
+	 * The Player takes items from the PackageContainer.
+	 */
+	public PlayerTakeResult take(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+		int handSlot = handToSlotId(player, hand);
+		int maxAmountToTake = switch(action) {
+			case TAKE_ONE -> 1;
+			case TAKE_STACK -> {
+				ItemStack held = player.getItemInHand(hand);
+				if(matches(held)) {
+					//First, try to complete the stack in the player's hand without going over.
+					int completionAmount = held.getMaxStackSize() - held.getCount();
+					if(completionAmount > 0) yield completionAmount;
+				}
+				yield maxStackAmountAllowed(getFilterStack());
+			}
+			case TAKE_ALL -> Integer.MAX_VALUE;
+			default -> throw new IllegalArgumentException();
+		};
+		
+		ItemStack toGiveOverstack = take(maxAmountToTake, simulate);
+		if(toGiveOverstack.isEmpty()) return new PlayerTakeResult(false);
+		
+		//TODO: Simulate adding items to player inventories instead of cheesing it
+		if(simulate) return new PlayerTakeResult(true);
+		
+		List<ItemStack> toGive = flattenOverstack(toGiveOverstack);
+		List<ItemStack> leftovers = new ArrayList<>();
+		for(ItemStack stack : toGive) {
+			if(!player.getInventory().add(stack)) {
+				leftovers.add(stack);
+			}
+		}
+		return new PlayerTakeResult(true, leftovers);
+	}
+	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {
+		public PlayerTakeResult(boolean s) { this(s, Collections.emptyList()); }
 	}
 	
 	/**
@@ -256,6 +278,25 @@ public class PackageContainer implements Container {
 			result.add(mutOverstack.split(Math.min(mutOverstack.getCount(), mutOverstack.getMaxStackSize())));
 		}
 		return result;
+	}
+	
+	private static int handToSlotId(Player player, InteractionHand hand) {
+		return hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
+	}
+	
+	//Star ward refrence???
+	private static IntStream handSlotFirst(Player player, int handSlot) {
+		int size = player.getInventory().getContainerSize();
+		if(handSlot == 0) {
+			//The hand slot is already first, that's pretty convenient.
+			return IntStream.range(0, size);
+		} else if(handSlot == size) {
+			//2 segments: size, then [0..size-1)
+			return IntStream.concat(IntStream.of(handSlot), IntStream.range(0, size));
+		} else {
+			//3 segments: handSlot, [0..handSlot), [handSlot + 1..size)
+			return IntStream.concat(IntStream.of(handSlot), IntStream.concat(IntStream.range(0, handSlot), IntStream.range(handSlot + 1, size)));
+		}
 	}
 	
 	/// Container

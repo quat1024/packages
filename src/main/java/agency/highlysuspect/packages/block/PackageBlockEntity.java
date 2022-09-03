@@ -14,10 +14,12 @@ import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -120,7 +122,17 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	//<editor-fold desc="Interactions">
 	public void performAction(Player player, InteractionHand hand, PackageAction action) {
 		if(action.isInsert()) container.insert(player, hand, action, false);
-		else take(player, action);
+		else {
+			PackageContainer.PlayerTakeResult result = container.take(player, hand, action, false);
+			if(result.successful() && !result.leftovers().isEmpty() && level != null) {
+				Vec3 spawnPos = Vec3.atCenterOf(getBlockPos()).add(new Vec3(getBlockState().getValue(PackageBlock.FACING).primaryDirection.step()).scale(0.8d));
+				for(ItemStack stack : result.leftovers()) {
+					ItemEntity e = new ItemEntity(level, spawnPos.x, spawnPos.y, spawnPos.z, stack, 0, 0.01, 0);
+					e.setPickUpDelay(10);
+					level.addFreshEntity(e);
+				}
+			}
+		}
 	}
 	
 	@Deprecated

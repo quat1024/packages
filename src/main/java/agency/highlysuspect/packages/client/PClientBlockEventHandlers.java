@@ -16,7 +16,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,12 +37,20 @@ public class PClientBlockEventHandlers {
 		EarlyClientsideAttackBlockCallback.EVENT.register((player, level, pos, direction) -> {
 			if(!canAttack(player, level, pos, direction)) return false;
 			
+			BlockState state = level.getBlockState(pos);
+			BlockEntity be = level.getBlockEntity(pos);
+			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return false;
+			PackageContainer container = pkg.getContainer();
+			
 			PackageAction action = PackageAction.TAKE_ONE;
 			if(player.isShiftKeyDown()) action = PackageAction.TAKE_STACK;
 			if(Screen.hasControlDown()) action = PackageAction.TAKE_ALL;
 			
-			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
-			return true;
+			PackageContainer.PlayerTakeResult result = container.take(player, InteractionHand.MAIN_HAND, action, true);
+			if(result.successful()) {
+				PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
+				return true;
+			} else return false;
 		});
 		
 		//This callback is usually fired when you start left-clicking a block, but also every tick while you continue to left click it.
@@ -62,13 +69,12 @@ public class PClientBlockEventHandlers {
 			if(pos == null || direction == null) return InteractionResult.PASS; //is this even needed lmao
 			
 			BlockState state = level.getBlockState(pos);
-			BlockEntity pkg = level.getBlockEntity(pos);
-			if(!(state.getBlock() instanceof PackageBlock) || !(pkg instanceof PackageBlockEntity be)) return InteractionResult.PASS;
+			BlockEntity be = level.getBlockEntity(pos);
+			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return InteractionResult.PASS;
+			PackageContainer container = pkg.getContainer();
 			
 			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 			if(direction != frontDir) return InteractionResult.PASS;
-			
-			PackageContainer container = be.getContainer();
 			
 			PackageAction action = PackageAction.INSERT_ONE;
 			if(player.isShiftKeyDown()) action = PackageAction.INSERT_STACK;
@@ -80,9 +86,7 @@ public class PClientBlockEventHandlers {
 				PNetClient.performAction(pos, hand, action);
 				player.swing(hand);
 				return InteractionResult.CONSUME; //SUCCESS sends a block-place packet too because useblockcallback wacky
-			}
-			
-			return InteractionResult.PASS;
+			} else return InteractionResult.PASS;
 		});
 	}
 }
