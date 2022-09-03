@@ -1,7 +1,6 @@
 package agency.highlysuspect.packages.junk;
 
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.item.PackageItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
@@ -37,64 +36,44 @@ public class PackageContainer implements Container {
 	
 	/// helpers
 	
-	public ItemStack findFirstNonemptyStack() {
+	//The item currently inside the Package.
+	public ItemStack getFilterStack() {
 		for(ItemStack stack : inv) {
 			if(!stack.isEmpty()) return stack;
 		}
 		return ItemStack.EMPTY;
 	}
 	
-	public int countItems() {
+	//THe number of items inside the Package.
+	public int getCount() {
 		int count = 0;
 		for(ItemStack stack : inv) count += stack.getCount();
 		return count;
 	}
 	
+	//The amount of items per-internal-slot that this Package is allowed to hold.
+	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight packages.
 	public int maxStackAmountAllowed(ItemStack stack) {
-		if(stack.isEmpty()) return 64;
-		else if(stack.getItem() instanceof PackageItem) {
-			return stack.hasTag() ? 1 : 64;
-//			//TODO reimpl
-//			if(!stack.hasTag()) return 64;
-//			CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-//			if(beTag == null) return 64;
-//			CompoundTag contentsTag = beTag.getCompound(CONTENTS_KEY);
-//			if(contentsTag.getInt("realCount") > 0) return 1;
-//			else return 64;
-		}
-		else return Math.min(stack.getMaxStackSize(), 64); //just in case
+		PackageContainer recur = fromItemStack(stack);
+		if(recur != null && recur.getCount() > 0) return 1;
+		else return Math.min(stack.getMaxStackSize(), 64);
 	}
 	
-	private int calcPackageRecursion(ItemStack stack) {
-		//TODO reimpl
-		CompoundTag beTag = stack.getTagElement("BlockEntityTag");
-		if(beTag != null) {
-			CompoundTag contentsTag = beTag.getCompound("PackageContents");
-			if(!contentsTag.isEmpty()) {
-				int count = contentsTag.getInt("realCount");
-				ItemStack containedStack = ItemStack.of(contentsTag.getCompound("stack"));
-				if(count != 0 && !containedStack.isEmpty()) {
-					return 1 + calcPackageRecursion(containedStack);
-				}
-			}
-		}
-		
-		return 0;
+	//The amount of layers of nested Packages.
+	private int calcRecursionLevel() {
+		PackageContainer recur = fromItemStack(getFilterStack());
+		if(recur == null) return 0;
+		else return 1 + recur.calcRecursionLevel();
 	}
 	
-	//HopperBlockEntity.canMergeItems copy, with a modification
+	//HopperBlockEntity.canMergeItems copy, with modifications
 	private boolean canMergeItems(ItemStack first, ItemStack second) {
-		if(first.isEmpty() || second.isEmpty()) return true; //My modification
-		
-		if (first.getItem() != second.getItem()) {
-			return false;
-		} else if (first.getDamageValue() != second.getDamageValue()) {
-			return false;
-		} else if (first.getCount() > first.getMaxStackSize()) {
-			return false;
-		} else {
-			return ItemStack.tagMatches(first, second);
-		}
+		if(first.isEmpty() || second.isEmpty()) return true; //My modification: empty stacks coerce to everything
+		else if(first.getItem() != second.getItem()) return false;
+		else if(first.getDamageValue() != second.getDamageValue()) return false;
+		//else if(first.getCount() > first.getMaxStackSize()) return false; //This is from vanilla, idk what it's all about, yes it's really "first" twice
+		else if(first.getCount() + second.getCount() > maxStackAmountAllowed(second)) return false; //My modification: respect custom maxStackAmountAllowed semantics
+		else return ItemStack.tagMatches(first, second);
 	}
 	
 	public boolean matches(ItemStack stack) {
@@ -141,7 +120,7 @@ public class PackageContainer implements Container {
 	
 	@Override
 	public int getMaxStackSize() {
-		return maxStackAmountAllowed(findFirstNonemptyStack());
+		return maxStackAmountAllowed(getFilterStack());
 	}
 	
 	@Override
@@ -151,9 +130,10 @@ public class PackageContainer implements Container {
 	
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
-		if(stack.getItem() == PItems.PACKAGE && calcPackageRecursion(stack) > RECURSION_LIMIT) return false;
+		PackageContainer containerToInsert = fromItemStack(stack);
+		if(containerToInsert != null && containerToInsert.calcRecursionLevel() > RECURSION_LIMIT) return false;
 		
-		return canMergeItems(findFirstNonemptyStack(), stack);
+		return canMergeItems(getFilterStack(), stack);
 	}
 	
 	@Override
@@ -174,13 +154,13 @@ public class PackageContainer implements Container {
 	}
 	
 	public CompoundTag toTag(CompoundTag writeTo) {
-		ItemStack first = findFirstNonemptyStack();
+		ItemStack first = getFilterStack();
 		if(!first.isEmpty()) {
-			CompoundTag stackTag = findFirstNonemptyStack().save(new CompoundTag());
+			CompoundTag stackTag = getFilterStack().save(new CompoundTag());
 			stackTag.putByte("Count", (byte) 1);
 			
 			writeTo.put("stack", stackTag);
-			writeTo.putInt("realCount", countItems());
+			writeTo.putInt("realCount", getCount());
 		} else {
 			writeTo.putInt("realCount", 0);
 		}
@@ -188,7 +168,7 @@ public class PackageContainer implements Container {
 		return writeTo;
 	}
 	
-	public void fromTag(CompoundTag tag) {
+	public void readFromTag(CompoundTag tag) {
 		clearContent();
 		int count = tag.getInt("realCount");
 		if(count != 0) {
@@ -203,13 +183,18 @@ public class PackageContainer implements Container {
 		}
 	}
 	
+	public static PackageContainer fromTag(CompoundTag tag) {
+		PackageContainer r = new PackageContainer();
+		r.readFromTag(tag);
+		return r;
+	}
+	
 	public static @Nullable PackageContainer fromItemStack(ItemStack stack) {
+		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE) return null;
+		
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return null;
-		
-		PackageContainer r = new PackageContainer();
-		r.fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
-		return r;
+		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
 	
 	public ItemStack writeToStackTag(ItemStack stack) {

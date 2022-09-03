@@ -33,7 +33,7 @@ import java.util.ListIterator;
  * the package from your inventory), it is untenable, and I need a new system.
  * 
  * Ideally I will be able to inintialize PackageContainer from a raw NBT tag, interface with it the same way I
- * can interface witht he package block entity (all the interaction-heavy code should live there), then write back
+ * can interface with the package block entity (all the interaction-heavy code should live there), then write back
  * to the item stack. And have the same API surface that I do with the block entity.
  * 
  * But it's late and I'm pretty tired, so I'm doing the refactor piecemeal.
@@ -97,7 +97,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	 */
 	@Deprecated
 	public ItemStack findFirstNonemptyStack() {
-		return container.findFirstNonemptyStack();
+		return container.getFilterStack();
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	 */
 	@Deprecated
 	public int countItems() {
-		return container.countItems();
+		return container.getCount();
 	}
 	
 	/**
@@ -313,7 +313,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	@Override
 	public void load(CompoundTag tag) {
 		super.load(tag);
-		container.fromTag(tag.getCompound(PackageContainer.KEY));
+		container.readFromTag(tag.getCompound(PackageContainer.KEY));
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
 		if(tag.contains("CustomName", 8)) {
 			customName = Component.Serializer.fromJson(tag.getString("CustomName"));

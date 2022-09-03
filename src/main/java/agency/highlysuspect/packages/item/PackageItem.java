@@ -25,8 +25,8 @@ public class PackageItem extends BlockItem {
 	public Component getName(ItemStack stack) {
 		PackageContainer container = PackageContainer.fromItemStack(stack);
 		if(container != null) {
-			ItemStack contents = container.findFirstNonemptyStack();
-			int count = container.countItems();
+			ItemStack contents = container.getFilterStack();
+			int count = container.getCount();
 			if(!contents.isEmpty() && count != 0) {
 				return new TranslatableComponent("block.packages.package.nonempty",
 					super.getName(stack),
@@ -41,7 +41,7 @@ public class PackageItem extends BlockItem {
 	
 	public Optional<ItemStack> getContainedStack(ItemStack stack) {
 		return Optional.ofNullable(PackageContainer.fromItemStack(stack))
-			.map(PackageContainer::findFirstNonemptyStack)
+			.map(PackageContainer::getFilterStack)
 			.filter(s -> !s.isEmpty());
 	}
 }
