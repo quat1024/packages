@@ -1,22 +1,38 @@
 package agency.highlysuspect.packages.junk;
 
 import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.net.PackageAction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ContainerListener;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PackageContainer implements Container {
+	//The number of internal slots in the Package. Packages hold eight stacks of items, by design.
 	public static final int SLOT_COUNT = 8;
+	
+	//Packages containing more than this number of layers of recursion are too heavy to insert into other Packages.
+	//A recursion limit of 3 allows inserting packages of packages of packages of things,
+	//but not packages of packages of packages of packages of things.
 	public static final int RECURSION_LIMIT = 3;
+	
+	//The location that PackageContainer data is conventionally stored in the Package's NBT tag.
+	//A convention is required so that the PackageContainer can be read back from the ItemStack.
 	public static final String KEY = "PackageContents";
 	
 	@VisibleForTesting //"the visibility of this field is deprecated, and it will be made private". Just havent migrated the clicking-on-pkg logic yet
@@ -26,8 +42,9 @@ public class PackageContainer implements Container {
 	
 	/// listeners
 	
-	public void addListener(ContainerListener listener) {
+	public PackageContainer addListener(ContainerListener listener) {
 		listeners.add(listener);
+		return this;
 	}
 	
 	public void removeListener(ContainerListener listener) {
@@ -44,7 +61,7 @@ public class PackageContainer implements Container {
 		return ItemStack.EMPTY;
 	}
 	
-	//THe number of items inside the Package.
+	//The number of items inside the Package.
 	public int getCount() {
 		int count = 0;
 		for(ItemStack stack : inv) count += stack.getCount();
@@ -76,8 +93,172 @@ public class PackageContainer implements Container {
 		else return ItemStack.tagMatches(first, second);
 	}
 	
+	//"true" if the itemstack is suitable for insertion into the Package.
+	//Doesn't check things like "is the Package full". So this method is kind of useless.
 	public boolean matches(ItemStack stack) {
-		return !stack.isEmpty() && canPlaceItem(0, stack);
+		ItemStack filter = getFilterStack();
+		
+		if(filter.isEmpty() || stack.isEmpty()) return true; //My modification: empty stacks coerce to everything
+		else if(filter.getItem() != stack.getItem()) return false;
+		else if(filter.getDamageValue() != stack.getDamageValue()) return false;
+		else return ItemStack.tagMatches(filter, stack);
+	}
+	
+	/// Interactions
+	
+	/**
+	 * Inserts the ItemStack into the PackageContainer, possibly spreading it across multiple internal slots.
+	 * @param toInsert The ItemStack to insert. Will not be mutated.
+	 * @param simulate If "true", perform a dry run. The PackageContainer will not be mutated.
+	 * @return The leftover portion of the ItemStack that did not fit in the PackageContainer, or ItemStack.EMPTY if it all fit.
+	 *         Always returns a fresh ItemStack instance.
+	 */
+	public ItemStack insert(ItemStack toInsert, int maxAmountToInsert, boolean simulate) {
+		//Check that the item fits in the Package at all
+		if(toInsert.isEmpty() || !matches(toInsert)) return toInsert;
+		
+		int remainingAmountToInsert = Math.min(toInsert.getCount(), maxAmountToInsert);
+		int amountInserted = 0;
+		int maxStackAmountPerSlot = maxStackAmountAllowed(toInsert);
+		for(int slot = 0; slot < SLOT_COUNT && remainingAmountToInsert > 0; slot++) { //Iterate forward through the slots, as long as we have more items to insert.
+			int amountToInsertThisSlot = Math.min(remainingAmountToInsert, maxStackAmountPerSlot); //Insert at most this many items into this slot.
+			
+			ItemStack currentStack = getItem(slot), newStack;
+			if(currentStack.isEmpty()) {
+				//If this slot is vacant, populate it with a new ItemStack.
+				newStack = toInsert.copy();
+				newStack.setCount(amountToInsertThisSlot);
+			} else {
+				//If the slot is occupied, try to increase its count with items from toInsert.
+				int remainingSpaceThisSlot = maxStackAmountPerSlot - currentStack.getCount();
+				if(remainingSpaceThisSlot <= 0) continue;
+				amountToInsertThisSlot = Math.min(amountToInsertThisSlot, remainingSpaceThisSlot);
+				
+				newStack = simulate ? currentStack.copy() : currentStack; //It's newStack = currentStack.copy() but avoiding the alloc when it isn't needed
+				newStack.grow(amountToInsertThisSlot);
+			}
+			
+			remainingAmountToInsert -= amountToInsertThisSlot;
+			amountInserted += amountToInsertThisSlot;
+			if(!simulate) setItem(slot, newStack);
+		}
+		
+		ItemStack remaining = toInsert.copy();
+		remaining.shrink(amountInserted);
+		return remaining;
+	}
+	
+	/**
+	 * The Player inserts items into the PackageContainer.
+	 * @return true if at least one item was inserted into the inventory
+	 */
+	public boolean insert(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+		int handSlot = handToSlotId(player, hand);
+		
+		if(action == PackageAction.INSERT_ALL) {
+			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
+			boolean didAnything = false;
+			for(int slotToTry : handSlotFirst(player, handSlot).boxed().toList()) {
+				int inserted = insert0(player, slotToTry, Integer.MAX_VALUE, simulate);
+				if(inserted != 0) didAnything = true;
+			}
+			return didAnything;
+		}
+		
+		int x = action == PackageAction.INSERT_ONE ? 1 : Integer.MAX_VALUE;
+		if(isEmpty()) {
+			//Only insert items from the player's hand slot, to avoid surprises.
+			return insert0(player, handSlot, x, simulate) > 0;
+		} else {
+			//Start with the player's hand slot, then iterate through the rest of the inventory.
+			for(int slotToTry : handSlotFirst(player, handSlot).boxed().toList()) {
+				int inserted = insert0(player, slotToTry, x, simulate);
+				if(inserted != 0) return true;
+			}
+			return false;
+		}
+	}
+	
+	private int insert0(Player player, int insertionSlot, int maxAmountToInsert, boolean simulate) {
+		ItemStack toInsert = player.getInventory().getItem(insertionSlot).copy();
+		ItemStack leftover = insert(toInsert, maxAmountToInsert, simulate);
+		if(!simulate) player.getInventory().setItem(insertionSlot, leftover);
+		return toInsert.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
+	}
+	
+	private static int handToSlotId(Player player, InteractionHand hand) {
+		return hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
+	}
+	
+	//Star ward refrence???
+	private static IntStream handSlotFirst(Player player, int handSlot) {
+		int size = player.getInventory().getContainerSize();
+		if(handSlot == 0) {
+			//The hand slot is already first, that's pretty convenient.
+			return IntStream.range(0, size);
+		} else if(handSlot == size) {
+			//2 segments: size, then [0..size-1)
+			return IntStream.concat(IntStream.of(handSlot), IntStream.range(0, size));
+		} else {
+			//3 segments: handSlot, [0..handSlot), [handSlot + 1..size)
+			return IntStream.concat(IntStream.of(handSlot), IntStream.concat(IntStream.range(0, handSlot), IntStream.range(handSlot + 1, size)));
+		}
+	}
+	
+	/**
+	 * Removes and returns up to maxAmountToTake items from the PackageContainer.
+	 * @param maxAmountToTake The maximum amount of items to remove from the PackageContainer.
+	 * @param simulate If "true", perform a dry run. The PackageContainer will not be mutated.
+	 * @return An ItemStack representing the items removed from the PackageContainer.
+	 *         Always returns a fresh ItemStack.
+	 *         May return an "overstack" if maxAmountToTake > getFilterStack().getMaxStackSize().
+	 * @see PackageContainer#flattenOverstack(ItemStack)
+	 */
+	public ItemStack take(int maxAmountToTake, boolean simulate) {
+		//First, peek at which item is in the Package.
+		//Calling getFilterStack after actually removing items from the Package will return ItemStack.EMPTY if we removed the last one.
+		ItemStack filter = getFilterStack();
+		if(filter.isEmpty()) return ItemStack.EMPTY;
+		
+		//Next, perform the taking operation
+		int remainingAmountToTake = maxAmountToTake, amountTook = 0;
+		for(int slot = SLOT_COUNT - 1; slot >= 0 && remainingAmountToTake > 0; slot--) { //Iterate backward through the slots, as long as we have more items to take.
+			ItemStack currentStack = getItem(slot);
+			if(currentStack.isEmpty()) continue;
+			
+			ItemStack newStack;
+			int amountToTakeThisSlot = Math.min(remainingAmountToTake, currentStack.getCount()); //Nonzero
+			
+			if(amountToTakeThisSlot == currentStack.getCount()) {
+				//Take all the items from the slot.
+				newStack = ItemStack.EMPTY;
+			} else {
+				//Take some of the items from the slot.
+				newStack = simulate ? currentStack.copy() : currentStack; //It's newStack = currentStack.copy() but avoiding the alloc when it isn't needed
+				newStack.shrink(amountToTakeThisSlot);
+			}
+			
+			remainingAmountToTake -= amountToTakeThisSlot;
+			amountTook += amountToTakeThisSlot;
+			if(!simulate) setItem(0, newStack);
+		}
+		
+		//Finally, construct the itemstack to be returned
+		filter = filter.copy();
+		filter.setCount(amountTook);
+		return filter;
+	}
+	
+	/**
+	 * @param mutOverstack An ItemStack where getCount() is potentially greater than getMaxStackSize(). It is mutated and will be isEmpty by the end of the call
+	 * @return A list of ItemStacks where each individual stack obeys getCount() <= getMaxStackSize().
+	 */
+	public static List<ItemStack> flattenOverstack(ItemStack mutOverstack) {
+		List<ItemStack> result = new ArrayList<>();
+		while(!mutOverstack.isEmpty()) {
+			result.add(mutOverstack.split(Math.min(mutOverstack.getCount(), mutOverstack.getMaxStackSize())));
+		}
+		return result;
 	}
 	
 	/// Container
@@ -133,7 +314,7 @@ public class PackageContainer implements Container {
 		PackageContainer containerToInsert = fromItemStack(stack);
 		if(containerToInsert != null && containerToInsert.calcRecursionLevel() >= RECURSION_LIMIT) return false;
 		
-		return canMergeItems(getFilterStack(), stack);
+		return matches(stack);
 	}
 	
 	@Override

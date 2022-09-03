@@ -6,17 +6,24 @@ public enum PackageAction {
 	//Insert one item into the package.
 	INSERT_ONE,
 	
-	//Insert everything in your hand into the package.
+	//Insert up to one stack of items into the package.
 	INSERT_STACK,
+	
+	//Insert all matching items in the player's inventory into the package.
+	INSERT_ALL,
 	
 	//Take one item out of the package.
 	TAKE_ONE,
 	
 	//Take a stack of items out of the package.
-	TAKE_STACK;
+	TAKE_STACK,
+	
+	//Take everything out of the package.
+	TAKE_ALL,
+	;
 	
 	public boolean isInsert() {
-		return this == INSERT_ONE || this == INSERT_STACK;
+		return this == INSERT_ONE || this == INSERT_STACK || this == INSERT_ALL;
 	}
 	
 	void write(FriendlyByteBuf buf) {

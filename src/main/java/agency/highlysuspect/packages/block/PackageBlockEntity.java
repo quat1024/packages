@@ -44,8 +44,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	}
 	
 	private PackageStyle style = PackageStyle.ERROR_LOL;
-	private final PackageContainer container = new PackageContainer();
-	{ container.addListener(c -> this.setChanged()); }
+	private final PackageContainer container = new PackageContainer().addListener(c -> this.setChanged());
 	
 	private Component customName;
 	
@@ -117,69 +116,14 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	}
 	
 	//custom package-specific inventory wrappers, for external use
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	public boolean matches(ItemStack stack) {
-		return container.matches(stack);
-	}
 	
 	//<editor-fold desc="Interactions">
 	public void performAction(Player player, InteractionHand hand, PackageAction action) {
-		if(action.isInsert()) insert(player, hand, action);
+		if(action.isInsert()) container.insert(player, hand, action, false);
 		else take(player, action);
 	}
 	
-	//Does not mutate 'held', always returns a different item stack.
-	//kinda like forge item handlers lol...
-	public void insert(Player player, InteractionHand hand, PackageAction action) {
-		ItemStack held = player.getItemInHand(hand);
-		
-		if(held.isEmpty() || !matches(held)) {
-			int matchingSlot = player.getInventory().findSlotMatchingItem(findFirstNonemptyStack());
-			if(matchingSlot == -1) {
-				return;
-			}
-			held = player.getInventory().getItem(matchingSlot);
-			ItemStack leftover = placeIntoPackage(held, action);
-			player.getInventory().setItem(matchingSlot, leftover);
-			return;
-		}
-		ItemStack leftover = placeIntoPackage(held, action);
-		player.setItemInHand(hand, leftover);
-	}
-
-	private ItemStack placeIntoPackage(ItemStack insertStack, PackageAction action) {
-		//Will never be more than one stack
-		int amountToInsert = Math.min(maxStackAmountAllowed(insertStack), action == PackageAction.INSERT_STACK ? insertStack.getCount() : 1);
-		int insertedAmount = 0;
-		
-		ListIterator<ItemStack> stackerator = container.inv.listIterator();
-		while(amountToInsert > 0 && stackerator.hasNext()) {
-			ItemStack stack = stackerator.next();
-			
-			if(stack.isEmpty()) {
-				ItemStack newStack = insertStack.copy();
-				newStack.setCount(amountToInsert);
-				insertedAmount += amountToInsert;
-				stackerator.set(newStack);
-				break;
-			} else {
-				int increaseAmount = Math.min(maxStackAmountAllowed(stack) - stack.getCount(), amountToInsert);
-				if(increaseAmount > 0) {
-					stack.grow(increaseAmount);
-					amountToInsert -= increaseAmount;
-					insertedAmount += increaseAmount;
-				}
-			}
-		}
-		setChanged();
-		ItemStack leftover = insertStack.copy();
-		leftover.shrink(insertedAmount);
-		return leftover;
-	}
-	
+	@Deprecated
 	public void take(Player player, PackageAction action) {
 		ItemStack contained = findFirstNonemptyStack();
 		if(contained.isEmpty()) return;

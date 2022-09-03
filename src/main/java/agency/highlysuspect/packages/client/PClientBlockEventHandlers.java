@@ -3,12 +3,14 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
+import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -35,7 +37,12 @@ public class PClientBlockEventHandlers {
 	public static void onInitializeClient() {
 		EarlyClientsideAttackBlockCallback.EVENT.register((player, level, pos, direction) -> {
 			if(!canAttack(player, level, pos, direction)) return false;
-			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, player.isShiftKeyDown() ? PackageAction.TAKE_STACK : PackageAction.TAKE_ONE);
+			
+			PackageAction action = PackageAction.TAKE_ONE;
+			if(player.isShiftKeyDown()) action = PackageAction.TAKE_STACK;
+			if(Screen.hasControlDown()) action = PackageAction.TAKE_ALL;
+			
+			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
 			return true;
 		});
 		
@@ -56,26 +63,23 @@ public class PClientBlockEventHandlers {
 			
 			BlockState state = level.getBlockState(pos);
 			BlockEntity pkg = level.getBlockEntity(pos);
-			if(!(state.getBlock() instanceof PackageBlock) || !(pkg instanceof PackageBlockEntity)) return InteractionResult.PASS;
+			if(!(state.getBlock() instanceof PackageBlock) || !(pkg instanceof PackageBlockEntity be)) return InteractionResult.PASS;
 			
 			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 			if(direction != frontDir) return InteractionResult.PASS;
 			
-			ItemStack contentsOrEmpty = ((PackageBlockEntity) pkg).findFirstNonemptyStack();
-			//Player is holding something matching the pkg (where an empty package counts as matching everything)
-			if(contentsOrEmpty.isEmpty() || contentsOrEmpty.sameItem(player.getItemInHand(hand))) {
-				PNetClient.performAction(pos, hand, player.isShiftKeyDown() ? PackageAction.INSERT_STACK : PackageAction.INSERT_ONE);
-				return InteractionResult.CONSUME;
-			}
+			PackageContainer container = be.getContainer();
 			
-			//Player is holding something else but there's some other item in the package
-			if(!contentsOrEmpty.isEmpty()) {
-				int slot = player.getInventory().findSlotMatchingItem(contentsOrEmpty);
-				if(slot != -1) {
-					//This will still pass hand, but we'll check on the server side for available items if the hand stack doesn't match.
-					PNetClient.performAction(pos, hand, player.isShiftKeyDown() ? PackageAction.INSERT_STACK : PackageAction.INSERT_ONE);
-					return InteractionResult.CONSUME;
-				}
+			PackageAction action = PackageAction.INSERT_ONE;
+			if(player.isShiftKeyDown()) action = PackageAction.INSERT_STACK;
+			if(Screen.hasControlDown()) action = PackageAction.INSERT_ALL;
+			
+			//Simulate performing the action. If anything happened...
+			if(container.insert(player, hand, action, true)) {
+				//...send a packet to do it for real
+				PNetClient.performAction(pos, hand, action);
+				player.swing(hand);
+				return InteractionResult.CONSUME; //SUCCESS sends a block-place packet too because useblockcallback wacky
 			}
 			
 			return InteractionResult.PASS;
