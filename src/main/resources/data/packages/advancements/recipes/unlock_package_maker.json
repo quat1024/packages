@@ -11,12 +11,6 @@
       "conditions": {
         "items": [
           {
-            "tag": "minecraft:logs"
-          },
-          {
-            "tag": "minecraft:planks"
-          },
-          {
             "tag": "c:wooden_chests"
           }
         ]

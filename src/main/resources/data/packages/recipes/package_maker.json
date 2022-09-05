@@ -3,7 +3,7 @@
   "pattern": [
     "WWW",
     "LCL",
-    "L L"
+    "LIL"
   ],
   "key": {
     "W": {
@@ -14,7 +14,10 @@
     },
     "C": {
       "tag": "c:wooden_chests"
-    }
+    },
+		"I": {
+			"item": "minecraft:iron_block"
+		}
   },
   "result": {
     "item": "packages:package_maker"
