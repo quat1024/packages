@@ -16,7 +16,7 @@
       "tag": "c:wooden_chests"
     },
 		"I": {
-			"item": "minecraft:iron_block"
+			"item": "minecraft:hay_block"
 		}
   },
   "result": {
