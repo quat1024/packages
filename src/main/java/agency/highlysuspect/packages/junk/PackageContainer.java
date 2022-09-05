@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.junk;
 import agency.highlysuspect.packages.item.PItems;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ContainerListener;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class PackageContainer implements Container {
 	/**
@@ -68,6 +70,16 @@ public class PackageContainer implements Container {
 		return count;
 	}
 	
+	public boolean isFull() {
+		return Mth.equal(fillPercentage(), 1); //Mth.equal uses a suitable epsilon
+	}
+	
+	public float fillPercentage() {
+		int maxCount = maxStackAmountAllowed(getFilterStack()) * SLOT_COUNT;
+		if(maxCount == 0) return 1;
+		return getCount() / (float) maxCount;
+	}
+	
 	//Whether you're ever allowed to put this item into a Package.
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean allowedInPackageAtAll(ItemStack stack) {
@@ -95,14 +107,12 @@ public class PackageContainer implements Container {
 	
 	//"true" if the itemstack is suitable for insertion into the Package.
 	//Doesn't check things like "is the Package full". So this method is kind of useless.
-	//Based off HopperBlockEntity#canMergeItems or something
+	//Based kinda off HopperBlockEntity#canMergeItems but it's different
 	public boolean matches(ItemStack stack) {
 		ItemStack filter = getFilterStack();
 		
-		if(filter.isEmpty() || stack.isEmpty()) return true; //My modification: empty stacks coerce to everything
-		else if(filter.getItem() != stack.getItem()) return false;
-		else if(filter.getDamageValue() != stack.getDamageValue()) return false;
-		else return ItemStack.tagMatches(filter, stack);
+		if(filter.isEmpty() || stack.isEmpty()) return true; //Empty stacks coerce to everything
+		else return ItemStack.isSameItemSameTags(filter, stack);
 	}
 	
 	//<editor-fold desc="Interactions">
@@ -321,14 +331,39 @@ public class PackageContainer implements Container {
 	
 	public static @Nullable PackageContainer fromItemStack(ItemStack stack) {
 		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE) return null;
-		
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return null;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
 	
+	//Use this instead of fromItemStack() != null if you don't actually need the PackageContainer afterwards, it's cheaper.
+	public static boolean existsOnItemStack(ItemStack stack) {
+		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE) return false;
+		CompoundTag tag = stack.getTag();
+		if(tag == null) return false;
+		
+		CompoundTag blockEntityTag = tag.getCompound("BlockEntityTag");
+		if(blockEntityTag == null || blockEntityTag.isEmpty()) return false;
+		
+		CompoundTag key = blockEntityTag.getCompound(KEY);
+		return key != null && !key.isEmpty();
+	}
+	
 	public ItemStack writeToStackTag(ItemStack stack) {
 		stack.getOrCreateTagElement("BlockEntityTag").put(KEY, toTag());
 		return stack;
+	}
+	
+	/**
+	 * Ensures that the modified PackageContainer is written back to the itemstack.
+	 */
+	public static <T> T mutateItemStack(ItemStack stack, Function<PackageContainer, T> action, T ifNoContainer) {
+		PackageContainer cont = fromItemStack(stack);
+		if(cont == null) return ifNoContainer;
+		try {
+			return action.apply(cont);
+		} finally {
+			cont.writeToStackTag(stack);
+		}
 	}
 }

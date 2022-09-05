@@ -65,7 +65,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 			if(!showText && distance <= 8) showText = true;
 		}
 		
-		if(showText) drawText(matrices, vertexConsumers, light, count, container.maxStackAmountAllowed(stack), detailed, distance);
+		if(showText) drawText(matrices, vertexConsumers, light, container, detailed, distance);
 		
 		matrices.popPose();
 	}
@@ -111,8 +111,11 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		}
 	}
 	
-	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, int count, int max, boolean detailed, double distance) {
+	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, PackageContainer container, boolean detailed, double distance) {
 		if(Minecraft.getInstance().gameMode == null) return;
+		
+		int count = container.getCount();
+		int max = container.maxStackAmountAllowed(container.getFilterStack());
 		
 		String text;
 		if(detailed) {
@@ -124,7 +127,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 			}
 		} else text = String.valueOf(count);
 		
-		int color = (max * PackageContainer.SLOT_COUNT == count ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().gameMode.getPickRange() ? 0x55000000 : 0xFF000000);
+		int color = (container.isFull() ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().gameMode.getPickRange() ? 0x55000000 : 0xFF000000);
 		int shadowColor = (color & 0xFCFCFC) >> 2; //I um, okay, so, this is kind of a weird color algorithm. Wrote this like 2yrs ago lmao
 		
 		float scale;
