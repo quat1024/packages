@@ -116,16 +116,20 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		
 		String text;
 		if(detailed) {
-			int stacks = count / max;
-			int leftover = count % max;
-			text = stacks + "x" + max + " + " + leftover;
+			if(max == 1) text = count + "x1";
+			else {
+				int stacks = count / max;
+				int leftover = count % max;
+				text = stacks + "x" + max + " + " + leftover;
+			}
 		} else text = String.valueOf(count);
 		
 		int color = (max * PackageContainer.SLOT_COUNT == count ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().gameMode.getPickRange() ? 0x55000000 : 0xFF000000);
 		int shadowColor = (color & 0xFCFCFC) >> 2; //I um, okay, so, this is kind of a weird color algorithm. Wrote this like 2yrs ago lmao
 		
 		float scale;
-		if(detailed) scale = 1/70f;
+		if(detailed && max == 1) scale = 1/30f;
+		else if(detailed) scale = 1/70f;
 		else if(count < 10) scale = 1/15f;
 		else if(count < 100) scale = 1/23f;
 		else scale = 1/30f;
