@@ -1,46 +1,41 @@
 package agency.highlysuspect.packages.junk;
 
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.net.PackageAction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ContainerListener;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.stream.IntStream;
 
 public class PackageContainer implements Container {
-	//The number of internal slots in the Package. Packages hold eight stacks of items, by design.
+	/**
+	 * The number of internal slots in the Package. Packages hold eight stacks of items.
+	 */
 	public static final int SLOT_COUNT = 8;
 	
-	//Packages containing more than this number of layers of recursion are too heavy to insert into other Packages.
-	//A recursion limit of 3 allows inserting packages of packages of packages of things,
-	//but not packages of packages of packages of packages of things.
+	/**
+	 * Packages containing more than this number of layers of recursion are too heavy to insert into other Packages.
+	 * A recursion limit of 3 allows inserting packages of packages of packages of things,
+	 * but not packages of packages of packages of packages of things.
+	 */
 	public static final int RECURSION_LIMIT = 3;
 	
-	//The location that PackageContainer data is conventionally stored in the Package's NBT tag.
-	//A convention is required so that the PackageContainer can be read back from the ItemStack.
+	/**
+	 * The location that PackageContainer data is conventionally stored in the Package's NBT tag.
+	 * A convention is required so that the PackageContainer can be read back from the ItemStack.
+	 */
 	public static final String KEY = "PackageContents";
 	
-	@VisibleForTesting //"the visibility of this field is deprecated, and it will be made private". Just havent migrated the clicking-on-pkg logic yet
-	public final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
+	/**
+	 * The internal slots.
+	 */
+	private final NonNullList<ItemStack> inv = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
 	
 	/// Listeners
 	
@@ -82,7 +77,7 @@ public class PackageContainer implements Container {
 	}
 	
 	//The amount of items per-internal-slot that a Package is allowed to hold, if it contained `stack`.
-	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight packages.
+	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight nonempty packages.
 	//TODO: leaky abstraction, see comment in canPlaceItem
 	public int maxStackAmountAllowed(ItemStack stack) {
 		PackageContainer recur = fromItemStack(stack);
@@ -110,11 +105,12 @@ public class PackageContainer implements Container {
 		else return ItemStack.tagMatches(filter, stack);
 	}
 	
-	/// Interactions
-	
+	//<editor-fold desc="Interactions">
 	/**
 	 * Inserts the ItemStack into the PackageContainer, possibly spreading it across multiple internal slots.
 	 * @param toInsert The ItemStack to insert. Will not be mutated.
+	 * @param maxAmountToInsert The maximum amount of items that will be inserted.
+	 *                          This is a convenience, to avoid copying when you want to insert less than the full toInsert stack.
 	 * @param simulate If "true", perform a dry run. The PackageContainer will not be mutated.
 	 * @return The leftover portion of the ItemStack that did not fit in the PackageContainer, or ItemStack.EMPTY if it all fit.
 	 *         Always returns a fresh ItemStack instance.
@@ -152,49 +148,6 @@ public class PackageContainer implements Container {
 		ItemStack remaining = toInsert.copy();
 		remaining.shrink(amountInserted);
 		return remaining;
-	}
-	
-	/**
-	 * The Player inserts items into the PackageContainer.
-	 * @return true if at least one item was inserted into the inventory
-	 */
-	public boolean insert(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
-		int handSlot = handToSlotId(player, hand);
-		
-		if(action == PackageAction.INSERT_ALL) {
-			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
-			//If the player and package is not holding anything, look for the item type the player has the most of, and choose that.
-			int favoriteSlot;
-			if(player.getItemInHand(hand).isEmpty() && isEmpty()) favoriteSlot = slotWithALot(player).orElse(handSlot);
-			else favoriteSlot = handSlot;
-			
-			boolean didAnything = false;
-			for(int slotToTry : handSlotFirst(player, favoriteSlot).boxed().toList()) {
-				int inserted = insert0(player, slotToTry, Integer.MAX_VALUE, simulate);
-				if(inserted != 0) didAnything = true;
-			}
-			return didAnything;
-		}
-		
-		int x = action == PackageAction.INSERT_ONE ? 1 : Integer.MAX_VALUE;
-		if(isEmpty()) {
-			//Only insert items from the player's hand slot, to avoid surprises.
-			return insert0(player, handSlot, x, simulate) > 0;
-		} else {
-			//Start with the player's hand slot, then iterate through the rest of the inventory.
-			for(int slotToTry : handSlotFirst(player, handSlot).boxed().toList()) {
-				int inserted = insert0(player, slotToTry, x, simulate);
-				if(inserted != 0) return true;
-			}
-			return false;
-		}
-	}
-	
-	private int insert0(Player player, int insertionSlot, int maxAmountToInsert, boolean simulate) {
-		ItemStack toInsert = player.getInventory().getItem(insertionSlot).copy();
-		ItemStack leftover = insert(toInsert, maxAmountToInsert, simulate);
-		if(!simulate) player.getInventory().setItem(insertionSlot, leftover);
-		return toInsert.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
 	}
 	
 	/**
@@ -241,98 +194,18 @@ public class PackageContainer implements Container {
 		return filter;
 	}
 	
-	/**
-	 * The Player takes items from the PackageContainer.
-	 */
-	public PlayerTakeResult take(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
-		int maxAmountToTake = switch(action) {
-			case TAKE_ONE -> 1;
-			case TAKE_STACK -> {
-				ItemStack held = player.getItemInHand(hand);
-				if(matches(held)) {
-					//First, try to complete the stack in the player's hand without going over.
-					int completionAmount = held.getMaxStackSize() - held.getCount();
-					if(completionAmount > 0) yield completionAmount;
-				}
-				yield maxStackAmountAllowed(getFilterStack());
-			}
-			case TAKE_ALL -> Integer.MAX_VALUE;
-			default -> throw new IllegalArgumentException();
-		};
-		
-		ItemStack toGiveOverstack = take(maxAmountToTake, simulate);
-		if(toGiveOverstack.isEmpty()) return new PlayerTakeResult(false, Collections.emptyList());
-		
-		//TODO: Simulate adding items to player inventories and returning an accurate leftovers count, instead of cheesing it
-		if(simulate) return new PlayerTakeResult(true, Collections.emptyList());
-		
-		List<ItemStack> toGive = flattenOverstack(toGiveOverstack);
-		List<ItemStack> leftovers = new ArrayList<>();
-		for(ItemStack stack : toGive) {
-			if(!player.getInventory().add(stack)) {
-				leftovers.add(stack);
-			}
-		}
-		return new PlayerTakeResult(true, leftovers);
-	}
-	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {}
-	
-	/**
-	 * @param mutOverstack An ItemStack where getCount() is potentially greater than getMaxStackSize(). It is mutated and will be isEmpty by the end of the call
-	 * @return A list of ItemStacks where each individual stack obeys getCount() <= getMaxStackSize().
-	 */
+	//Eg. 160x cobblestone -> [64x cobblestone, 64x cobblestone, 32x cobblestone]. Mutates its argument.
 	public static List<ItemStack> flattenOverstack(ItemStack mutOverstack) {
 		List<ItemStack> result = new ArrayList<>();
 		while(!mutOverstack.isEmpty()) {
-			result.add(mutOverstack.split(Math.min(mutOverstack.getCount(), mutOverstack.getMaxStackSize())));
+			//split(amt) takes min(stack.getCount(), amt)
+			result.add(mutOverstack.split(mutOverstack.getMaxStackSize()));
 		}
 		return result;
 	}
+	//</editor-fold>
 	
-	private static int handToSlotId(Player player, InteractionHand hand) {
-		return hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
-	}
-	
-	//Star ward refrence???
-	private static IntStream handSlotFirst(Player player, int handSlot) {
-		int size = player.getInventory().getContainerSize();
-		if(handSlot == 0) {
-			//The hand slot is already first, that's pretty convenient.
-			return IntStream.range(0, size);
-		} else if(handSlot == size) {
-			//2 segments: size, then [0..size-1)
-			return IntStream.concat(IntStream.of(handSlot), IntStream.range(0, size));
-		} else {
-			//3 segments: handSlot, [0..handSlot), [handSlot + 1..size)
-			return IntStream.concat(IntStream.of(handSlot), IntStream.concat(IntStream.range(0, handSlot), IntStream.range(handSlot + 1, size)));
-		}
-	}
-	
-	//Pick one of the slots containing the item type that the player has the most of.
-	private Optional<Integer> slotWithALot(Player player) {
-		//Make a frequency table of items
-		Map<Item, MutableInt> runningTotal = new HashMap<>();
-		for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
-			ItemStack here = player.getInventory().getItem(i);
-			if(here.isEmpty()) continue;
-			if(!allowedInPackageAtAll(here)) continue;
-			runningTotal.computeIfAbsent(here.getItem(), __ -> new MutableInt(0)).add(here.getCount());
-		}
-		
-		return runningTotal.entrySet().stream()
-			.max(Map.Entry.comparingByValue())
-			.map(Map.Entry::getKey)
-			.flatMap(item -> {
-				//I forgot which slot the item belonged to, could you remind me?
-				for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
-					if(player.getInventory().getItem(i).getItem() == item) return Optional.of(i); //Thanks
-				}
-				return Optional.empty();
-			});
-	}
-	
-	/// Container
-	
+	//<editor-fold desc="Container">
 	@Override
 	public int getContainerSize() {
 		return SLOT_COUNT;
@@ -402,6 +275,7 @@ public class PackageContainer implements Container {
 		inv.clear();
 		setChanged();
 	}
+	//</editor-fold>
 	
 	/// NBT guts
 	

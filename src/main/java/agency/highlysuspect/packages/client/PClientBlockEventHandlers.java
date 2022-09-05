@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
-import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
 import net.fabricmc.api.EnvType;
@@ -40,13 +39,12 @@ public class PClientBlockEventHandlers {
 			BlockState state = level.getBlockState(pos);
 			BlockEntity be = level.getBlockEntity(pos);
 			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return false;
-			PackageContainer container = pkg.getContainer();
 			
 			PackageAction action = PackageAction.TAKE_ONE;
 			if(player.isShiftKeyDown()) action = PackageAction.TAKE_STACK;
 			if(Screen.hasControlDown()) action = PackageAction.TAKE_ALL;
 			
-			PackageContainer.PlayerTakeResult result = container.take(player, InteractionHand.MAIN_HAND, action, true);
+			PackageBlockEntity.PlayerTakeResult result = pkg.playerTake(player, InteractionHand.MAIN_HAND, action, true);
 			if(result.successful()) {
 				PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
 				return true;
@@ -71,7 +69,6 @@ public class PClientBlockEventHandlers {
 			BlockState state = level.getBlockState(pos);
 			BlockEntity be = level.getBlockEntity(pos);
 			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return InteractionResult.PASS;
-			PackageContainer container = pkg.getContainer();
 			
 			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 			if(direction != frontDir) return InteractionResult.PASS;
@@ -81,7 +78,7 @@ public class PClientBlockEventHandlers {
 			if(Screen.hasControlDown()) action = PackageAction.INSERT_ALL;
 			
 			//Simulate performing the action. If anything happened...
-			if(container.insert(player, hand, action, true)) {
+			if(pkg.playerInsert(player, hand, action, true)) {
 				//...send a packet to do it for real
 				PNetClient.performAction(pos, hand, action);
 				player.swing(hand);

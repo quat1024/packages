@@ -3,6 +3,9 @@ package agency.highlysuspect.packages.block;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.net.PackageAction;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,31 +18,24 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.IntStream;
 
-/**
- * Hi, you caught me in the middle of a big refactor.
- * So one of the big things with inventory mods is that inventories can live inside of real block entities, but
- * on ItemStacks they are ephemeral; the best you can do is read the inventory off the NBT tag, modify it however
- * you need, then write the result back to the NBT tag. This leads to blobs of ad-hoc NBT handling code gumming
- * up the codebase. It's already annoying, and for the features I want to add (like being able to click items into
- * the package from your inventory), it is untenable, and I need a new system.
- * 
- * Ideally I will be able to inintialize PackageContainer from a raw NBT tag, interface with it the same way I
- * can interface with the package block entity (all the interaction-heavy code should live there), then write back
- * to the item stack. And have the same API surface that I do with the block entity.
- * 
- * But it's late and I'm pretty tired, so I'm doing the refactor piecemeal.
- */
 public class PackageBlockEntity extends BlockEntity implements Container, RenderAttachmentBlockEntity, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE, pos, state);
@@ -62,20 +58,163 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		return container;
 	}
 	
+	//<editor-fold desc="Interactions">
 	public void performAction(Player player, InteractionHand hand, PackageAction action) {
-		if(action.isInsert()) container.insert(player, hand, action, false);
-		else {
-			PackageContainer.PlayerTakeResult result = container.take(player, hand, action, false);
-			if(result.successful() && !result.leftovers().isEmpty() && level != null) {
-				Vec3 spawnPos = Vec3.atCenterOf(getBlockPos()).add(new Vec3(getBlockState().getValue(PackageBlock.FACING).primaryDirection.step()).scale(0.8d));
-				for(ItemStack stack : result.leftovers()) {
-					ItemEntity e = new ItemEntity(level, spawnPos.x, spawnPos.y, spawnPos.z, stack, 0, 0.01, 0);
-					e.setPickUpDelay(10);
-					level.addFreshEntity(e);
-				}
+		if(action.isInsert()) playerInsert(player, hand, action, false);
+		else playerTakeDropLeftovers(player, hand, action, false);
+	}
+	
+	/**
+	 * The Player inserts items from their inventory into the Package.
+	 * @param player The Player who is inserting items.
+	 * @param hand Which hand the player is interacting with.
+	 * @param action Which inserting action the player is performing. Must not be a taking action.
+	 * @param simulate If "true", a dry-run is performed.
+	 * @return "true" if any items changed.
+	 */
+	public boolean playerInsert(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+		int handSlot = handToSlotId(player, hand);
+		if(!action.isInsert()) throw new IllegalArgumentException("playerInsert only supports insertion actions, not " + action);
+		
+		if(action == PackageAction.INSERT_ALL) {
+			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
+			//If the player and package is not holding anything, look for the item type the player has the most of, and choose that.
+			int favoriteSlot;
+			if(player.getItemInHand(hand).isEmpty() && container.isEmpty()) favoriteSlot = slotWithALot(player).orElse(handSlot);
+			else favoriteSlot = handSlot;
+			
+			boolean didAnything = false;
+			IntIterator iterator = handSlotFirst(player, favoriteSlot).intIterator();
+			while(iterator.hasNext()) {
+				int inserted = insert0(player, iterator.nextInt(), Integer.MAX_VALUE, simulate);
+				if(inserted != 0) didAnything = true;
 			}
+			return didAnything;
+		}
+		
+		int x = action == PackageAction.INSERT_ONE ? 1 : Integer.MAX_VALUE;
+		if(container.isEmpty()) {
+			//Only insert items from the player's hand slot, to avoid surprises.
+			return insert0(player, handSlot, x, simulate) > 0;
+		} else {
+			//Start with the player's hand slot, but iterate through the rest of the inventory, to look for more similar items.
+			IntIterator iterator = handSlotFirst(player, handSlot).intIterator();
+			while(iterator.hasNext()) {
+				int inserted = insert0(player, iterator.nextInt(), x, simulate);
+				if(inserted != 0) return true;
+			}
+			return false;
 		}
 	}
+	
+	//Inserts items from the player's slot into the package, then places any leftovers back into the slot.
+	private int insert0(Player player, int slot, int maxAmountToInsert, boolean simulate) {
+		ItemStack toInsert = player.getInventory().getItem(slot).copy();
+		ItemStack leftover = container.insert(toInsert, maxAmountToInsert, simulate);
+		if(!simulate) player.getInventory().setItem(slot, leftover);
+		return toInsert.getCount() - (leftover.isEmpty() ? 0 : leftover.getCount());
+	}
+	
+	//Picks one of the slots containing the item type that the player has the most of.
+	private Optional<Integer> slotWithALot(Player player) {
+		//Make a frequency table of items
+		Map<Item, MutableInt> runningTotal = new HashMap<>();
+		for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
+			ItemStack here = player.getInventory().getItem(i);
+			if(here.isEmpty()) continue;
+			if(!container.allowedInPackageAtAll(here)) continue;
+			runningTotal.computeIfAbsent(here.getItem(), __ -> new MutableInt(0)).add(here.getCount());
+		}
+		
+		return runningTotal.entrySet().stream()
+			.max(Map.Entry.comparingByValue()) //Optional.Empty if runningTotal is empty
+			.map(Map.Entry::getKey)
+			.flatMap(item -> {
+				//I forgot which slot the item belonged to, could you remind me?
+				for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
+					if(player.getInventory().getItem(i).getItem() == item) return Optional.of(i); //Thanks
+				}
+				return Optional.empty(); //Unreachable under normal circumstances
+			});
+	}
+	
+	/**
+	 * The Player takes items from the Package.
+	 * @param player The Player who is taking items.
+	 * @param hand Which hand the player is interacting with.
+	 * @param action Which taking action the player is performing. Must not be an insertion action.
+	 * @param simulate If "true", a dry-run is performed.
+	 * @return A tuple: whether the action was successful, and all leftover itemstacks that the player wanted to take but couldn't fit in their inventory.
+	 */
+	public PlayerTakeResult playerTake(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+		int maxAmountToTake = switch(action) {
+			case TAKE_ONE -> 1;
+			case TAKE_STACK -> {
+				ItemStack held = player.getItemInHand(hand);
+				if(container.matches(held)) {
+					//First, try to complete the stack in the player's hand without going over.
+					int completionAmount = held.getMaxStackSize() - held.getCount();
+					if(completionAmount > 0) yield completionAmount;
+				}
+				yield container.maxStackAmountAllowed(container.getFilterStack());
+			}
+			case TAKE_ALL -> Integer.MAX_VALUE;
+			default -> throw new IllegalArgumentException("take() only supports taking actions, not " + action);
+		};
+		
+		ItemStack toGiveOverstack = container.take(maxAmountToTake, simulate);
+		if(toGiveOverstack.isEmpty()) return new PlayerTakeResult(false, Collections.emptyList());
+		
+		//TODO: Simulate adding items to player inventories and returning an accurate leftovers list, instead of faking it
+		// This isn't very important
+		if(simulate) return new PlayerTakeResult(true, Collections.emptyList());
+		
+		List<ItemStack> toGive = PackageContainer.flattenOverstack(toGiveOverstack);
+		List<ItemStack> leftovers = new ArrayList<>();
+		for(ItemStack stack : toGive) {
+			if(!player.getInventory().add(stack)) leftovers.add(stack);
+		}
+		return new PlayerTakeResult(true, leftovers);
+	}
+	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {}
+	
+	@SuppressWarnings("SameParameterValue") //simulate == false, see above to-do comment
+	private void playerTakeDropLeftovers(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+		PlayerTakeResult result = playerTake(player, hand, action, simulate);
+		if(simulate || !result.successful() || result.leftovers().isEmpty() || level == null) return;
+		
+		Vec3 spawnPos = Vec3.atCenterOf(getBlockPos()).add(new Vec3(getBlockState().getValue(PackageBlock.FACING).primaryDirection.step()).scale(0.8d));
+		for(ItemStack stack : result.leftovers()) {
+			ItemEntity e = new ItemEntity(level, spawnPos.x, spawnPos.y, spawnPos.z, stack, 0, 0.01, 0);
+			e.setPickUpDelay(10);
+			level.addFreshEntity(e);
+		}
+	}
+	
+	//MAIN_HAND returns the slot ID of the current hotbar slot, OFF_HAND returns the offhand slot ID. Designed for player.getInventory().getItem().
+	private static int handToSlotId(Player player, InteractionHand hand) {
+		return hand == InteractionHand.MAIN_HAND ? player.getInventory().selected : Inventory.SLOT_OFFHAND;
+	}
+	
+	//Returns the sequence [0..player.getInventory().getContainerSize()), but with the passed argument moved to the front.
+	//Star ward refrence???
+	private static IntList handSlotFirst(Player player, int handSlot) {
+		int size = player.getInventory().getContainerSize();
+		IntStream stream;
+		if(handSlot == 0) {
+			//The hand slot is already first, that's pretty convenient.
+			stream = IntStream.range(0, size);
+		} else if(handSlot == size) {
+			//2 segments: size, then [0..size-1)
+			stream = IntStream.concat(IntStream.of(handSlot), IntStream.range(0, size));
+		} else {
+			//3 segments: handSlot, [0..handSlot), [handSlot + 1..size)
+			stream = IntStream.concat(IntStream.of(handSlot), IntStream.concat(IntStream.range(0, handSlot), IntStream.range(handSlot + 1, size)));
+		}
+		
+		return stream.collect(IntArrayList::new, IntArrayList::add, IntArrayList::addAll);
+	}
+	//</editor-fold>
 	
 	//<editor-fold desc="Container">
 	@Override
