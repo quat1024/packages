@@ -7,8 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 public class PNetCommon {
 	public static void onInitialize() {
@@ -18,29 +17,16 @@ public class PNetCommon {
 			PackageAction action = PackageAction.get(buf.readByte());
 			
 			server.submit(() -> {
-				Level world = player.level;
-				
-				if(!packageSanityCheck(world, player, pos)) return;
-				
-				PackageBlockEntity be = (PackageBlockEntity) world.getBlockEntity(pos);
-				assert be != null; //sanity checked
-				
-				be.performAction(player, hand, action);
+				PackageBlockEntity be = getPackageChecked(player.level, player, pos);
+				if(be != null) be.performAction(player, hand, action);
 			});
 		});
 	}
 	
-	@SuppressWarnings({"RedundantIfStatement", "deprecation", "BooleanMethodIsAlwaysInverted"})
-	private static boolean packageSanityCheck(Level world, Player player, BlockPos pos) {
-		if(!world.hasChunkAt(pos)) return false;
-		if(player.blockPosition().distSqr(pos) > 8 * 8) return false;
-		
-		BlockState state = world.getBlockState(pos);
-		if(!(state.getBlock() instanceof PackageBlock)) return false;
-		
-		BlockEntity be = world.getBlockEntity(pos);
-		if(!(be instanceof PackageBlockEntity)) return false;
-		
-		return true;
+	@SuppressWarnings({"deprecation", "BooleanMethodIsAlwaysInverted"})
+	private static @Nullable PackageBlockEntity getPackageChecked(Level level, Player player, BlockPos pos) {
+		if(!level.hasChunkAt(pos) || player.blockPosition().distSqr(pos) > 8 * 8) return null;
+		if(!(level.getBlockState(pos).getBlock() instanceof PackageBlock)) return null;
+		return level.getBlockEntity(pos) instanceof PackageBlockEntity pbe ? pbe : null;
 	}
 }

@@ -35,9 +35,8 @@ public class MixinLivingEntity {
 	private BlockState packages$checkFallDamage$modifyParticleOptionArg(BlockState state) {
 		if(lastFallCheckPos != null &&
 			state.getBlock() == PBlocks.PACKAGE &&
-			((Entity) (Object) this).getLevel().getBlockEntity(lastFallCheckPos) instanceof PackageBlockEntity be &&
-			be.getRenderAttachmentData() instanceof PackageStyle style) {
-			return style.innerBlock().defaultBlockState();
+			((Entity) (Object) this).getLevel().getBlockEntity(lastFallCheckPos) instanceof PackageBlockEntity be) {
+			return be.getStyle().innerBlock().defaultBlockState();
 		} else return state;
 	}
 }

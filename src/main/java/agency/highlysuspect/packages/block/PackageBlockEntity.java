@@ -50,11 +50,6 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	
 	private Component customName;
 	
-	@Override
-	public Object getRenderAttachmentData() {
-		return getStyle();
-	}
-	
 	public PackageStyle getStyle() {
 		return style;
 	}
@@ -67,7 +62,74 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		return container;
 	}
 	
-	//<editor-fold desc="Name cruft">
+	public void performAction(Player player, InteractionHand hand, PackageAction action) {
+		if(action.isInsert()) container.insert(player, hand, action, false);
+		else {
+			PackageContainer.PlayerTakeResult result = container.take(player, hand, action, false);
+			if(result.successful() && !result.leftovers().isEmpty() && level != null) {
+				Vec3 spawnPos = Vec3.atCenterOf(getBlockPos()).add(new Vec3(getBlockState().getValue(PackageBlock.FACING).primaryDirection.step()).scale(0.8d));
+				for(ItemStack stack : result.leftovers()) {
+					ItemEntity e = new ItemEntity(level, spawnPos.x, spawnPos.y, spawnPos.z, stack, 0, 0.01, 0);
+					e.setPickUpDelay(10);
+					level.addFreshEntity(e);
+				}
+			}
+		}
+	}
+	
+	//<editor-fold desc="Container">
+	@Override
+	public int getContainerSize() {
+		return container.getContainerSize();
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return container.isEmpty();
+	}
+	
+	@Override
+	public ItemStack getItem(int slot) {
+		return container.getItem(slot);
+	}
+	
+	@Override
+	public ItemStack removeItem(int slot, int amount) {
+		return container.removeItem(slot, amount);
+	}
+	
+	@Override
+	public ItemStack removeItemNoUpdate(int slot) {
+		return container.removeItemNoUpdate(slot);
+	}
+	
+	@Override
+	public void setItem(int slot, ItemStack stack) {
+		container.setItem(slot, stack);
+	}
+	
+	@Override
+	public int getMaxStackSize() {
+		return container.getMaxStackSize();
+	}
+	
+	@Override
+	public boolean stillValid(Player player) {
+		return container.stillValid(player);
+	}
+	
+	@Override
+	public boolean canPlaceItem(int slot, ItemStack stack) {
+		return container.canPlaceItem(slot, stack);
+	}
+	
+	@Override
+	public void clearContent() {
+		container.clearContent();
+	}
+	//</editor-fold>
+	
+	//<editor-fold desc="Nameable">
 	@Override
 	public Component getName() {
 		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE.getDescriptionId());
@@ -93,165 +155,10 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	}
 	//</editor-fold>
 	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	public ItemStack findFirstNonemptyStack() {
-		return container.getFilterStack();
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	public int countItems() {
-		return container.getCount();
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	public int maxStackAmountAllowed(ItemStack stack) {
-		return container.maxStackAmountAllowed(stack);
-	}
-	
-	//custom package-specific inventory wrappers, for external use
-	
-	//<editor-fold desc="Interactions">
-	public void performAction(Player player, InteractionHand hand, PackageAction action) {
-		if(action.isInsert()) container.insert(player, hand, action, false);
-		else {
-			PackageContainer.PlayerTakeResult result = container.take(player, hand, action, false);
-			if(result.successful() && !result.leftovers().isEmpty() && level != null) {
-				Vec3 spawnPos = Vec3.atCenterOf(getBlockPos()).add(new Vec3(getBlockState().getValue(PackageBlock.FACING).primaryDirection.step()).scale(0.8d));
-				for(ItemStack stack : result.leftovers()) {
-					ItemEntity e = new ItemEntity(level, spawnPos.x, spawnPos.y, spawnPos.z, stack, 0, 0.01, 0);
-					e.setPickUpDelay(10);
-					level.addFreshEntity(e);
-				}
-			}
-		}
-	}
-	
-	@Deprecated
-	public void take(Player player, PackageAction action) {
-		ItemStack contained = findFirstNonemptyStack();
-		if(contained.isEmpty()) return;
-		
-		int removeTotal = action == PackageAction.TAKE_STACK ? maxStackAmountAllowed(contained) : 1;
-		List<ItemStack> stacksToGive = new ArrayList<>();
-		
-		ListIterator<ItemStack> stackerator = container.inv.listIterator();
-		while(removeTotal > 0 && stackerator.hasNext()) {
-			ItemStack stack = stackerator.next();
-			if(stack.isEmpty()) continue;
-			
-			int remove = Math.min(stack.getCount(), removeTotal);
-			stacksToGive.add(stack.split(remove));
-			removeTotal -= remove;
-		}
-		
-		stacksToGive.forEach(stack -> {
-			if(!player.getInventory().add(stack)) {
-				player.drop(stack, false);
-			}
-		});
-		
-		setChanged();
-	}
-	//</editor-fold>
-	
-	//<editor-fold desc="Container">
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
+	//<editor-fold desc="RenderAttachmentBlockEntity">
 	@Override
-	public int getContainerSize() {
-		return container.getContainerSize();
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public boolean isEmpty() {
-		return container.isEmpty();
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public ItemStack getItem(int slot) {
-		return container.getItem(slot);
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public ItemStack removeItem(int slot, int amount) {
-		return container.removeItem(slot, amount);
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public ItemStack removeItemNoUpdate(int slot) {
-		return container.removeItemNoUpdate(slot);
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public void setItem(int slot, ItemStack stack) {
-		container.setItem(slot, stack);
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public int getMaxStackSize() {
-		return container.getMaxStackSize();
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public boolean stillValid(Player player) {
-		return container.stillValid(player);
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public boolean canPlaceItem(int slot, ItemStack stack) {
-		return container.canPlaceItem(slot, stack);
-	}
-	
-	/**
-	 * @deprecated Migrate to PackageContainer instead
-	 */
-	@Deprecated
-	@Override
-	public void clearContent() {
-		container.clearContent();
+	public Object getRenderAttachmentData() {
+		return getStyle();
 	}
 	//</editor-fold>
 	
@@ -260,9 +167,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	public void saveAdditional(CompoundTag tag) {
 		tag.put(PackageContainer.KEY, container.toTag());
 		tag.put(PackageStyle.KEY, style.toTag());
-		if(customName != null) {
-			tag.putString("CustomName", Component.Serializer.toJson(customName));
-		}
+		if(customName != null) tag.putString("CustomName", Component.Serializer.toJson(customName));
 		super.saveAdditional(tag);
 	}
 	
@@ -271,9 +176,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		super.load(tag);
 		container.readFromTag(tag.getCompound(PackageContainer.KEY));
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
-		if(tag.contains("CustomName", 8)) {
-			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
-		} else customName = null;
+		if(tag.contains("CustomName", 8)) customName = Component.Serializer.fromJson(tag.getString("CustomName"));
+		else customName = null;
 	}
 	
 	@Override

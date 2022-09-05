@@ -20,8 +20,8 @@ public class MixinTerrainParticle {
 		require = 0 //Unimportant feature
 	)
 	private void packages$onInit(ClientLevel level, double d, double e, double f, double g, double h, double i, BlockState state, BlockPos pos, CallbackInfo ci) {
-		if(level.getBlockEntity(pos) instanceof PackageBlockEntity be && be.getRenderAttachmentData() instanceof PackageStyle style) {
-			((AccessorTextureSheetParticle) this).packages$setSprite(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(style.innerBlock().defaultBlockState()));
+		if(level.getBlockEntity(pos) instanceof PackageBlockEntity be) {
+			((AccessorTextureSheetParticle) this).packages$setSprite(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(be.getStyle().innerBlock().defaultBlockState()));
 		}
 	}
 }

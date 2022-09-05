@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,139 +33,114 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 	
 	@Override
 	public void render(PackageBlockEntity blockEntity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
-		if(blockEntity == null || blockEntity.getLevel() == null) return;
+		/// Setup
+		Entity player = Minecraft.getInstance().getCameraEntity();
+		if(blockEntity.getLevel() == null || player == null) return;
 		
-		//Gather some data
 		Level world = blockEntity.getLevel();
-		Minecraft client = Minecraft.getInstance();
-		
 		BlockState packageState = blockEntity.getBlockState();
 		if(!(packageState.getBlock() instanceof PackageBlock)) return;
-		
 		TwelveDirection packageTwelveDir = packageState.getValue(PackageBlock.FACING);
-		
-		//get the light level of whatever's in front
-		//Quick fix for my block being solid so it has no light inside...
+		PackageContainer container = blockEntity.getContainer();
+		int count = container.getCount();
+		ItemStack stack = container.getFilterStack();
+		//The block is solid, so has no light inside; use the light of whatever's in front instead.
 		light = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
 		
-		int count = blockEntity.countItems();
-		ItemStack icon = blockEntity.findFirstNonemptyStack();
-		
+		/// Prepare
 		matrices.pushPose();
 		matrices.translate(0.5, 0.5, 0.5);
 		applyRotation(matrices, packageTwelveDir);
 		
-		//draw the item on the front
-		if(count > 0) {
-			drawItem(matrices, vertexConsumers, icon, light);
+		/// Item
+		if(!stack.isEmpty()) drawItem(matrices, vertexConsumers, stack, light);
+		
+		/// Text
+		HitResult hit = player.pick(8, 0, false);
+		boolean showText = hit instanceof BlockHitResult blockHit && blockEntity.getBlockPos().equals(blockHit.getBlockPos());
+		boolean detailed = false;
+		double distance = player.getEyePosition(1).distanceTo(Vec3.atCenterOf(blockEntity.getBlockPos()));
+		if(player.isShiftKeyDown()) {
+			if(showText) detailed = true;
+			if(!showText && distance <= 8) showText = true;
 		}
 		
-		//See if we need to show text.
-		boolean showText = false, showDetailedText = false;
-		
-		if(client.getCameraEntity() == null) return;
-		HitResult ray = client.getCameraEntity().pick(8, 0, false);
-		
-		if(ray.getType() == HitResult.Type.BLOCK && blockEntity.getBlockPos().equals(((BlockHitResult) ray).getBlockPos())) {
-			showText = true;
-		}
-		
-		double distance = client.getCameraEntity().getEyePosition(1).distanceTo(Vec3.atCenterOf(blockEntity.getBlockPos()));
-		
-		//This isn't a perfectly accurate distance estimator, but works pretty well
-		//The intention is to grey out the text a bit when you're too far away to actually click
-		@SuppressWarnings("ConstantConditions")
-		boolean aBitFar = distance - 0.5 >= client.gameMode.getPickRange();
-		
-		if(client.getCameraEntity().isShiftKeyDown()) {
-			if(showText) showDetailedText = true;
-			
-			if(!showText && distance <= 8) {
-				showText = true;
-			}
-		}
-		
-		if(showText) {
-			String text;
-			int max = blockEntity.maxStackAmountAllowed(icon);
-			
-			if(showDetailedText) {
-				int stacks = count / max;
-				int leftover = count % max;
-				text = stacks + "x" + max + " + " + leftover;
-			} else {
-				text = String.valueOf(count);
-			}
-			
-			boolean completelyFull = max * PackageContainer.SLOT_COUNT == count;
-			int color = completelyFull ? 0x00FF6600 : 0x00FFFFFF;
-			color |= aBitFar ? 0x55000000 : 0xFF000000;
-			
-			float scale;
-			if(showDetailedText) scale = 1/70f;
-			else if(count < 10) scale = 1/15f;
-			else if(count < 100) scale = 1/23f;
-			else scale = 1/30f;
-			
-			matrices.pushPose();
-			
-			matrices.translate(6 / 16d + 0.05, 0, 0);
-			matrices.scale(-1, -scale, scale);
-			matrices.translate(0, -4, 0);
-			//todo figure out what that normal call does in the original
-			matrices.mulPose(Vector3f.YP.rotationDegrees(90));
-			
-			int minusHalfWidth = -textRenderer.width(text) / 2;
-			textRenderer.drawInBatch(text, minusHalfWidth + 1, 1, (color & 0xFCFCFC) >> 2, false, matrices.last().pose(), vertexConsumers, false, 0, light);
-			matrices.translate(0, 0, -0.001);
-			textRenderer.drawInBatch(text, minusHalfWidth, 0, color, false, matrices.last().pose(), vertexConsumers, false, 0, light);
-			
-			matrices.popPose();
-		}
+		if(showText) drawText(matrices, vertexConsumers, light, count, container.maxStackAmountAllowed(stack), detailed, distance);
 		
 		matrices.popPose();
 	}
 	
-	private static int depth = 0;
-	
-	public static void applyRotation(PoseStack matrices, TwelveDirection dir) {
-		//Rotate into position.
-		//This might be jank, just blindly copied from Worse Barrels really
-		//Only move the model matrix not the normal matrix, to ensure items are lit uniformly
-		Matrix4f modelMatrix = matrices.last().pose();
-		
+	public static void applyRotation(PoseStack ps, TwelveDirection dir) {
+		//Rotate into position. This might be jank, just blindly copied from Worse Barrels really.
+		//Only moves the pose matrix, not the normal matrix, so item lighting comes from the correct direction
+		Matrix4f pose = ps.last().pose();
 		if(dir.primaryDirection.get2DDataValue() == -1) { //up/down
-			modelMatrix.multiply(Vector3f.YP.rotationDegrees(-dir.secondaryDirection.toYRot() + 90));
-			modelMatrix.multiply(Vector3f.ZP.rotationDegrees(dir.primaryDirection == Direction.UP ? 90 : -90));
+			pose.multiply(Vector3f.YP.rotationDegrees(-dir.secondaryDirection.toYRot() + 90));
+			pose.multiply(Vector3f.ZP.rotationDegrees(dir.primaryDirection == Direction.UP ? 90 : -90));
 		} else {
-			modelMatrix.multiply(Vector3f.YP.rotationDegrees(-dir.primaryDirection.toYRot() - 90));
+			pose.multiply(Vector3f.YP.rotationDegrees(-dir.primaryDirection.toYRot() - 90));
 		}
 	}
 	
-	public static void drawItem(PoseStack matrices, MultiBufferSource vertexConsumers, ItemStack stack, int light) {
-		Minecraft client = Minecraft.getInstance();
+	private static int depth = 0;
+	public static void drawItem(PoseStack ps, MultiBufferSource bufs, ItemStack stack, int light) {
+		ps.pushPose();
 		
-		matrices.pushPose();
-		
-		Matrix4f modelMatrix2 = matrices.last().pose();
-		
+		//Only moves the pose matrix, not the normal matrix, so items appear flat but are shaded as if they're not flat.
+		Matrix4f pose = ps.last().pose();
 		if(depth == 0) {
-			modelMatrix2.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.006f, 0, 0));
-			modelMatrix2.multiply(Vector3f.YP.rotationDegrees(90));
-			modelMatrix2.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
+			pose.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.006f, 0, 0));
+			pose.multiply(Vector3f.YP.rotationDegrees(90));
+			pose.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
 		} else {
 			//Don't think about this too hard, just a workaround to slightly space out deeply-nested items.
 			//If I don't do this, situations like packages-inside-packages-inside-packages start zfighting pretty hard.
-			modelMatrix2.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.07f, 0, 0)); //Lift it out more
-			modelMatrix2.multiply(Vector3f.YP.rotationDegrees(90));
-			modelMatrix2.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
+			pose.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.07f, 0, 0)); //Lift it out more
+			pose.multiply(Vector3f.YP.rotationDegrees(90));
+			pose.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
 		}
 		
-		depth++;
-		if(depth < 5) {
-			client.getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.GUI, light, OverlayTexture.NO_OVERLAY, matrices, vertexConsumers, 0);
+		try {
+			depth++;
+			if(depth < 5) {
+				Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.GUI, light, OverlayTexture.NO_OVERLAY, ps, bufs, 0);
+			}
+		} finally {
+			depth--;
+			ps.popPose();
 		}
-		depth--;
+	}
+	
+	private void drawText(PoseStack matrices, MultiBufferSource vertexConsumers, int light, int count, int max, boolean detailed, double distance) {
+		if(Minecraft.getInstance().gameMode == null) return;
+		
+		String text;
+		if(detailed) {
+			int stacks = count / max;
+			int leftover = count % max;
+			text = stacks + "x" + max + " + " + leftover;
+		} else text = String.valueOf(count);
+		
+		int color = (max * PackageContainer.SLOT_COUNT == count ? 0x00FF6600 : 0x00FFFFFF) | (distance - 0.5 >= Minecraft.getInstance().gameMode.getPickRange() ? 0x55000000 : 0xFF000000);
+		int shadowColor = (color & 0xFCFCFC) >> 2; //I um, okay, so, this is kind of a weird color algorithm. Wrote this like 2yrs ago lmao
+		
+		float scale;
+		if(detailed) scale = 1/70f;
+		else if(count < 10) scale = 1/15f;
+		else if(count < 100) scale = 1/23f;
+		else scale = 1/30f;
+		
+		matrices.pushPose();
+		
+		matrices.translate(6 / 16d + 0.05, 0, 0);
+		matrices.scale(-1, -scale, scale);
+		matrices.translate(0, -4, 0);
+		matrices.mulPose(Vector3f.YP.rotationDegrees(90));
+		
+		int minusHalfWidth = -textRenderer.width(text) / 2;
+		textRenderer.drawInBatch(text, minusHalfWidth + 1, 1, shadowColor, false, matrices.last().pose(), vertexConsumers, false, 0, light); //Background
+		matrices.translate(0, 0, -0.001);
+		textRenderer.drawInBatch(text, minusHalfWidth,     0, color      , false, matrices.last().pose(), vertexConsumers, false, 0, light); //Foreground
 		
 		matrices.popPose();
 	}

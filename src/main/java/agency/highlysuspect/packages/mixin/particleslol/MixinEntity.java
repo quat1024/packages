@@ -39,9 +39,8 @@ public class MixinEntity {
 	private BlockState packages$spawnSprintParticle$modifyParticleOptionArg(BlockState state) {
 		if(lastSprintParticlePos != null &&
 			state.getBlock() == PBlocks.PACKAGE &&
-			level.getBlockEntity(lastSprintParticlePos) instanceof PackageBlockEntity be && 
-			be.getRenderAttachmentData() instanceof PackageStyle style) {
-			return style.innerBlock().defaultBlockState();
+			level.getBlockEntity(lastSprintParticlePos) instanceof PackageBlockEntity be) {
+			return be.getStyle().innerBlock().defaultBlockState();
 		} else return state;
 	}
 }

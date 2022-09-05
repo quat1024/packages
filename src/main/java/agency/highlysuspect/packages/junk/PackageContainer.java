@@ -261,10 +261,10 @@ public class PackageContainer implements Container {
 		};
 		
 		ItemStack toGiveOverstack = take(maxAmountToTake, simulate);
-		if(toGiveOverstack.isEmpty()) return new PlayerTakeResult(false);
+		if(toGiveOverstack.isEmpty()) return new PlayerTakeResult(false, Collections.emptyList());
 		
-		//TODO: Simulate adding items to player inventories instead of cheesing it
-		if(simulate) return new PlayerTakeResult(true);
+		//TODO: Simulate adding items to player inventories and returning an accurate leftovers count, instead of cheesing it
+		if(simulate) return new PlayerTakeResult(true, Collections.emptyList());
 		
 		List<ItemStack> toGive = flattenOverstack(toGiveOverstack);
 		List<ItemStack> leftovers = new ArrayList<>();
@@ -275,9 +275,7 @@ public class PackageContainer implements Container {
 		}
 		return new PlayerTakeResult(true, leftovers);
 	}
-	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {
-		public PlayerTakeResult(boolean s) { this(s, Collections.emptyList()); }
-	}
+	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {}
 	
 	/**
 	 * @param mutOverstack An ItemStack where getCount() is potentially greater than getMaxStackSize(). It is mutated and will be isEmpty by the end of the call
