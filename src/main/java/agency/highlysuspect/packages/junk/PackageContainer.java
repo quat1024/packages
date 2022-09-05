@@ -312,7 +312,7 @@ public class PackageContainer implements Container {
 	
 	//Pick one of the slots containing the item type that the player has the most of.
 	private Optional<Integer> slotWithALot(Player player) {
-		//Make a histogram of items
+		//Make a frequency table of items
 		Map<Item, MutableInt> runningTotal = new HashMap<>();
 		for(int i = 0; i < player.getInventory().getContainerSize(); i++) {
 			ItemStack here = player.getInventory().getItem(i);
