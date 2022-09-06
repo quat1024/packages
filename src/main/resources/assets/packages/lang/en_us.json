@@ -1,25 +1,25 @@
 {
-  "itemGroup.packages.group": "Packages",
-  
-  "block.packages.package_maker": "Package Crafter",
-  "block.packages.package": "Package",
-  "block.packages.package.nonempty": "%s - %sx %s",
-  
-  "packages.style_tooltip.frame": "%s Frame",
-  "packages.style_tooltip.inner": "%s Core",
-  "packages.style_tooltip.both": "%s Frame and Core",
-  "packages.style_tooltip.color": "%s Color",
-  
-  "packages.contents_tooltip": "%sx %s",
-  "packages.contents_tooltip.empty": "Empty",
+	"itemGroup.packages.group": "Packages",
+	
+	"block.packages.package_maker": "Package Crafter",
+	"block.packages.package": "Package",
+	"block.packages.package.nonempty": "%s - %sx %s",
+	
+	"packages.style_tooltip.frame": "%s Frame",
+	"packages.style_tooltip.inner": "%s Core",
+	"packages.style_tooltip.both": "%s Frame and Core",
+	"packages.style_tooltip.color": "%s Color",
+	
+	"packages.contents_tooltip": "%sx %s",
+	"packages.contents_tooltip.empty": "Empty",
 
-  "packages.package_maker.frame": "Frame",
+	"packages.package_maker.frame": "Frame",
 	"packages.package_maker.frame.1": "Choose a theme for the border of the Package.",
 	"packages.package_maker.frame.2": "Automation can insert from the top.",
-  "packages.package_maker.inner": "Core",
+	"packages.package_maker.inner": "Core",
 	"packages.package_maker.inner.1": "Choose a theme for the sides of the Package.",
 	"packages.package_maker.inner.2": "Automation can insert from any side.",
-  "packages.package_maker.dye": "Dye",
+	"packages.package_maker.dye": "Dye",
 	"packages.package_maker.dye.1": "Choose a color for the front of the Package.",
 	"packages.package_maker.dye.2": "Automation can insert from the top or side.",
 	"packages.package_maker.extra": "Extra",
@@ -29,7 +29,7 @@
 	"packages.package_maker.output": "Result",
 	"packages.package_maker.output.1": "Automation can extract from the bottom.",
 	
-  "packages.package_maker.craft_button": "Create",
+	"packages.package_maker.craft_button": "Create",
 	
 	"packages.subtitle.package_maker_craft": "Package Crafter used"
 }
