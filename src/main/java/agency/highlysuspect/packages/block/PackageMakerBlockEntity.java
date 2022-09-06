@@ -43,7 +43,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	public static final int FRAME_SLOT = 0;
 	public static final int INNER_SLOT = 1;
 	public static final int DYE_SLOT = 2;
-	public static final int OUTPUT_SLOT = 3;
+	public static final int EXTRA_SLOT = 3;
+	public static final int OUTPUT_SLOT = 4;
 	public static final int SIZE = OUTPUT_SLOT + 1;
 	
 	private final NonNullList<ItemStack> inv = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
@@ -70,11 +71,23 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		return stack.getItem() instanceof DyeItem;
 	}
 	
+	public static boolean matchesExtraSlot(ItemStack stack) {
+		if(stack.isEmpty()) return false;
+		else return stack.is(PItemTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING);
+	}
+	
 	//Static because it's called from PackageMakerScreen, which doesn't have a blockentity available, to show the preview slot
-	public static ItemStack whatWouldBeCrafted(ItemStack frame, ItemStack inner, ItemStack dye) {
+	
+	public static ItemStack whatWouldBeCrafted(Container container) {
+		ItemStack frame = container.getItem(FRAME_SLOT);
+		ItemStack inner = container.getItem(INNER_SLOT);
+		ItemStack dye = container.getItem(DYE_SLOT);
+		ItemStack extra = container.getItem(EXTRA_SLOT);
+		
 		if(!matchesFrameSlot(frame)) return ItemStack.EMPTY;
 		if(!matchesInnerSlot(inner)) return ItemStack.EMPTY;
 		if(!matchesDyeSlot(dye)) return ItemStack.EMPTY;
+		if(!matchesExtraSlot(extra)) return ItemStack.EMPTY;
 		
 		Block frameBlock = ((BlockItem) frame.getItem()).getBlock();
 		Block innerBlock = ((BlockItem) inner.getItem()).getBlock();
@@ -86,7 +99,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	///
 	
 	public ItemStack whatWouldBeCrafted() {
-		return whatWouldBeCrafted(getItem(FRAME_SLOT), getItem(INNER_SLOT), getItem(DYE_SLOT));
+		return whatWouldBeCrafted(this);
 	}
 	
 	public void performCraft() {
@@ -97,9 +110,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		if(currentOutputStack.isEmpty()) {
 			inv.set(OUTPUT_SLOT, wouldCraft);
 		} else {
-			if(currentOutputStack.getCount() != currentOutputStack.getMaxStackSize() &&
-				 currentOutputStack.sameItemStackIgnoreDurability(wouldCraft) &&
-				 ItemStack.tagMatches(currentOutputStack, wouldCraft)) {
+			if(currentOutputStack.getCount() != currentOutputStack.getMaxStackSize() && ItemStack.isSameItemSameTags(currentOutputStack, wouldCraft)) {
 				currentOutputStack.grow(1);
 			} else return;
 		}
@@ -107,6 +118,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		inv.get(FRAME_SLOT).shrink(1);
 		inv.get(INNER_SLOT).shrink(1);
 		inv.get(DYE_SLOT).shrink(1);
+		inv.get(EXTRA_SLOT).shrink(1);
 		
 		setChanged();
 		
@@ -126,6 +138,10 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	public boolean hasDye() {
 		return !inv.get(DYE_SLOT).isEmpty();
+	}
+	
+	public boolean hasExtra() {
+		return !inv.get(EXTRA_SLOT).isEmpty();
 	}
 	
 	public boolean hasOutput() {
@@ -149,15 +165,15 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	//endregion
 	
 	//region WorldlyContainer (f.k.a. SidedInventory)
-	public static final int[] FRAME_AND_DYE = new int[] {FRAME_SLOT, DYE_SLOT};
-	public static final int[] INNER_AND_DYE = new int[] {INNER_SLOT, DYE_SLOT};
+	public static final int[] FRAME_AND_MISC = new int[] {FRAME_SLOT, DYE_SLOT, EXTRA_SLOT};
+	public static final int[] INNER_AND_MISC = new int[] {INNER_SLOT, DYE_SLOT, EXTRA_SLOT};
 	public static final int[] OUTPUT = new int[] {OUTPUT_SLOT};
 	
 	@Override
 	public int[] getSlotsForFace(Direction side) {
 		if(side == Direction.DOWN) return OUTPUT;
-		else if(side == Direction.UP) return FRAME_AND_DYE;
-		else return INNER_AND_DYE;
+		else if(side == Direction.UP) return FRAME_AND_MISC;
+		else return INNER_AND_MISC;
 	}
 	
 	@Override
@@ -176,13 +192,14 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			case FRAME_SLOT -> matchesFrameSlot(stack);
 			case INNER_SLOT -> matchesInnerSlot(stack);
 			case DYE_SLOT -> matchesDyeSlot(stack);
+			case EXTRA_SLOT -> matchesExtraSlot(stack);
 			default -> false;
 		};
 	}
 	
 	@Override
 	public int getContainerSize() {
-		return 4;
+		return SIZE;
 	}
 	
 	@Override
@@ -261,6 +278,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	//region Serialization
 	@Override
 	public void saveAdditional(CompoundTag tag) {
+		tag.putInt("packages$dataVersion", 1);
+		
 		if(hasCustomName()) {
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
@@ -270,6 +289,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public void load(CompoundTag tag) {
+		int dataVersion = tag.getInt("packages$dataVersion");
 		if(tag.contains("CustomName", 8)) {
 			customName = Component.Serializer.fromJson(tag.getString("CustomName"));
 		} else {
@@ -277,9 +297,15 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		}
 		
 		ContainerHelper.loadAllItems(tag, inv);
+		
+		if(dataVersion == 0) {
+			//the "extra" slot didn't exist yet; need to move slot 3 (old output slot) to slot 4 (new output slot)
+			inv.set(4, inv.get(3));
+			inv.set(3, ItemStack.EMPTY);
+		}
 	}
 	
-	//TODO kind of a hack
+	//TODO kind of a hack Also it doesn't work lol
 	@Override
 	public void setChanged() {
 		super.setChanged();

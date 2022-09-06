@@ -6,17 +6,21 @@ import agency.highlysuspect.packages.container.PackageMakerMenu;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
@@ -31,13 +35,16 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.FRAME_SLOT, Init.MODID + ".package_maker.frame");
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.INNER_SLOT, Init.MODID + ".package_maker.inner");
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.DYE_SLOT, Init.MODID + ".package_maker.dye");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.EXTRA_SLOT, Init.MODID + ".package_maker.extra");
 		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.OUTPUT_SLOT, Init.MODID + ".package_maker.output");
 	}
+	
+	private Button craftButton;
 	
 	@Override
 	protected void init() {
 		super.init();
-		addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> {
+		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> {
 			if(hasShiftDown()) sendButtonClick(1);
 			else sendButtonClick(0);
 		}));
@@ -50,6 +57,11 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	}
 	
 	public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+		ItemStack currentOutput = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).getItem();
+		boolean full = currentOutput.getCount() == currentOutput.getMaxStackSize();
+		boolean cantCraft = PackageMakerBlockEntity.whatWouldBeCrafted(menu.container).isEmpty();
+		craftButton.active = !(full || cantCraft);
+		
 		//Begin copy paste
 		this.renderBackground(matrices);
 		super.render(matrices, mouseX, mouseY, delta);
@@ -58,7 +70,18 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		
 		if(hoveredSlot != null && !hoveredSlot.hasItem()) {
 			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
-			if(tooltip != null) renderTooltip(matrices, new TranslatableComponent(tooltip), mouseX, mouseY);
+			if(tooltip != null) {
+				List<Component> toot = new ArrayList<>();
+				toot.add(new TranslatableComponent(tooltip));
+				
+				for(int k = 1; true; k++) {
+					String line = tooltip + "." + k;
+					if(Language.getInstance().has(line)) toot.add(new TranslatableComponent(line).withStyle(ChatFormatting.DARK_GRAY));
+					else break;
+				}
+				
+				renderComponentTooltip(matrices, toot, mouseX, mouseY);
+			}
 		}
 	}
 	
@@ -70,11 +93,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		if(!menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).hasItem()) {
 			//draw a preview of the crafted item behind a transparent overlay
 			//I guess this makes sense ?? lmao
-			ItemStack dryRun = PackageMakerBlockEntity.whatWouldBeCrafted(
-				menu.slots.get(PackageMakerBlockEntity.FRAME_SLOT).getItem(),
-				menu.slots.get(PackageMakerBlockEntity.INNER_SLOT).getItem(),
-				menu.slots.get(PackageMakerBlockEntity.DYE_SLOT).getItem()
-			);
+			ItemStack dryRun = PackageMakerBlockEntity.whatWouldBeCrafted(menu.container);
 			if (!dryRun.isEmpty()) {
 				int x = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).x;
 				int y = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).y;
@@ -105,6 +124,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 			reg.register(PackageMakerMenu.FRAME_BG);
 			reg.register(PackageMakerMenu.INNER_BG);
 			reg.register(PackageMakerMenu.DYE_BG);
+			reg.register(PackageMakerMenu.EXTRA_BG);
 		});
 	}
 }
