@@ -103,28 +103,37 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	}
 	
 	public void performCraft() {
-		ItemStack wouldCraft = whatWouldBeCrafted();
-		if(wouldCraft.isEmpty()) return;
+		performCraft(1);
+	}
+	
+	public void performCraft(int max) {
+		boolean playedSound = false;
 		
-		ItemStack currentOutputStack = inv.get(OUTPUT_SLOT);
-		if(currentOutputStack.isEmpty()) {
-			inv.set(OUTPUT_SLOT, wouldCraft);
-		} else {
-			if(currentOutputStack.getCount() != currentOutputStack.getMaxStackSize() && ItemStack.isSameItemSameTags(currentOutputStack, wouldCraft)) {
-				currentOutputStack.grow(1);
-			} else return;
-		}
-		
-		inv.get(FRAME_SLOT).shrink(1);
-		inv.get(INNER_SLOT).shrink(1);
-		inv.get(DYE_SLOT).shrink(1);
-		inv.get(EXTRA_SLOT).shrink(1);
-		
-		setChanged();
-		
-		//doubt it's null, lol
-		if(level != null)	{
-			level.playSound(null, worldPosition, PSoundEvents.PACKAGE_MAKER_CRAFT, SoundSource.BLOCKS, 0.5f, 1f);
+		for(int i = 0; i < max; i++) {
+			ItemStack wouldCraft = whatWouldBeCrafted();
+			if(wouldCraft.isEmpty()) return;
+			
+			ItemStack currentOutputStack = inv.get(OUTPUT_SLOT);
+			if(currentOutputStack.isEmpty()) {
+				inv.set(OUTPUT_SLOT, wouldCraft);
+			} else {
+				if(currentOutputStack.getCount() != currentOutputStack.getMaxStackSize() && ItemStack.isSameItemSameTags(currentOutputStack, wouldCraft)) {
+					currentOutputStack.grow(1);
+				} else return; //doesn't fit!
+			}
+			
+			inv.get(FRAME_SLOT).shrink(1);
+			inv.get(INNER_SLOT).shrink(1);
+			inv.get(DYE_SLOT).shrink(1);
+			inv.get(EXTRA_SLOT).shrink(1);
+			
+			setChanged();
+			
+			//doubt it's null, lol
+			if(level != null && !playedSound)	{
+				level.playSound(null, worldPosition, PSoundEvents.PACKAGE_MAKER_CRAFT, SoundSource.BLOCKS, 1f, 1f);
+				playedSound = true;
+			}
 		}
 	}
 	

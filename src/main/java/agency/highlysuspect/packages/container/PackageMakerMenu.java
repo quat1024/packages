@@ -47,10 +47,7 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 	public boolean clickMenuButton(Player player, int id) {
 		if(id == 0 || id == 1) {
 			if(container instanceof PackageMakerBlockEntity be) {
-				boolean all = id == 1;
-				for(int i = 0; i < (all ? 64 : 1); i++) { //Janky hack mate
-					be.performCraft();
-				}
+				be.performCraft((id == 1) ? 64 : 1);
 				return true;
 			}
 		}
