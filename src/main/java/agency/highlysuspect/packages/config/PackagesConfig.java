@@ -4,9 +4,9 @@ import agency.highlysuspect.packages.config.ConfigShape2.Comment;
 import agency.highlysuspect.packages.config.ConfigShape2.Section;
 import agency.highlysuspect.packages.config.ConfigShape2.SkipDefault;
 import agency.highlysuspect.packages.net.PackageAction;
-import com.mojang.datafixers.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,36 +22,40 @@ public class PackagesConfig {
 	@Comment({
 		"Specify at least 'use' (right click) or 'punch' (left click), and optionally add",
 		"any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
-		"Separate multiple items with hyphens. You can disable an action entirely by leaving it blank.",
-		"These actions affect your game client only.",
+		"Separate multiple items with hyphens. Disable an action entirely by leaving it blank.",
+		"These actions affect your game client only, not any other players on the server.",
 		"",
 		"How do you insert one item into the package?",
 	})
-	public PackageActionBinding insertOne = new PackageActionBinding.Builder().use().build();
+	@PackageActionBinding.For(PackageAction.INSERT_ONE) //Weird annotation needed so the deserializer knows which PackageAction it's for... isn't great, but it'll do
+	public PackageActionBinding insertOne = new PackageActionBinding.Builder(PackageAction.INSERT_ONE).use().build();
+	
 	@Comment("How do you insert one stack of items into the package?")
-	public PackageActionBinding insertStack = new PackageActionBinding.Builder().use().sneak().build();
+	@PackageActionBinding.For(PackageAction.INSERT_STACK)
+	public PackageActionBinding insertStack = new PackageActionBinding.Builder(PackageAction.INSERT_STACK).use().sneak().build();
+	
 	@Comment("How do you insert everything in your inventory that fits into the package?")
-	public PackageActionBinding insertAll = new PackageActionBinding.Builder().use().ctrl().build();
+	@PackageActionBinding.For(PackageAction.INSERT_ALL)
+	public PackageActionBinding insertAll = new PackageActionBinding.Builder(PackageAction.INSERT_ALL).use().ctrl().build();
 	
 	@Comment("How do you take one item from the package?")
-	public PackageActionBinding takeOne = new PackageActionBinding.Builder().punch().build();
-	@Comment("How do you take one stack of items from the package?")
-	public PackageActionBinding takeStack = new PackageActionBinding.Builder().punch().sneak().build();
-	@Comment("How do you clear all items from the package?")
-	public PackageActionBinding takeAll = new PackageActionBinding.Builder().punch().ctrl().build();
+	@PackageActionBinding.For(PackageAction.TAKE_ONE)
+	public PackageActionBinding takeOne = new PackageActionBinding.Builder(PackageAction.TAKE_ONE).punch().build();
 	
-	//contains bindings sorted such that the more specific ones are at the front of the list (check ctrl-shift-alt, before ctrl-alt, before alt)
-	//TODO: make the parser optionally pass the field name as context, so i don't need this Pair bs, or make my own keybindings file, or something
-	public transient List<Pair<PackageAction, PackageActionBinding>> sortedBindings = new ArrayList<>();
+	@Comment("How do you take one stack of items from the package?")
+	@PackageActionBinding.For(PackageAction.TAKE_STACK)
+	public PackageActionBinding takeStack = new PackageActionBinding.Builder(PackageAction.TAKE_STACK).punch().sneak().build();
+	
+	@Comment("How do you clear all items from the package?")
+	@PackageActionBinding.For(PackageAction.TAKE_ALL)
+	public PackageActionBinding takeAll = new PackageActionBinding.Builder(PackageAction.TAKE_ALL).punch().ctrl().build();
+	
+	//Bindings sorted such that the more specific ones are at the front of the list (checks ctrl-shift-alt, before ctrl-alt, before alt)
+	public transient List<PackageActionBinding> sortedBindings = new ArrayList<>();
 	
 	public void finish() {
 		sortedBindings = new ArrayList<>();
-		sortedBindings.add(Pair.of(PackageAction.INSERT_ONE, insertOne));
-		sortedBindings.add(Pair.of(PackageAction.INSERT_STACK, insertStack));
-		sortedBindings.add(Pair.of(PackageAction.INSERT_ALL, insertAll));
-		sortedBindings.add(Pair.of(PackageAction.TAKE_ONE, takeOne));
-		sortedBindings.add(Pair.of(PackageAction.TAKE_STACK, takeStack));
-		sortedBindings.add(Pair.of(PackageAction.TAKE_ALL, takeAll));
-		sortedBindings.sort(Comparator.<Pair<PackageAction, PackageActionBinding>>comparingInt(p -> p.getSecond().specificity()).reversed());
+		sortedBindings.addAll(Arrays.asList(insertOne, insertStack, insertAll, takeOne, takeStack, takeAll));
+		sortedBindings.sort(Comparator.naturalOrder());
 	}
 }

@@ -7,7 +7,6 @@ import agency.highlysuspect.packages.config.PackageActionBinding;
 import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
-import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
@@ -90,8 +89,8 @@ public class PClientBlockEventHandlers {
 	}
 	
 	public static @Nullable PackageAction getApplicableAction(Player player, PackageActionBinding.MainTrigger main) {
-		for(Pair<PackageAction, PackageActionBinding> bindPair : Init.config.sortedBindings) {
-			if(isPressed(player, bindPair.getSecond(), main)) return bindPair.getFirst();
+		for(PackageActionBinding bind : Init.config.sortedBindings) {
+			if(isPressed(player, bind, main)) return bind.action();
 		}
 		return null;
 	}

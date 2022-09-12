@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -23,7 +24,7 @@ import java.util.function.Function;
 public class ConfigShape2 {
 	public sealed interface Element permits Heading, Option {}
 	public static record Heading(String name) implements Element {}
-	public static record Option<T>(String key, T defaultValue, List<String> comment, Function<String, T> parser, Function<T, String> writer, Consumer<T> validator, Field field) implements Element {
+	public static record Option<T>(String key, T defaultValue, List<String> comment, BiFunction<Field, String, T> parser, Function<T, String> writer, Consumer<T> validator, Field field) implements Element {
 		@SuppressWarnings("unchecked")
 		String getAndWriteErased(Object pojo) {
 			try {
@@ -44,10 +45,31 @@ public class ConfigShape2 {
 	
 	private final List<Element> elements = new ArrayList<>();
 	private final Map<String, Option<?>> optionsByName = new HashMap<>();
+	private final Map<Class<?>, SerializerDeserializer<?>> serdeByType = new HashMap<>();
+	private final Map<String, SerializerDeserializer<?>> serdeByName = new HashMap<>();
+	
+	{
+		//Here, I'll give you a few freebies
+		installSerializer(String.class, SerializerDeserializer.makeSimple(x -> x, x -> x));
+		installSerializer(Integer.class, SerializerDeserializer.withObjectToString(Integer::parseInt));
+		installSerializer(Integer.TYPE, SerializerDeserializer.withObjectToString(Integer::parseInt));
+		installSerializer(Boolean.class, SerializerDeserializer.withObjectToString(Boolean::parseBoolean));
+		installSerializer(Boolean.TYPE, SerializerDeserializer.withObjectToString(Boolean::parseBoolean));
+	}
 	
 	public void add(Element element) {
 		elements.add(element);
 		if(element instanceof Option opt) optionsByName.put(opt.key, opt);
+	}
+	
+	public <T> ConfigShape2 installSerializer(Class<T> classs, SerializerDeserializer<T> serde) {
+		serdeByType.put(classs, serde);
+		return this;
+	}
+	
+	public <T> ConfigShape2 installNamedSerializer(String name, SerializerDeserializer<T> serde) {
+		serdeByName.put(name, serde);
+		return this;
 	}
 	
 	// writing and reading into a pojo //
@@ -90,7 +112,7 @@ public class ConfigShape2 {
 				String valueStr = s.substring(eqIndex + 1).trim();
 				Object result;
 				try {
-					result = opt.parser.apply(valueStr);
+					result = opt.parser.apply(opt.field, valueStr);
 				} catch (RuntimeException e) {
 					throw new ConfigParseException("unable to parse '" + valueStr + "' for option " + keyStr + ".", e);
 				}
@@ -134,48 +156,26 @@ public class ConfigShape2 {
 	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface SkipDefault {}
 	/** Include a comment. Specifying multiple strings will concatenate them with newlines. */
 	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface Comment { String[] value(); }
-	/** Use a specifically named SerializerDeserializer instead of going off the type. */
+	/** Use a specifically named SerializerDeserializer instead of guessing from the type. */
 	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface Use { String value(); }
 	
 	/** Assert that integers are at least this. */
 	@Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD) public @interface AtLeast { int value(); }
 	
 	public interface SerializerDeserializer<T> {
-		T parse(String value);
+		T parse(Field field, String value);
 		String write(T value);
 		
-		static <T> SerializerDeserializer<T> make(Function<String, T> parser, Function<T, String> writer) {
+		static <T> SerializerDeserializer<T> makeSimple(Function<String, T> parser, Function<T, String> writer) {
 			return new SerializerDeserializer<>() {
-				@Override public T parse(String value) { return parser.apply(value); }
+				@Override public T parse(Field field, String value) { return parser.apply(value); }
 				@Override public String write(T value) { return writer.apply(value); }
 			};
 		}
 		
 		static <T> SerializerDeserializer<T> withObjectToString(Function<String, T> parser) {
-			return make(parser, Objects::toString);
+			return makeSimple(parser, Objects::toString);
 		}
-	}
-	
-	private final Map<Class<?>, SerializerDeserializer<?>> serdeByType = new HashMap<>();
-	private final Map<String, SerializerDeserializer<?>> serdeByName = new HashMap<>();
-	
-	public <T> ConfigShape2 installSerializer(Class<T> classs, SerializerDeserializer<T> serde) {
-		serdeByType.put(classs, serde);
-		return this;
-	}
-	
-	public <T> ConfigShape2 installNamedSerializer(String name, SerializerDeserializer<T> serde) {
-		serdeByName.put(name, serde);
-		return this;
-	}
-	
-	{
-		//some defaults
-		installSerializer(String.class, SerializerDeserializer.make(x -> x, x -> x));
-		installSerializer(Integer.class, SerializerDeserializer.withObjectToString(Integer::parseInt));
-		installSerializer(Integer.TYPE, SerializerDeserializer.withObjectToString(Integer::parseInt));
-		installSerializer(Boolean.class, SerializerDeserializer.withObjectToString(Boolean::parseBoolean));
-		installSerializer(Boolean.TYPE, SerializerDeserializer.withObjectToString(Boolean::parseBoolean));
 	}
 	
 	@SuppressWarnings("unchecked") //actually kind of dangerous lol
