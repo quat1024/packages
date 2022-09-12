@@ -2,6 +2,9 @@ package agency.highlysuspect.packages;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PBlockEntityTypes;
+import agency.highlysuspect.packages.config.ConfigShape2;
+import agency.highlysuspect.packages.config.PackageActionBinding;
+import agency.highlysuspect.packages.config.PackagesConfig;
 import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;
@@ -9,6 +12,7 @@ import agency.highlysuspect.packages.junk.PItemTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.net.PNetCommon;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,12 +21,26 @@ public class Init implements ModInitializer {
 	public static final String MODID = "packages";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
 	
+	public static ConfigShape2 CONFIG_SHAPE;
+	public static PackagesConfig config;
+	
 	public static ResourceLocation id(String path) {
 		return new ResourceLocation(MODID, path);
 	}
 	
 	@Override
 	public void onInitialize() {
+		CONFIG_SHAPE = new ConfigShape2()
+			.installSerializer(PackageActionBinding.class, new PackageActionBinding.SerializerDeserializer())
+			.readPropsFromPojo(new PackagesConfig());
+		
+		try {
+			config = CONFIG_SHAPE.readFromOrCreateFile(FabricLoader.getInstance().getConfigDir().resolve("packages.cfg"), new PackagesConfig());
+			config.finish();
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}
+		
 		PBlocks.onInitialize();
 		PBlockEntityTypes.onInitialize();
 		PItems.onInitialize();
