@@ -33,11 +33,11 @@ public class PackagesConfig {
 	@Comment("How do you insert everything in your inventory that fits into the package?")
 	public PackageActionBinding insertAll = new PackageActionBinding.Builder().use().ctrl().build();
 	
-	@Comment("How do you remove one item from the package?")
+	@Comment("How do you take one item from the package?")
 	public PackageActionBinding takeOne = new PackageActionBinding.Builder().punch().build();
-	@Comment("How do you remove one stack of items from the package?")
+	@Comment("How do you take one stack of items from the package?")
 	public PackageActionBinding takeStack = new PackageActionBinding.Builder().punch().sneak().build();
-	@Comment("How do you clear the package?")
+	@Comment("How do you clear all items from the package?")
 	public PackageActionBinding takeAll = new PackageActionBinding.Builder().punch().ctrl().build();
 	
 	//contains bindings sorted such that the more specific ones are at the front of the list (check ctrl-shift-alt, before ctrl-alt, before alt)
