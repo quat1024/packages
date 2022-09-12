@@ -47,6 +47,8 @@ public record PackageActionBinding(PackageAction action, boolean ctrl, boolean s
 	
 	public static PackageActionBinding fromString(PackageAction action, String s) {
 		PackageActionBinding.Builder b = new PackageActionBinding.Builder(action);
+		if(s.isEmpty()) return b.build();
+		
 		for(String option : s.split("-")) {
 			switch(option.toLowerCase(Locale.ROOT)) {
 				case "ctrl" -> b.ctrl = true;

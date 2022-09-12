@@ -4,6 +4,7 @@ import agency.highlysuspect.packages.Init;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.config.PackageActionBinding;
+import agency.highlysuspect.packages.config.PackageActionBinding.MainTrigger;
 import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
@@ -43,7 +45,7 @@ public class PClientBlockEventHandlers {
 			BlockEntity be = level.getBlockEntity(pos);
 			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return false;
 			
-			PackageAction action = getApplicableAction(player, PackageActionBinding.MainTrigger.PUNCH);
+			PackageAction action = getApplicableAction(player, MainTrigger.PUNCH);
 			if(action == null) return false;
 			
 			PackageBlockEntity.PlayerTakeResult result = pkg.playerTake(player, InteractionHand.MAIN_HAND, action, true);
@@ -75,7 +77,7 @@ public class PClientBlockEventHandlers {
 			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 			if(direction != frontDir) return InteractionResult.PASS;
 			
-			PackageAction action = getApplicableAction(player, PackageActionBinding.MainTrigger.USE);
+			PackageAction action = getApplicableAction(player, MainTrigger.USE);
 			if(action == null) return InteractionResult.PASS;
 			
 			//Simulate performing the action. If anything happened...
@@ -88,15 +90,58 @@ public class PClientBlockEventHandlers {
 		});
 	}
 	
-	public static @Nullable PackageAction getApplicableAction(Player player, PackageActionBinding.MainTrigger main) {
-		for(PackageActionBinding bind : Init.config.sortedBindings) {
-			if(isPressed(player, bind, main)) return bind.action();
+	public static @Nullable PackageAction getApplicableAction(Player player, MainTrigger main) {
+		//Find the closest one by edit distance
+		PackageActionBinding leastWrongBinding = null;
+		int leastWrongness = NOPE;
+		for(PackageActionBinding binding : Init.config.sortedBindings) {
+			int wrongness = computeWrongness(player, binding, main);
+			if(wrongness == 0) return binding.action(); //Exact match, don't bother checking others
+			if(wrongness < leastWrongness) {
+				leastWrongness = wrongness;
+				leastWrongBinding = binding;
+			}
 		}
-		return null;
+		if(leastWrongBinding != null) return leastWrongBinding.action();
+		else return null;
 	}
+
+//	private static boolean matchesExactly(Player player, PackageActionBinding binding, MainTrigger main) {
+//		if(binding.mainTrigger() == MainTrigger.UNDEFINED || binding.mainTrigger() != main) return false;
+//		return binding.ctrl() == Screen.hasControlDown() && binding.alt() == Screen.hasAltDown() && binding.sneak() == player.isShiftKeyDown();
+//	}
 	
-	public static boolean isPressed(Player player, PackageActionBinding binding, PackageActionBinding.MainTrigger main) {
-		if(binding.mainTrigger() == PackageActionBinding.MainTrigger.UNDEFINED) return false;
-		return binding.mainTrigger() == main && binding.ctrl() == Screen.hasControlDown() && binding.alt() == Screen.hasAltDown() && binding.sneak() == player.isShiftKeyDown();
+	/**
+	 * - The binding requires a modifier, and the player is not holding the modifier. No match.
+	 * - The binding requires a modifier, and the player is holding the modifier. Perfect match.
+	 * - The binding doesn't require a modifier, and the player is not holding the modifier. Perfect match.
+	 * - The binding doesn't require a modifier, and the player is holding the modifier...
+	 *    But this is an interesting case, it's "wrong" but comes up in practice.
+	 *    If you bind things to only ctrl-click and shift-click, if you *alt*-shift-click, you'd still expect the shift-click one to match, right?
+	 *    Just because you are pressing an unused modifier key shouldn't invalidate all the other bindings.
+	 *    But if you have something actually bound to alt-shift-click, you'd expect it to take priority.
+	 * 
+	 * So this method returns NOPE if the keybinding doesn't match at all, and otherwise returns a score tallying how wrong it is.
+	 * A binding is "wrong" but not NOPE-worthy if the player is holding extra modifier keys.
+	 * Run through all the modifiers and pick the one with the lowest score that isn't NOPE.
+	 * A score of 0 is an exact match, 1 is one wrong modifier key, etc.
+	 */
+	private static int computeWrongness(Player player, PackageActionBinding binding, MainTrigger main) {
+		if(binding.mainTrigger() == MainTrigger.UNDEFINED || binding.mainTrigger() != main) return NOPE;
+		int wrongness = 0;
+		if(binding.ctrl() != Screen.hasControlDown()) {
+			if(binding.ctrl()) return NOPE;
+			else wrongness++;
+		}
+		if(binding.alt() != Screen.hasAltDown()) {
+			if(binding.alt()) return NOPE;
+			else wrongness++;
+		}
+		if(binding.sneak() != player.isShiftKeyDown()) {
+			if(binding.sneak()) return NOPE;
+			else wrongness++;
+		}
+		return wrongness;
 	}
+	private static final int NOPE = 10000;
 }

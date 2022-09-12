@@ -12,10 +12,20 @@ import agency.highlysuspect.packages.junk.PItemTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.net.PNetCommon;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 public class Init implements ModInitializer {
 	public static final String MODID = "packages";
@@ -34,12 +44,19 @@ public class Init implements ModInitializer {
 			.installSerializer(PackageActionBinding.class, new PackageActionBinding.SerializerDeserializer())
 			.readPropsFromPojo(new PackagesConfig());
 		
-		try {
-			config = CONFIG_SHAPE.readFromOrCreateFile(FabricLoader.getInstance().getConfigDir().resolve("packages.cfg"), new PackagesConfig());
-			config.finish();
-		} catch (Exception e) {
-			LOGGER.error(e);
-		}
+		loadConfig();
+		//TODO: Split client and server config
+		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+			@Override
+			public ResourceLocation getFabricId() {
+				return new ResourceLocation(MODID, "data-reload");
+			}
+			
+			@Override
+			public void onResourceManagerReload(ResourceManager resourceManager) {
+				loadConfig();
+			}
+		});
 		
 		PBlocks.onInitialize();
 		PBlockEntityTypes.onInitialize();
@@ -52,5 +69,14 @@ public class Init implements ModInitializer {
 		PNetCommon.onInitialize();
 		
 		PSoundEvents.onInitialize();
+	}
+	
+	private void loadConfig() {
+		try {
+			config = CONFIG_SHAPE.readFromOrCreateFile(FabricLoader.getInstance().getConfigDir().resolve("packages.cfg"), new PackagesConfig());
+			config.finish();
+		} catch (Exception e) {
+			LOGGER.error(e);
+		}
 	}
 }

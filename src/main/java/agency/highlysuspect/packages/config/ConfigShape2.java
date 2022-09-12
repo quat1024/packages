@@ -83,7 +83,7 @@ public class ConfigShape2 {
 				lines.add("## " + h.name + " ##");
 				lines.add("#".repeat(h.name.length() + 6));
 			} else if(e instanceof Option<?> opt) {
-				opt.comment.forEach(commentLine -> lines.add("# " + commentLine));
+				opt.comment.forEach(commentLine -> lines.add(commentLine.isEmpty() ? "" : "# " + commentLine)); //skip # gutter for empty comment lines
 				lines.add(opt.key + " = " + opt.getAndWriteErased(pojo));
 			}
 			lines.add("");
@@ -124,7 +124,7 @@ public class ConfigShape2 {
 				opt.field.set(pojo, result);
 			} catch (ConfigParseException e) {
 				//Include the line number, also hopefully funge into something that will be of more value to nonprogrammers
-				throw new ConfigParseException("On line " + line + ", " + e.getMessage(), e.getCause());
+				throw new ConfigParseException("On line " + (line + 1) + ", " + e.getMessage(), e.getCause());
 			} catch (ReflectiveOperationException e) { throw new RuntimeException(e); }
 		}
 		return pojo;
