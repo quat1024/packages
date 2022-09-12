@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.mixin.particleslol;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
-import agency.highlysuspect.packages.junk.PackageStyle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;

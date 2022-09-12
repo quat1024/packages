@@ -1,9 +1,10 @@
 package agency.highlysuspect.packages.junk;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class PUtil {
 	public static final Direction[] DIRECTIONS_AND_NULL = new Direction[]{

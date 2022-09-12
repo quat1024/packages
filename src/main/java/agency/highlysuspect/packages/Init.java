@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages;
 
-import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PBlockEntityTypes;
+import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.config.ConfigShape2;
 import agency.highlysuspect.packages.config.PackageActionBinding;
 import agency.highlysuspect.packages.config.PackagesConfig;
@@ -12,20 +12,14 @@ import agency.highlysuspect.packages.junk.PItemTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.net.PNetCommon;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.profiling.ProfilerFiller;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 public class Init implements ModInitializer {
 	public static final String MODID = "packages";

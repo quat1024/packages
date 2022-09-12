@@ -1,8 +1,6 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PackageContainer;
-import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

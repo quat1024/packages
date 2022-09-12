@@ -1,10 +1,11 @@
 package agency.highlysuspect.packages.junk;
 
-import java.util.EnumMap;
-import java.util.Locale;
 import net.minecraft.core.Direction;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
+
+import java.util.EnumMap;
+import java.util.Locale;
 
 //Cut and paste this from Carved Melons without looking too closely at it lmao
 public enum TwelveDirection implements StringRepresentable {
