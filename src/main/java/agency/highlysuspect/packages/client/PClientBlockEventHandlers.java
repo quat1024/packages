@@ -25,6 +25,9 @@ import org.jetbrains.annotations.Nullable;
 
 @Environment(EnvType.CLIENT)
 public class PClientBlockEventHandlers {
+	private static BlockPos lastPunchPosLegacy;
+	private static long lastPunchTickLegacy;
+	
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public static boolean canAttack(Player player, Level level, BlockPos pos, Direction direction) {
 		if(player.isSpectator()) return false;
@@ -36,30 +39,43 @@ public class PClientBlockEventHandlers {
 		return true;
 	}
 	
+	public static boolean performPunchAction(Player player, Level level, BlockPos pos, Direction direction) {
+		BlockState state = level.getBlockState(pos);
+		BlockEntity be = level.getBlockEntity(pos);
+		if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return false;
+		
+		PackageAction action = getApplicableAction(player, MainTrigger.PUNCH);
+		if(action == null) return false;
+		
+		PackageBlockEntity.PlayerTakeResult result = pkg.playerTake(player, InteractionHand.MAIN_HAND, action, true);
+		if(result.successful()) {
+			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
+			lastPunchTickLegacy = level.getGameTime();
+			return true;
+		} else return false;
+	}
+	
 	public static void onInitializeClient() {
 		EarlyClientsideAttackBlockCallback.EVENT.register((player, level, pos, direction) -> {
 			if(!canAttack(player, level, pos, direction)) return false;
-			
-			BlockState state = level.getBlockState(pos);
-			BlockEntity be = level.getBlockEntity(pos);
-			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return false;
-			
-			PackageAction action = getApplicableAction(player, MainTrigger.PUNCH);
-			if(action == null) return false;
-			
-			PackageBlockEntity.PlayerTakeResult result = pkg.playerTake(player, InteractionHand.MAIN_HAND, action, true);
-			if(result.successful()) {
-				PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
-				return true;
-			} else return false;
+			return performPunchAction(player, level, pos, direction);
 		});
 		
 		//This callback is usually fired when you start left-clicking a block, but also every tick while you continue to left click it.
 		//EarlyClientsideAttackBlockCallback will prevent the start-left-clicking one from being fired. This regular callback will
 		//also help prevent the block from being mined.
 		AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
-			if(canAttack(player, level, pos, direction)) return InteractionResult.CONSUME;
-			else return InteractionResult.PASS;
+			if(canAttack(player, level, pos, direction)) {
+				//Legacy stuff! Here's a reimplementation of the old, broken left click antirepeat. Old mod effectively had punchRepeat set to 4 ticks btw.
+				//removed in https://github.com/quat1024/packages/commit/401a19818dac539174081b219ca10c797fa0abf0
+				if(!level.isClientSide || Init.config.punchRepeat < 0) return InteractionResult.CONSUME;
+				
+				if(pos.equals(lastPunchPosLegacy) && (level.getGameTime() - lastPunchTickLegacy <= Init.config.punchRepeat)) return InteractionResult.CONSUME;
+				lastPunchPosLegacy = pos;
+				lastPunchTickLegacy = level.getGameTime();
+				performPunchAction(player, level, pos, direction);
+				return InteractionResult.CONSUME;
+			} else return InteractionResult.PASS;
 		});
 		
 		UseBlockCallback.EVENT.register((player, level, hand, hitResult) -> {

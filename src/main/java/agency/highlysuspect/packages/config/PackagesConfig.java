@@ -60,6 +60,15 @@ public class PackagesConfig {
 	public PackageActionBinding takeAll = new PackageActionBinding.Builder(PackageAction.TAKE_ALL).punch().ctrl().build();
 	
 	@Comment({
+		"Older versions of Packages had a \"feature\" where holding left-click would slowly trickle items out of the Package.",
+		"This was actually a bug, caused by code intended to differentiatiate between 'starting a left click' and 'continuing",
+		"a left click' not working correctly; the delay was my band-aid fix.",
+		"I've since actually fixed it, but I don't know if people had gotten used to the broken behavior :)",
+		"If you did and want it back, set this to 4."
+	})
+	public int punchRepeat = -1;
+	
+	@Comment({
 		"Vertically shift the numeric display on Packages up by this many blocks.",
 		"Nudge this to recenter fonts with a different baseline from vanilla."
 	})
