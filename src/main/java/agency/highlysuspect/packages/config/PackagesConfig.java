@@ -67,8 +67,8 @@ public class PackagesConfig {
 	
 	@Comment({
 		"If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
-		"I'm not gonna lie - this probably helps performance less than it sounds like it would. On my pc it actually hurts.",
-		"I'll leave the option in in case you have a really slow implementation of fabric renderer api, I guess."
+		"I'm not gonna lie - this probably helps performance less than it sounds like it would. I can barely tell the difference.",
+		"I'll leave the option in in case you have a slow implementation of fabric renderer api."
 	})
 	public boolean cacheMeshes = false;
 	

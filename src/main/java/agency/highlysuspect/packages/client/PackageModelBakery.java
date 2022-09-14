@@ -27,14 +27,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 public class PackageModelBakery {
@@ -177,14 +176,22 @@ public class PackageModelBakery {
 			super(baseModel, specialFrameSprite, specialInnerSprite);
 		}
 		
-		//ConcurrentHashMap does not support null keys.
+		//HashMap does support null keys.
 		//No method of evicting meshes from the cache is required because the entire PackageModelBakery is thrown out on resource reload.
-		private final Map<@NotNull Object, Mesh> bakedModelCache = new ConcurrentHashMap<>();
-		private static final Object NULL_KEY = new Object();
+		//Also, yeehaw, throwing thread safety to the wind!!!
+		//ConcurrentHashMap turned out to have too much overhead - this is an append-only map, I want reads to be backed by simple code.
+		//Also because model baking is usually pretty fast anyways, I don't care about spurious cache misses caused by e.g. reading while rehashing
+		private final Map<Object, Mesh> bakedModelCache = new HashMap<>();
+		private static final Object UPDATE_LOCK = new Object();
 		
 		@Override
 		protected Mesh bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-			return bakedModelCache.computeIfAbsent(cacheKey == null ? NULL_KEY : cacheKey, __ -> super.bake(cacheKey, faceColor, frameBlock, innerBlock));
+			Mesh mesh = bakedModelCache.get(cacheKey);
+			if(mesh != null) return mesh;
+			
+			mesh = super.bake(cacheKey, faceColor, frameBlock, innerBlock);
+			synchronized(UPDATE_LOCK) { bakedModelCache.put(cacheKey, mesh); }
+			return mesh;
 		}
 	}
 }
