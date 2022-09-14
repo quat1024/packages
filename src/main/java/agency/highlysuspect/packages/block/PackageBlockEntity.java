@@ -333,10 +333,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	@Override
 	public void setChanged() {
 		super.setChanged();
-		if(level != null && !level.isClientSide) {
-			//TODO: What does it do
-			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-		}
+		if(level != null && !level.isClientSide) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 	}
 	
 	@Nullable
