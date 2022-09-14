@@ -7,5 +7,69 @@
 			}
 		],
 		"subtitle": "packages.subtitle.package_maker_craft"
+	},
+	"insert_one": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:block.calcite.place",
+				"volume": 0.4,
+				"pitch": 1
+			}
+		],
+		"subtitle": "packages.subtitle.insert_one"
+	},
+	"take_one": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:entity.item.pickup",
+				"volume": 0.2
+			}
+		],
+		"subtitle": "packages.subtitle.take_one"
+	},
+	"insert_stack": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:block.calcite.place",
+				"volume": 0.4,
+				"pitch": 0.75
+			}
+		],
+		"subtitle": "packages.subtitle.insert_stack"
+	},
+	"take_stack": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:entity.item.pickup",
+				"volume": 0.2
+			}
+		],
+		"subtitle": "packages.subtitle.take_stack"
+	},
+	"insert_all": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:block.bone_block.place",
+				"volume": 0.8,
+				"pitch": 0.7
+			}
+		],
+		"subtitle": "packages.subtitle.insert_all"
+	},
+	"take_all": {
+		"sounds": [
+			{
+				"type": "event",
+				"name": "minecraft:block.gilded_blackstone.break",
+				"volume": 0.5,
+				"pitch": 0.7
+			}
+		],
+		"subtitle": "packages.subtitle.take_all"
 	}
 }

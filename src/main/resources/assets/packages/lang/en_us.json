@@ -31,5 +31,11 @@
 	
 	"packages.package_maker.craft_button": "Create",
 	
-	"packages.subtitle.package_maker_craft": "Package Crafter used"
+	"packages.subtitle.package_maker_craft": "Package Crafter used",
+	"packages.subtitle.insert_one": "Item inserted",
+	"packages.subtitle.take_one": "Item taken",
+	"packages.subtitle.insert_stack": "Items inserted",
+	"packages.subtitle.take_stack": "Items taken",
+	"packages.subtitle.insert_all": "Many items inserted",
+	"packages.subtitle.take_all": "Many items taken"
 }

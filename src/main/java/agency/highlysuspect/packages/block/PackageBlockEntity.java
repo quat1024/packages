@@ -16,7 +16,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -70,18 +69,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		else didAnything = playerTakeDropLeftovers(player, hand, action, false);
 		
 		if(didAnything && level != null && Init.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
-			SoundEvent event; float vol, pitch;
-			//TODO yes break this out into sounds json
-			switch(action) {
-				case INSERT_ONE   -> { event = SoundEvents.CALCITE_PLACE; vol = 0.4f; pitch = 1; }
-				case TAKE_ONE     -> { event = SoundEvents.ITEM_PICKUP; vol = 0.2f; pitch = (level.random.nextFloat() - level.random.nextFloat()) * 1.4f + 2f; }
-				case INSERT_STACK -> { event = SoundEvents.CALCITE_PLACE; vol = 0.4f; pitch = 0.75f; }
-				case TAKE_STACK   -> { event = SoundEvents.ITEM_PICKUP; vol = 0.2f; pitch = level.random.nextFloat() * 0.1f + 0.7f; }
-				case INSERT_ALL   -> { event = SoundEvents.BONE_BLOCK_PLACE; vol = 0.8f; pitch = 0.7f; }
-				case TAKE_ALL     -> { event = SoundEvents.GILDED_BLACKSTONE_BREAK; vol = 0.5f; pitch = 0.7f; }
-				default -> { return; }
-			}
-			level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, vol, pitch);
+			SoundEvent event = action.getSoundEvent();
+			if(event != null) level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, action.getSoundVolume(), action.getSoundPitch(level));
 		}
 	}
 	
