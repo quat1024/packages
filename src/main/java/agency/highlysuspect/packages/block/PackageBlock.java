@@ -105,10 +105,8 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
-		//TODO is it needed
-		if(state.getBlock() != newState.getBlock()) {
-			world.updateNeighbourForOutputSignal(pos, this);
-		}
+		//Don't ask me why the cast is there but Mojang does it too
+		if(world.getBlockEntity(pos) instanceof PackageBlockEntity) world.updateNeighbourForOutputSignal(pos, this);
 		
 		super.onRemove(state, world, pos, newState, moved);
 	}

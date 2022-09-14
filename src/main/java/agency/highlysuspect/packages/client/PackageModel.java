@@ -46,7 +46,7 @@ public class PackageModel implements UnbakedModel {
 	
 	public static class Baked extends ForwardingBakedModel {
 		public Baked(PackageModelBakery bakery) {
-			this.wrapped = bakery.baseModel();
+			this.wrapped = bakery.baseModel;
 			this.bakery = bakery;
 		}
 		
@@ -60,18 +60,14 @@ public class PackageModel implements UnbakedModel {
 		@Override
 		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
 			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageStyle style) {
-				emitFrame(context, style);
+				context.meshConsumer().accept(bakery.bake(style, style.color(), style.frameBlock(), style.innerBlock()));
 			}
 		}
 		
 		@Override
 		public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-			emitFrame(context, PackageStyle.fromItemStack(stack));
-		}
-		
-		private void emitFrame(RenderContext context, PackageStyle style) {
-			//TODO: Reimplement model caching.
-			context.meshConsumer().accept(bakery.bake(style));
+			PackageStyle style = PackageStyle.fromItemStack(stack);
+			context.meshConsumer().accept(bakery.bake(style, style.color(), style.frameBlock(), style.innerBlock()));
 		}
 	}
 }

@@ -46,7 +46,7 @@ public class PackageMakerModel implements UnbakedModel {
 	
 	public static class Baked extends ForwardingBakedModel {
 		public Baked(PackageModelBakery bakery) {
-			this.wrapped = bakery.baseModel();
+			this.wrapped = bakery.baseModel;
 			this.bakery = bakery;
 		}
 		
@@ -60,14 +60,14 @@ public class PackageMakerModel implements UnbakedModel {
 		@Override
 		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
 			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageMakerRenderAttachment attachment) {
-				context.meshConsumer().accept(bakery.bake(attachment.color(), attachment.frameBlock(), attachment.innerBlock()));
+				context.meshConsumer().accept(bakery.bake(attachment, attachment.color(), attachment.frameBlock(), attachment.innerBlock()));
 			}
 		}
 		
 		@Override
 		public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
 			//filters out all the special quads
-			context.meshConsumer().accept(bakery.bake(null, null, null));
+			context.meshConsumer().accept(bakery.bake(null, null, null, null));
 		}
 	}
 }

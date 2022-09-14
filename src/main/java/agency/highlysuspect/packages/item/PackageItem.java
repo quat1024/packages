@@ -52,12 +52,6 @@ public class PackageItem extends BlockItem {
 			.filter(s -> !s.isEmpty());
 	}
 	
-	//TODO: You don't get an ItemStack. Only Packages containing items are not suitable for being placed inside other container items.
-//	@Override
-//	public boolean canFitInsideContainerItems() {
-//		return false;
-//	}
-	
 	@Override
 	public boolean isBarVisible(ItemStack stack) {
 		if(stack.getCount() != 1) return false; //Clips with the number and looks bad, and stacked packages aren't interactable anyway.

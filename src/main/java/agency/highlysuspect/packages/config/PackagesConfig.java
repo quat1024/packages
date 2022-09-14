@@ -65,6 +65,13 @@ public class PackagesConfig {
 	})
 	public double fontVerticalShift = 0;
 	
+	@Comment({
+		"If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
+		"I'm not gonna lie - this probably helps performance less than it sounds like it would. On my pc it actually hurts.",
+		"I'll leave the option in in case you have a really slow implementation of fabric renderer api, I guess."
+	})
+	public boolean cacheMeshes = false;
+	
 	//Bindings sorted such that the more specific ones are at the front of the list (checks ctrl-shift-alt, before ctrl-alt, before alt)
 	public transient List<PackageActionBinding> sortedBindings = new ArrayList<>();
 	

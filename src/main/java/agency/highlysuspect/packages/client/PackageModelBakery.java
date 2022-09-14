@@ -4,7 +4,6 @@ import agency.highlysuspect.packages.Init;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.junk.PUtil;
-import agency.highlysuspect.packages.junk.PackageStyle;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
@@ -28,16 +27,29 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-public record PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
-	private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/frame"));
-	private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/inner"));
+public class PackageModelBakery {
+	@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/frame"));
+	@SuppressWarnings("deprecation") private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/inner"));
+	
+	public final BakedModel baseModel;
+	public final TextureAtlasSprite specialFrameSprite;
+	public final TextureAtlasSprite specialInnerSprite;
+	
+	public PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
+		this.baseModel = baseModel;
+		this.specialFrameSprite = specialFrameSprite;
+		this.specialInnerSprite = specialInnerSprite;
+	}
 	
 	public record Spec(ResourceLocation blockModelId) {
 		public Collection<ResourceLocation> modelDependencies() {
@@ -52,19 +64,16 @@ public record PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specia
 		}
 		
 		public PackageModelBakery make(ModelBakery loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
-			return new PackageModelBakery(
-				loader.getModel(blockModelId).bake(loader, textureGetter, rotationContainer, modelId),
-				textureGetter.apply(SPECIAL_FRAME),
-				textureGetter.apply(SPECIAL_INNER)
-			);
+			BakedModel baseModel = loader.getModel(blockModelId).bake(loader, textureGetter, rotationContainer, modelId);
+			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
+			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
+			
+			if(Init.config.cacheMeshes) return new Caching(baseModel, specialFrameSprite, specialInnerSprite);
+			else return new PackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
 		}
 	}
 	
-	public Mesh bake(PackageStyle style) {
-		return bake(style.color(), style.frameBlock(), style.innerBlock());
-	}
-	
-	public Mesh bake(@Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
+	protected Mesh bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
 		BlockRenderDispatcher mgr = Minecraft.getInstance().getBlockRenderer();
 		Renderer renderer = RendererAccess.INSTANCE.getRenderer();
 		assert renderer != null;
@@ -72,14 +81,13 @@ public record PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specia
 		MeshBuilder meshBuilder = renderer.meshBuilder();
 		QuadEmitter emitter = meshBuilder.getEmitter();
 		
-		Random random = new Random(42);
-		
 		@Nullable BlockState frameState = frameBlock == null ? null : frameBlock.defaultBlockState();
 		@Nullable TextureAtlasSprite frameSprite = frameState == null ? null : mgr.getBlockModel(frameState).getParticleIcon();
 		
 		@Nullable BlockState innerState = innerBlock == null ? null : innerBlock.defaultBlockState();
 		@Nullable TextureAtlasSprite innerSprite = innerState == null ? null : mgr.getBlockModel(innerState).getParticleIcon();
 		
+		Random random = new Random(42);
 		for(Direction cullFace : PUtil.DIRECTIONS_AND_NULL) {
 			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.defaultBlockState(), cullFace, random)) {
 				emitter.fromVanilla(quad, null, cullFace);
@@ -161,6 +169,22 @@ public record PackageModelBakery(BakedModel baseModel, TextureAtlasSprite specia
 				float writeV = emitter.spriteV(i, 0) == minV ? remappedMinV : remappedMaxV;
 				emitter.sprite(i, 0, writeU, writeV);
 			}
+		}
+	}
+	
+	public static class Caching extends PackageModelBakery {
+		public Caching(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
+			super(baseModel, specialFrameSprite, specialInnerSprite);
+		}
+		
+		//ConcurrentHashMap does not support null keys.
+		//No method of evicting meshes from the cache is required because the entire PackageModelBakery is thrown out on resource reload.
+		private final Map<@NotNull Object, Mesh> bakedModelCache = new ConcurrentHashMap<>();
+		private static final Object NULL_KEY = new Object();
+		
+		@Override
+		protected Mesh bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
+			return bakedModelCache.computeIfAbsent(cacheKey == null ? NULL_KEY : cacheKey, __ -> super.bake(cacheKey, faceColor, frameBlock, innerBlock));
 		}
 	}
 }
