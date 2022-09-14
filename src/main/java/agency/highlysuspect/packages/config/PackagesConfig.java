@@ -15,15 +15,24 @@ public class PackagesConfig {
 	@SuppressWarnings("unused")
 	@SkipDefault private int configVersion = 0;
 	
-	////////////////////////////////////////////
-	@Section("Interactions (client-controlled)")
-	////////////////////////////////////////////
+	////////////////////
+	@Section("Features")
+	////////////////////
+	
+	@Comment("Allow interacting with Packages in the player inventory, kinda like a Bundle.")
+	public boolean inventoryInteractions = true;
+	
+	@Comment("Play sounds when players interact with a Package.")
+	public boolean interactionSounds = true;
+	
+	//////////////////
+	@Section("Client")
+	//////////////////
 	
 	@Comment({
 		"Specify at least 'use' (right click) or 'punch' (left click), and optionally add",
 		"any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
 		"Separate multiple items with hyphens. Disable an action entirely by leaving it blank.",
-		"These actions affect your game client only, not any other players on the server.",
 		"",
 		"How do you insert one item into the package?",
 	})
@@ -49,6 +58,12 @@ public class PackagesConfig {
 	@Comment("How do you clear all items from the package?")
 	@PackageActionBinding.For(PackageAction.TAKE_ALL)
 	public PackageActionBinding takeAll = new PackageActionBinding.Builder(PackageAction.TAKE_ALL).punch().ctrl().build();
+	
+	@Comment({
+		"Vertically shift the numeric display on Packages up by this many blocks.",
+		"Nudge this to recenter fonts with a different baseline from vanilla."
+	})
+	public double fontVerticalShift = 0;
 	
 	//Bindings sorted such that the more specific ones are at the front of the list (checks ctrl-shift-alt, before ctrl-alt, before alt)
 	public transient List<PackageActionBinding> sortedBindings = new ArrayList<>();

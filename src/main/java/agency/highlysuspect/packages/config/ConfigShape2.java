@@ -55,6 +55,8 @@ public class ConfigShape2 {
 		installSerializer(Integer.TYPE, SerializerDeserializer.withObjectToString(Integer::parseInt));
 		installSerializer(Boolean.class, SerializerDeserializer.withObjectToString(Boolean::parseBoolean));
 		installSerializer(Boolean.TYPE, SerializerDeserializer.withObjectToString(Boolean::parseBoolean));
+		installSerializer(Double.class, SerializerDeserializer.withObjectToString(Double::parseDouble));
+		installSerializer(Double.TYPE, SerializerDeserializer.withObjectToString(Double::parseDouble));
 	}
 	
 	public void add(Element element) {

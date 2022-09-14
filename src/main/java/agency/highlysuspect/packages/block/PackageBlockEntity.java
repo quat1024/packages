@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.Init;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.net.PackageAction;
@@ -14,9 +15,13 @@ import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.Nameable;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -60,8 +65,24 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	
 	//<editor-fold desc="Interactions">
 	public void performAction(Player player, InteractionHand hand, PackageAction action) {
-		if(action.isInsert()) playerInsert(player, hand, action, false);
-		else playerTakeDropLeftovers(player, hand, action, false);
+		boolean didAnything;
+		if(action.isInsert()) didAnything = playerInsert(player, hand, action, false);
+		else didAnything = playerTakeDropLeftovers(player, hand, action, false);
+		
+		if(didAnything && level != null && Init.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
+			SoundEvent event; float vol, pitch;
+			//TODO yes break this out into sounds json
+			switch(action) {
+				case INSERT_ONE   -> { event = SoundEvents.CALCITE_PLACE; vol = 0.4f; pitch = 1; }
+				case TAKE_ONE     -> { event = SoundEvents.ITEM_PICKUP; vol = 0.2f; pitch = (level.random.nextFloat() - level.random.nextFloat()) * 1.4f + 2f; }
+				case INSERT_STACK -> { event = SoundEvents.CALCITE_PLACE; vol = 0.4f; pitch = 0.75f; }
+				case TAKE_STACK   -> { event = SoundEvents.ITEM_PICKUP; vol = 0.2f; pitch = level.random.nextFloat() * 0.1f + 0.7f; }
+				case INSERT_ALL   -> { event = SoundEvents.BONE_BLOCK_PLACE; vol = 0.8f; pitch = 0.7f; }
+				case TAKE_ALL     -> { event = SoundEvents.GILDED_BLACKSTONE_BREAK; vol = 0.5f; pitch = 0.7f; }
+				default -> { return; }
+			}
+			level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, vol, pitch);
+		}
 	}
 	
 	/**
@@ -179,9 +200,9 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	public record PlayerTakeResult(boolean successful, List<ItemStack> leftovers) {}
 	
 	@SuppressWarnings("SameParameterValue") //simulate == false, see above to-do comment
-	private void playerTakeDropLeftovers(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+	private boolean playerTakeDropLeftovers(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
 		PlayerTakeResult result = playerTake(player, hand, action, simulate);
-		if(simulate || !result.successful() || result.leftovers().isEmpty() || level == null) return;
+		if(simulate || !result.successful() || result.leftovers().isEmpty() || level == null) return result.successful();
 		
 		Vec3 spawnPos = Vec3.atCenterOf(getBlockPos()).add(new Vec3(getBlockState().getValue(PackageBlock.FACING).primaryDirection.step()).scale(0.8d));
 		for(ItemStack stack : result.leftovers()) {
@@ -189,6 +210,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 			e.setPickUpDelay(10);
 			level.addFreshEntity(e);
 		}
+		return true;
 	}
 	
 	//MAIN_HAND returns the slot ID of the current hotbar slot, OFF_HAND returns the offhand slot ID. Designed for player.getInventory().getItem().

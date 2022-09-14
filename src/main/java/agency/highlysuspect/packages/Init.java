@@ -21,6 +21,8 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.List;
+
 public class Init implements ModInitializer {
 	public static final String MODID = "packages";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
@@ -38,19 +40,15 @@ public class Init implements ModInitializer {
 			.installSerializer(PackageActionBinding.class, new PackageActionBinding.SerializerDeserializer())
 			.readPropsFromPojo(new PackagesConfig());
 		
-		loadConfig();
 		//TODO: Split client and server config
-		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-			@Override
-			public ResourceLocation getFabricId() {
-				return new ResourceLocation(MODID, "data-reload");
-			}
-			
-			@Override
-			public void onResourceManagerReload(ResourceManager resourceManager) {
-				loadConfig();
-			}
-		});
+		for(PackType type : List.of(PackType.CLIENT_RESOURCES, PackType.SERVER_DATA)) {
+			ResourceManagerHelper.get(type).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+				@Override public ResourceLocation getFabricId() { return new ResourceLocation(MODID, "data-reload"); }
+				@Override public void onResourceManagerReload(ResourceManager resourceManager) { loadConfig(); }
+			});
+		}
+		
+		loadConfig();
 		
 		PBlocks.onInitialize();
 		PBlockEntityTypes.onInitialize();
