@@ -249,6 +249,11 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	public void clearContent() {
 		inv.clear();
 	}
+	
+	public void setChanged() {
+		super.setChanged();
+		if(level != null) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+	}
 	//endregion
 	
 	//region MenuProvider
@@ -305,21 +310,13 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			customName = null;
 		}
 		
+		inv.clear();
 		ContainerHelper.loadAllItems(tag, inv);
 		
 		if(dataVersion == 0) {
 			//the "extra" slot didn't exist yet; need to move slot 3 (old output slot) to slot 4 (new output slot)
 			inv.set(4, inv.get(3));
 			inv.set(3, ItemStack.EMPTY);
-		}
-	}
-	
-	//TODO kind of a hack Also it doesn't work lol
-	@Override
-	public void setChanged() {
-		super.setChanged();
-		if(level != null) {
-			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 		}
 	}
 	

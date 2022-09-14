@@ -9,6 +9,7 @@
 		"api.MixinBundleItem"
   ],
   "client": [
+		"client.MixinClientPacketListener",
 		"client.MixinItemRenderer",
 		"client.MixinMinecraft",
 		"particleslol.AccessorTextureSheetParticle",
