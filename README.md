@@ -3,9 +3,9 @@ Packages
 
 Worse Barrels successor for Fabric ~~1.15.2~~ ~~1.16.4~~ ~~1.17.0~~ ~~1.17.1~~ 1.18. Package Crafter model by [Kat](https://kat.blue).
 
-~~soft dependency on FREX (transfers frex blockstate materials onto the package model)~~ Disabled for now in 1.18.
+Soft dependency on FREX (transfers FREX texture materials onto the package model). Try it with your favorite Canvas shader with selfillum blocks or PBR.
 
-~~soft dependency on Dashloader~~ also disabled for now. I am so tired. im sorry.
+~~soft dependency on Dashloader~~ Disabled for now, sorry about that.
 
 # `c` tag usage note:
 

@@ -81,6 +81,12 @@ public class PackagesConfig {
 	})
 	public boolean cacheMeshes = false;
 	
+	@Comment({
+		"If 'true' and FREX is loaded, materials on block models will be forwarded into the various Packages block models.",
+		"Use this if you have funky Canvas shaders that make blocks glow, or whatnot. Requires game restart."
+	})
+	public boolean frexSupport = true;
+	
 	//Bindings sorted such that the more specific ones are at the front of the list (checks ctrl-shift-alt, before ctrl-alt, before alt)
 	public transient List<PackageActionBinding> sortedBindings = new ArrayList<>();
 	

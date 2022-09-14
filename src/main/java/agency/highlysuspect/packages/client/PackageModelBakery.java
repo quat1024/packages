@@ -24,6 +24,7 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -161,11 +162,9 @@ public class PackageModelBakery {
 			float remappedMinV = PUtil.rangeRemap(minV, sprite.getV0(), sprite.getV1(), 0, 1);
 			float remappedMaxV = PUtil.rangeRemap(maxV, sprite.getV0(), sprite.getV1(), 0, 1);
 			
-			//This loop has to go in reverse order or else UV mapping totally falls apart under Canvas (last I checked). Not sure why, I should ask!
-			//It's not float comparison issues, pretty sure (if i add an epsilon, it's still broken)
-			for(int i = 3; i >= 0; i--) {
-				float writeU = emitter.spriteU(i, 0) == minU ? remappedMinU : remappedMaxU;
-				float writeV = emitter.spriteV(i, 0) == minV ? remappedMinV : remappedMaxV;
+			for(int i = 0; i < 4; i++) {
+				float writeU = Mth.equal(emitter.spriteU(i, 0), minU) ? remappedMinU : remappedMaxU;
+				float writeV = Mth.equal(emitter.spriteV(i, 0), minV) ? remappedMinV : remappedMaxV;
 				emitter.sprite(i, 0, writeU, writeV);
 			}
 		}

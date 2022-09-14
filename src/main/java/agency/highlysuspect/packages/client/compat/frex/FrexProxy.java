@@ -5,5 +5,11 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.world.level.block.state.BlockState;
 
 public interface FrexProxy {
-	void fancifyPackageQuad(QuadEmitter emitter, BlockState state, TextureAtlasSprite sprite);
+	default void fancifyPackageQuad(QuadEmitter emitter, BlockState state, TextureAtlasSprite sprite) {
+		//No-op by default.
+	}
+	
+	class Nil implements FrexProxy {
+		public static final Nil INSTANCE = new Nil();
+	}
 }

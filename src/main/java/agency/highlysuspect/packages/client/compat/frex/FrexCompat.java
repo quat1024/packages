@@ -9,18 +9,15 @@ public class FrexCompat {
 	static {
 		FrexProxy p;
 		
-		//TODO: Readd Frex compat in 1.18
-		//noinspection PointlessBooleanExpression,ConstantConditions
-		if(false && FabricLoader.getInstance().isModLoaded("frex")) {
+		if(Init.config.frexSupport && FabricLoader.getInstance().isModLoaded("frex")) {
+			Init.LOGGER.info("Packages is loading FREX support !");
 			try {
 				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.client.compat.frex.YesFrex").getDeclaredConstructor().newInstance();
 			} catch (ReflectiveOperationException e) {
 				Init.LOGGER.error("Problem initializing FREX compat, special stuff will be disabled: ", e);
-				p = new NoFrex();
+				p = FrexProxy.Nil.INSTANCE;
 			}
-		} else {
-			p = new NoFrex();
-		}
+		} else p = FrexProxy.Nil.INSTANCE;
 		
 		PROXY = p;
 	}
