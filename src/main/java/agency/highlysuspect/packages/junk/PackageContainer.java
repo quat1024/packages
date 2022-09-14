@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.junk;
 
+import agency.highlysuspect.packages.api.StackSensitiveContainerItemRules;
 import agency.highlysuspect.packages.item.PItems;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -83,6 +84,8 @@ public class PackageContainer implements Container {
 	//Whether you're ever allowed to put this item into a Package.
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean allowedInPackageAtAll(ItemStack stack) {
+		if(stack.getItem() instanceof StackSensitiveContainerItemRules r && !r.canFitInsideContainerItems(stack)) return false;
+		
 		PackageContainer cont = PackageContainer.fromItemStack(stack);
 		if(cont != null && cont.calcRecursionLevel() >= RECURSION_LIMIT) return false;
 		else return !stack.is(PItemTags.BANNED_FROM_PACKAGE);
