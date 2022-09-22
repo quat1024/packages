@@ -28,7 +28,7 @@ public class PClientBlockEventHandlers {
 	private static BlockPos lastPunchPosLegacy;
 	private static long lastPunchTickLegacy;
 	
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantIfStatement"})
 	public static boolean canAttack(Player player, Level level, BlockPos pos, Direction direction) {
 		if(player.isSpectator()) return false;
 		BlockState state = level.getBlockState(pos);
@@ -98,10 +98,17 @@ public class PClientBlockEventHandlers {
 			//Simulate performing the action. If anything happened...
 			if(pkg.playerInsert(player, hand, action, true)) {
 				//...send a packet to do it for real
+				//SUCCESS sends a block-place packet too because fabric api is weird, so we use CONSUME+swing to mark the action as successful.
 				PNetClient.performAction(pos, hand, action);
 				player.swing(hand);
-				return InteractionResult.CONSUME; //SUCCESS sends a block-place packet too because useblockcallback wacky
-			} else return InteractionResult.PASS;
+				return InteractionResult.CONSUME;
+			}
+			
+			//Also send CONSUME on failures that get this far in, because in practice it's annoying to be holding a block and have it go "oh, you
+			//pressed right click but the package contained a different item? aha, better place the block against the face of the package, covering it".
+			//But it *also* also feels weird for the action to still be consumed when Sneak is pressed, even though sneak-clicks are overridden
+			//to mean something else in this mod, in my experience. So we have this confusing nonsense line. Hopefully it makes things intuitive.
+			return player.isShiftKeyDown() ? InteractionResult.PASS : InteractionResult.CONSUME;
 		});
 	}
 	
