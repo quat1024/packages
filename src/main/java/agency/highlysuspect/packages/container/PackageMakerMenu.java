@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.container;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.api.EnvType;
@@ -86,10 +86,10 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		return what;
 	}
 	
-	public static final ResourceLocation FRAME_BG = Init.id("gui/slot_frame");
-	public static final ResourceLocation INNER_BG = Init.id("gui/slot_inner");
-	public static final ResourceLocation DYE_BG = Init.id("gui/slot_dye");
-	public static final ResourceLocation EXTRA_BG = Init.id("gui/slot_extra");
+	public static final ResourceLocation FRAME_BG = Packages.id("gui/slot_frame");
+	public static final ResourceLocation INNER_BG = Packages.id("gui/slot_inner");
+	public static final ResourceLocation DYE_BG = Packages.id("gui/slot_dye");
+	public static final ResourceLocation EXTRA_BG = Packages.id("gui/slot_extra");
 	
 	public static class FunkySlot extends Slot {
 		public FunkySlot(Container inventory, int slot, int x, int y, @Nullable ResourceLocation background, Predicate<ItemStack> mayPlace) {

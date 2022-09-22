@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.client.compat.frex;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import net.fabricmc.loader.api.FabricLoader;
 
 public class FrexCompat {
@@ -9,12 +9,12 @@ public class FrexCompat {
 	static {
 		FrexProxy p;
 		
-		if(Init.config.frexSupport && FabricLoader.getInstance().isModLoaded("frex")) {
-			Init.LOGGER.info("Packages is loading FREX support !");
+		if(Packages.config.frexSupport && FabricLoader.getInstance().isModLoaded("frex")) {
+			Packages.LOGGER.info("Packages is loading FREX support !");
 			try {
 				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.client.compat.frex.YesFrex").getDeclaredConstructor().newInstance();
 			} catch (ReflectiveOperationException e) {
-				Init.LOGGER.error("Problem initializing FREX compat, special stuff will be disabled: ", e);
+				Packages.LOGGER.error("Problem initializing FREX compat, special stuff will be disabled: ", e);
 				p = FrexProxy.Nil.INSTANCE;
 			}
 		} else p = FrexProxy.Nil.INSTANCE;

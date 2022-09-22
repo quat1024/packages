@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
-public class Init implements ModInitializer {
+public class Packages implements ModInitializer {
 	public static final String MODID = "packages";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
 	

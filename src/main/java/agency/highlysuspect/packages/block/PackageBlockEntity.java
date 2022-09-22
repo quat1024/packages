@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.net.PackageAction;
@@ -68,7 +68,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		if(action.isInsert()) didAnything = playerInsert(player, hand, action, false);
 		else didAnything = playerTakeDropLeftovers(player, hand, action, false);
 		
-		if(didAnything && level != null && Init.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
+		if(didAnything && level != null && Packages.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
 			SoundEvent event = action.getSoundEvent();
 			if(event != null) level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, action.getSoundVolume(), action.getSoundPitch(level));
 		}

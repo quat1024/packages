@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
@@ -25,9 +25,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PackageModel implements UnbakedModel {
-	public static final ResourceLocation PACKAGE_SPECIAL = Init.id("special/package");
-	public static final ResourceLocation ITEM_SPECIAL = Init.id("item/package");
-	private static final PackageModelBakery.Spec modelBakerySpec = new PackageModelBakery.Spec(Init.id("block/package"));
+	public static final ResourceLocation PACKAGE_SPECIAL = Packages.id("special/package");
+	public static final ResourceLocation ITEM_SPECIAL = Packages.id("item/package");
+	private static final PackageModelBakery.Spec modelBakerySpec = new PackageModelBakery.Spec(Packages.id("block/package"));
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {

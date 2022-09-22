@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.block;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.SoundType;
@@ -12,13 +12,13 @@ public class PBlocks {
 	public static PackageBlock PACKAGE;
 	
 	public static void onInitialize() {
-		PACKAGE_MAKER = Registry.register(Registry.BLOCK, Init.id("package_maker"), new PackageMakerBlock(
+		PACKAGE_MAKER = Registry.register(Registry.BLOCK, Packages.id("package_maker"), new PackageMakerBlock(
 			FabricBlockSettings.of(Material.WOOD)
 				.sound(SoundType.WOOD)
 				.strength(1f, 1f)
 		));
 		
-		PACKAGE = Registry.register(Registry.BLOCK, Init.id("package"), new PackageBlock(
+		PACKAGE = Registry.register(Registry.BLOCK, Packages.id("package"), new PackageBlock(
 			FabricBlockSettings.of(Material.WOOD)
 				.sound(SoundType.WOOD)
 				.strength(1f, 1f)

@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.junk.PUtil;
@@ -38,8 +38,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class PackageModelBakery {
-	@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/frame"));
-	@SuppressWarnings("deprecation") private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Init.id("special/inner"));
+	@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("special/frame"));
+	@SuppressWarnings("deprecation") private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("special/inner"));
 	
 	public final BakedModel baseModel;
 	public final TextureAtlasSprite specialFrameSprite;
@@ -68,7 +68,7 @@ public class PackageModelBakery {
 			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 			
-			if(Init.config.cacheMeshes) return new Caching(baseModel, specialFrameSprite, specialInnerSprite);
+			if(Packages.config.cacheMeshes) return new Caching(baseModel, specialFrameSprite, specialInnerSprite);
 			else return new PackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
 		}
 	}

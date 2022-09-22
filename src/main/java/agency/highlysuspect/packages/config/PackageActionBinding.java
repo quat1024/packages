@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.config;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.net.PackageAction;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,7 +56,7 @@ public record PackageActionBinding(PackageAction action, boolean ctrl, boolean s
 				case "alt" -> b.alt = true;
 				case "punch", "attack", "left" -> b.mainTrigger = MainTrigger.PUNCH;
 				case "use", "right", "activate" -> b.mainTrigger = MainTrigger.USE;
-				default -> Init.LOGGER.warn("Unknown PackageActionBinding component '" + option + "', skipping");
+				default -> Packages.LOGGER.warn("Unknown PackageActionBinding component '" + option + "', skipping");
 			}
 		}
 		return b.build();

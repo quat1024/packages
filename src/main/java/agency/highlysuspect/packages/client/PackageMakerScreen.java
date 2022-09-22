@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
-	private static final ResourceLocation TEXTURE = Init.id("textures/gui/package_maker.png");
+	private static final ResourceLocation TEXTURE = Packages.id("textures/gui/package_maker.png");
 	
 	public PackageMakerScreen(PackageMakerMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
@@ -32,11 +32,11 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	
 	private static final Map<Integer, String> SLOTS_TO_TOOLTIPS = new HashMap<>();
 	static {
-		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.FRAME_SLOT, Init.MODID + ".package_maker.frame");
-		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.INNER_SLOT, Init.MODID + ".package_maker.inner");
-		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.DYE_SLOT, Init.MODID + ".package_maker.dye");
-		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.EXTRA_SLOT, Init.MODID + ".package_maker.extra");
-		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.OUTPUT_SLOT, Init.MODID + ".package_maker.output");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.FRAME_SLOT, Packages.MODID + ".package_maker.frame");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.INNER_SLOT, Packages.MODID + ".package_maker.inner");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.DYE_SLOT, Packages.MODID + ".package_maker.dye");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.EXTRA_SLOT, Packages.MODID + ".package_maker.extra");
+		SLOTS_TO_TOOLTIPS.put(PackageMakerBlockEntity.OUTPUT_SLOT, Packages.MODID + ".package_maker.output");
 	}
 	
 	private Button craftButton;
@@ -44,7 +44,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	@Override
 	protected void init() {
 		super.init();
-		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Init.MODID + ".package_maker.craft_button"), (button) -> {
+		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Packages.MODID + ".package_maker.craft_button"), (button) -> {
 			if(hasShiftDown()) sendButtonClick(1);
 			else sendButtonClick(0);
 		}));

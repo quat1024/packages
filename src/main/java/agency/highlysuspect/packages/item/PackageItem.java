@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.item;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.minecraft.network.chat.Component;
@@ -77,7 +77,7 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public boolean overrideStackedOnOther(ItemStack me, Slot slot, ClickAction clickAction, Player player) {
-		if(clickAction != ClickAction.SECONDARY || !Init.config.inventoryInteractions) return super.overrideStackedOnOther(me, slot, clickAction, player);
+		if(clickAction != ClickAction.SECONDARY || !Packages.config.inventoryInteractions) return super.overrideStackedOnOther(me, slot, clickAction, player);
 		if(me.getCount() != 1) return false;
 		ItemStack other = slot.getItem();
 		
@@ -111,7 +111,7 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public boolean overrideOtherStackedOnMe(ItemStack me, ItemStack other, Slot slot, ClickAction clickAction, Player player, SlotAccess slotAccess) {
-		if(clickAction != ClickAction.SECONDARY || !Init.config.inventoryInteractions) return super.overrideOtherStackedOnMe(me, other, slot, clickAction, player, slotAccess);
+		if(clickAction != ClickAction.SECONDARY || !Packages.config.inventoryInteractions) return super.overrideOtherStackedOnMe(me, other, slot, clickAction, player, slotAccess);
 		if(me.getCount() != 1) return false;
 		
 		//These are two stackable packages. Presumably, the player wants to stack them,

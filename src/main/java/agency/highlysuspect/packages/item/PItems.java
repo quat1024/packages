@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.item;
 
-import agency.highlysuspect.packages.Init;
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PBlocks;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.core.Registry;
@@ -18,7 +18,7 @@ public class PItems {
 	public static BlockItem PACKAGE_MAKER;
 	public static PackageItem PACKAGE;
 	
-	public static final CreativeModeTab GROUP = FabricItemGroupBuilder.create(Init.id("group"))
+	public static final CreativeModeTab GROUP = FabricItemGroupBuilder.create(Packages.id("group"))
 		.icon(() -> new ItemStack(PACKAGE_MAKER))
 		.appendItems(list -> {
 			list.add(new ItemStack(PACKAGE_MAKER));
