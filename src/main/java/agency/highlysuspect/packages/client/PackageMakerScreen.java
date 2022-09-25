@@ -3,9 +3,9 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
+import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -119,12 +119,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		this.blit(matrices, i, j, 0, 0, this.imageWidth, this.imageHeight);
 	}
 	
-	public static void initIcons() {
-		ClientSpriteRegistryCallback.event(TextureAtlas.LOCATION_BLOCKS).register((tex, reg) -> {
-			reg.register(PackageMakerMenu.FRAME_BG);
-			reg.register(PackageMakerMenu.INNER_BG);
-			reg.register(PackageMakerMenu.DYE_BG);
-			reg.register(PackageMakerMenu.EXTRA_BG);
-		});
+	public static void initIcons(ClientPlatformSupport plat) {
+		plat.bakeSpritesOnto(TextureAtlas.LOCATION_BLOCKS, PackageMakerMenu.FRAME_BG, PackageMakerMenu.INNER_BG, PackageMakerMenu.DYE_BG, PackageMakerMenu.EXTRA_BG);
 	}
 }

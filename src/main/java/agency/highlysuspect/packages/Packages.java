@@ -19,7 +19,6 @@ import org.apache.logging.log4j.Logger;
 public abstract class Packages {
 	public static final String MODID = "packages";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
-	
 	public static Packages instance;
 	
 	public final PlatformSupport plat;
