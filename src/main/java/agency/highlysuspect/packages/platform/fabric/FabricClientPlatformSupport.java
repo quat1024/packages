@@ -3,6 +3,8 @@ package agency.highlysuspect.packages.platform.fabric;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
+import agency.highlysuspect.packages.platform.fabric.model.FrapiPackageMakerModel;
+import agency.highlysuspect.packages.platform.fabric.model.FrapiPackageModel;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -10,6 +12,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
@@ -32,6 +35,16 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	@Override
 	public void setRenderType(PlatformSupport.RegistryHandle<? extends Block> block, RenderType type) {
 		BlockRenderLayerMap.INSTANCE.putBlock(block.get(), type);
+	}
+	
+	@Override
+	public UnbakedModel createPackageModel() {
+		return new FrapiPackageModel();
+	}
+	
+	@Override
+	public UnbakedModel createPackageMakerModel() {
+		return new FrapiPackageMakerModel();
 	}
 	
 	@Override

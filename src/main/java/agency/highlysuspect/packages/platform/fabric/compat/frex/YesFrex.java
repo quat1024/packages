@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.client.compat.frex;
+package agency.highlysuspect.packages.platform.fabric.compat.frex;
 
 import io.vram.frex.api.material.MaterialMap;
 import io.vram.frex.fabric.compat.FabricMaterial;

@@ -2,45 +2,38 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.Packages;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
 
 public class PModelStuff {
-	private static PackageModel packageModel;
-	private static PackageMakerModel packageMakerModel;
+	public static final ResourceLocation PACKAGE_BLOCK_SPECIAL = Packages.id("special/package");
+	public static final ResourceLocation PACKAGE_ITEM_SPECIAL = Packages.id("item/package");
+	private static UnbakedModel packageModel;
+	
+	public static final ResourceLocation PACKAGE_MAKER_BLOCK_SPECIAL = Packages.id("special/package_maker");
+	public static final ResourceLocation PACKAGE_MAKER_ITEM_SPECIAL = Packages.id("item/package_maker");
+	private static UnbakedModel packageMakerModel;
 	
 	public static void onInitializeClient() {
+		//TODO: don't touch fabric here (not sure how it works on forge though)
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
-			if(PackageModel.PACKAGE_SPECIAL.equals(id) || PackageModel.ITEM_SPECIAL.equals(id)) {
-				if(packageModel == null) packageModel = new PackageModel();
+			if(PACKAGE_BLOCK_SPECIAL.equals(id) || PACKAGE_ITEM_SPECIAL.equals(id)) {
+				if(packageModel == null) packageModel = PackagesClient.instance.plat.createPackageModel();
 				return packageModel;
 			}
 			
-			if(PackageMakerModel.PACKAGE_MAKER_SPECIAL.equals(id) || PackageMakerModel.ITEM_SPECIAL.equals(id)) {
-				if(packageMakerModel == null) packageMakerModel = new PackageMakerModel();
+			if(PACKAGE_MAKER_BLOCK_SPECIAL.equals(id) || PACKAGE_MAKER_ITEM_SPECIAL.equals(id)) {
+				if(packageMakerModel == null) packageMakerModel = PackagesClient.instance.plat.createPackageMakerModel();
 				return packageMakerModel;
 			}
 			
 			return null;
 		});
 		
-		ResourceLocation id = Packages.id("dump_caches");
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(
-			new SimpleSynchronousResourceReloadListener() {
-				@Override
-				public ResourceLocation getFabricId() {
-					return id;
-				}
-				
-				@Override
-				public void onResourceManagerReload(ResourceManager manager) {
-					packageModel = null;
-					packageMakerModel = null;
-				}
-			}
-		);
+		Packages.instance.plat.installResourceReloadListener(mgr -> {
+			packageModel = null;
+			packageMakerModel = null;
+		}, Packages.id("dump_caches"), PackType.CLIENT_RESOURCES);
 	}
 }

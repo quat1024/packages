@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
-import agency.highlysuspect.packages.client.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -21,8 +20,6 @@ public abstract class PackagesClient {
 	}
 	
 	public void earlySetup() {
-		FrexCompat.onInitializeClient();
-		
 		PModelStuff.onInitializeClient();
 		
 		MenuScreens.register(PMenuTypes.PACKAGE_MAKER.get(), PackageMakerScreen::new);
