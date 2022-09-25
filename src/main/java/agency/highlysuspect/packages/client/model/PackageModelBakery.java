@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.client;
+package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PUtil;

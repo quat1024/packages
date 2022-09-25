@@ -65,6 +65,8 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 		UseBlockCallback.EVENT.register(callback::interact);
 	}
 	
+	//modelshit !
+	
 	@Override
 	public UnbakedModel createPackageModel() {
 		return new FrapiPackageModel();
@@ -74,6 +76,8 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	public UnbakedModel createPackageMakerModel() {
 		return new FrapiPackageMakerModel();
 	}
+	
+	//networking
 	
 	@Override
 	public void sendActionPacket(ActionPacket packet) {

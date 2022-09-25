@@ -2,7 +2,7 @@ package agency.highlysuspect.packages.platform.fabric.client.model;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.platform.fabric.compat.frex.FrexCompat;
-import agency.highlysuspect.packages.client.PackageModelBakery;
+import agency.highlysuspect.packages.client.model.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PUtil;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
