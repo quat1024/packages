@@ -2,8 +2,6 @@ package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.TwelveDirection;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -113,7 +111,6 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	//middle-click pick block, without holding Ctrl in creative
 	@Override
-	@Environment(EnvType.CLIENT)
 	public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
 		ItemStack stack = super.getCloneItemStack(world, pos, state);
 		

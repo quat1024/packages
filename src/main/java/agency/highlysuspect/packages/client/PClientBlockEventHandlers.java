@@ -8,8 +8,6 @@ import agency.highlysuspect.packages.config.PackageActionBinding.MainTrigger;
 import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,7 +21,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-@Environment(EnvType.CLIENT)
 public class PClientBlockEventHandlers {
 	private static BlockPos lastPunchPosLegacy;
 	private static long lastPunchTickLegacy;

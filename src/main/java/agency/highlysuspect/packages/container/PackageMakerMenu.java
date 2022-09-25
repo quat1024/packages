@@ -3,8 +3,6 @@ package agency.highlysuspect.packages.container;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import com.mojang.datafixers.util.Pair;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -108,7 +106,6 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		}
 		
 		@Override
-		@Environment(EnvType.CLIENT)
 		@Nullable
 		public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
 			if(background == null) return null;
