@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.platform.fabric.model;
+package agency.highlysuspect.packages.platform.fabric.client.model;
 
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;

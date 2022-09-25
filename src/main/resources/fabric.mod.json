@@ -19,7 +19,7 @@
 			"agency.highlysuspect.packages.platform.fabric.FabricInit"
     ],
     "client": [
-			"agency.highlysuspect.packages.platform.fabric.FabricClientInit"
+			"agency.highlysuspect.packages.platform.fabric.client.FabricClientInit"
     ]
   },
   "mixins": [

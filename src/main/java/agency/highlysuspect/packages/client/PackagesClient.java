@@ -25,7 +25,7 @@ public abstract class PackagesClient {
 		MenuScreens.register(PMenuTypes.PACKAGE_MAKER.get(), PackageMakerScreen::new);
 		PackageMakerScreen.initIcons(plat);
 		
-		PClientBlockEventHandlers.onInitializeClient();
+		PClientBlockEventHandlers.onInitializeClient(plat);
 		
 		plat.setBlockEntityRenderer(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
 		plat.setRenderType(PBlocks.PACKAGE_MAKER, RenderType.cutoutMipped());

@@ -43,7 +43,6 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		if(!(packageState.getBlock() instanceof PackageBlock)) return;
 		TwelveDirection packageTwelveDir = packageState.getValue(PackageBlock.FACING);
 		PackageContainer container = blockEntity.getContainer();
-		int count = container.getCount();
 		ItemStack stack = container.getFilterStack();
 		//The block is solid, so has no light inside; use the light of whatever's in front instead.
 		light = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));

@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.mixin.client;
 
-import agency.highlysuspect.packages.client.PClientBlockEventHandlers;
-import agency.highlysuspect.packages.junk.EarlyClientsideAttackBlockCallback;
+import agency.highlysuspect.packages.client.PackagesClient;
+import agency.highlysuspect.packages.platform.fabric.client.FabricClientPlatformSupport;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -16,9 +16,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-/**
- * @see PClientBlockEventHandlers
- */
 @Mixin(Minecraft.class)
 public class MixinMinecraft {
 	@Shadow @Nullable public LocalPlayer player;
@@ -26,7 +23,7 @@ public class MixinMinecraft {
 	
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
 	private void packages$startAttack$beforeStartDestroyingBlock(CallbackInfoReturnable<Boolean> cir, boolean miscLocal, BlockHitResult hit, BlockPos hitPos) {
-		if(EarlyClientsideAttackBlockCallback.EVENT.invoker().interact(player, level, hitPos, hit.getDirection())) {
+		if(player != null && PackagesClient.instance.plat instanceof FabricClientPlatformSupport f && f.EARLY_LEFT_CLICK_EVENT.invoker().interact(player, level, hitPos, hit.getDirection())) {
 			player.swing(InteractionHand.MAIN_HAND);
 			cir.setReturnValue(true);
 		}

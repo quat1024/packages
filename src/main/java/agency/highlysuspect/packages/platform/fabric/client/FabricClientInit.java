@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.platform.fabric;
+package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.platform.fabric.compat.frex.FrexCompat;
