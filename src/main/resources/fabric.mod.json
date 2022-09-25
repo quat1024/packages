@@ -12,7 +12,7 @@
     "sources": "https://github.com/quat1024/packages"
   },
   "license": "LGPL-3.0-or-later",
-  "icon": "assets/packages/icon.png",
+  "icon": "packages-icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
