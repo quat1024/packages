@@ -12,6 +12,12 @@ import java.util.List;
 
 @SuppressWarnings("FieldMayBeFinal")
 public class PackagesConfig {
+	public static ConfigShape2 makeConfigShape() {
+		return new ConfigShape2()
+			.installSerializer(PackageActionBinding.class, new PackageActionBinding.SerializerDeserializer())
+			.readPropsFromPojo(new PackagesConfig());
+	}
+	
 	@SuppressWarnings("unused")
 	@SkipDefault private int configVersion = 0;
 	

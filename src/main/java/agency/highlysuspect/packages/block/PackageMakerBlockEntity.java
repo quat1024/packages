@@ -36,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, MenuProvider, RenderAttachmentBlockEntity {
 	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
-		super(PBlockEntityTypes.PACKAGE_MAKER, pos, state);
+		super(PBlockEntityTypes.PACKAGE_MAKER.get(), pos, state);
 	}
 	
 	//region Crafting logic
@@ -93,7 +93,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		Block innerBlock = ((BlockItem) inner.getItem()).getBlock();
 		DyeColor dyeColor = ((DyeItem) dye.getItem()).getDyeColor();
 		
-		return PItems.PACKAGE.createCustomizedStack(frameBlock, innerBlock, dyeColor);
+		return PItems.PACKAGE.get().createCustomizedStack(frameBlock, innerBlock, dyeColor);
 	}
 	
 	///
@@ -266,7 +266,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE_MAKER.getDescriptionId());
+		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE_MAKER.get().getDescriptionId());
 	}
 	
 	@Override

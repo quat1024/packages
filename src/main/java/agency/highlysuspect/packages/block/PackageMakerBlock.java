@@ -50,7 +50,7 @@ public class PackageMakerBlock extends Block implements EntityBlock {
 	
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return PBlockEntityTypes.PACKAGE_MAKER.create(pos, state);
+		return PBlockEntityTypes.PACKAGE_MAKER.get().create(pos, state);
 	}
 	
 	@Override

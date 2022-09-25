@@ -333,7 +333,7 @@ public class PackageContainer implements Container {
 	}
 	
 	public static @Nullable PackageContainer fromItemStack(ItemStack stack) {
-		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE) return null;
+		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE.get()) return null;
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return null;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
@@ -341,7 +341,7 @@ public class PackageContainer implements Container {
 	
 	//Use this instead of fromItemStack() != null if you don't actually need the PackageContainer afterwards, it's cheaper.
 	public static boolean existsOnItemStack(ItemStack stack) {
-		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE) return false;
+		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE.get()) return false;
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return false;
 		

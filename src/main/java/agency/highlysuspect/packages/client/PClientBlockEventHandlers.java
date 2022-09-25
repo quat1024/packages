@@ -68,9 +68,9 @@ public class PClientBlockEventHandlers {
 			if(canAttack(player, level, pos, direction)) {
 				//Legacy stuff! Here's a reimplementation of the old, broken left click antirepeat. Old mod effectively had punchRepeat set to 4 ticks btw.
 				//removed in https://github.com/quat1024/packages/commit/401a19818dac539174081b219ca10c797fa0abf0
-				if(!level.isClientSide || Packages.config.punchRepeat < 0) return InteractionResult.CONSUME;
+				if(!level.isClientSide || Packages.instance.config.punchRepeat < 0) return InteractionResult.CONSUME;
 				
-				if(pos.equals(lastPunchPosLegacy) && (level.getGameTime() - lastPunchTickLegacy <= Packages.config.punchRepeat)) return InteractionResult.CONSUME;
+				if(pos.equals(lastPunchPosLegacy) && (level.getGameTime() - lastPunchTickLegacy <= Packages.instance.config.punchRepeat)) return InteractionResult.CONSUME;
 				lastPunchPosLegacy = pos;
 				lastPunchTickLegacy = level.getGameTime();
 				performPunchAction(player, level, pos, direction);
@@ -116,7 +116,7 @@ public class PClientBlockEventHandlers {
 		//Find the closest one by edit distance
 		PackageActionBinding leastWrongBinding = null;
 		int leastWrongness = NOPE;
-		for(PackageActionBinding binding : Packages.config.sortedBindings) {
+		for(PackageActionBinding binding : Packages.instance.config.sortedBindings) {
 			int wrongness = computeWrongness(player, binding, main);
 			if(wrongness == 0) return binding.action(); //Exact match, don't bother checking others
 			if(wrongness < leastWrongness) {

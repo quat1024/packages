@@ -9,7 +9,7 @@ public class FrexCompat {
 	static {
 		FrexProxy p;
 		
-		if(Packages.config.frexSupport && FabricLoader.getInstance().isModLoaded("frex")) {
+		if(Packages.instance.config.frexSupport && FabricLoader.getInstance().isModLoaded("frex")) {
 			Packages.LOGGER.info("Packages is loading FREX support !");
 			try {
 				p = (FrexProxy) Class.forName("agency.highlysuspect.packages.client.compat.frex.YesFrex").getDeclaredConstructor().newInstance();

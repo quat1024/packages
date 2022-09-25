@@ -68,7 +68,7 @@ public class PackageModelBakery {
 			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 			
-			if(Packages.config.cacheMeshes) return new Caching(baseModel, specialFrameSprite, specialInnerSprite);
+			if(Packages.instance.config.cacheMeshes) return new Caching(baseModel, specialFrameSprite, specialInnerSprite);
 			else return new PackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
 		}
 	}
@@ -89,7 +89,7 @@ public class PackageModelBakery {
 		
 		Random random = new Random(42);
 		for(Direction cullFace : PUtil.DIRECTIONS_AND_NULL) {
-			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.defaultBlockState(), cullFace, random)) {
+			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random)) {
 				emitter.fromVanilla(quad, null, cullFace);
 				emitter.material(null);
 				

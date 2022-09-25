@@ -20,15 +20,15 @@ public class ClientInit implements ClientModInitializer {
 		
 		PModelStuff.onInitializeClient();
 		
-		MenuScreens.register(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
+		MenuScreens.register(PMenuTypes.PACKAGE_MAKER.get(), PackageMakerScreen::new);
 		PackageMakerScreen.initIcons();
 		
 		PClientBlockEventHandlers.onInitializeClient();
 		
 		//block entity renderers
-		BlockEntityRendererRegistry.register(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
+		BlockEntityRendererRegistry.register(PBlockEntityTypes.PACKAGE.get(), PackageRenderer::new);
 		
 		//BlockRenderLayerMap entries
-		BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutoutMipped(), PBlocks.PACKAGE_MAKER);
+		BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutoutMipped(), PBlocks.PACKAGE_MAKER.get());
 	}
 }

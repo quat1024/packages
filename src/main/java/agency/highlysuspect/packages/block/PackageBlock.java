@@ -52,7 +52,7 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-		return PBlockEntityTypes.PACKAGE.create(pos, state);
+		return PBlockEntityTypes.PACKAGE.get().create(pos, state);
 	}
 	
 	//Behaviors.

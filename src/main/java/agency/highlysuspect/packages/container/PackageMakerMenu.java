@@ -24,7 +24,7 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 	}
 	
 	public PackageMakerMenu(int syncId, Inventory playerInventory, Container container) {
-		super(PMenuTypes.PACKAGE_MAKER, syncId);
+		super(PMenuTypes.PACKAGE_MAKER.get(), syncId);
 		this.container = container;
 		
 		addSlot(new FunkySlot(container, PackageMakerBlockEntity.FRAME_SLOT ,  16, 25, FRAME_BG, PackageMakerBlockEntity::matchesFrameSlot));

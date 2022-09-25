@@ -24,8 +24,8 @@ public class MixinItemRenderer {
 		at = @At("HEAD")
 	)
 	public void packages$renderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType transformMode, boolean invert, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light, int overlay, BakedModel model, CallbackInfo ci) {
-		if(stack.getItem() == PItems.PACKAGE) {
-			PItems.PACKAGE.getContainedStack(stack).ifPresent(inner -> {
+		if(stack.getItem() == PItems.PACKAGE.get()) {
+			PItems.PACKAGE.get().getContainedStack(stack).ifPresent(inner -> {
 				matrixStack.pushPose();
 				model.getTransforms().getTransform(transformMode).apply(invert, matrixStack);
 				PackageRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);

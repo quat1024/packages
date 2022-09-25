@@ -42,7 +42,7 @@ import java.util.stream.IntStream;
 
 public class PackageBlockEntity extends BlockEntity implements Container, RenderAttachmentBlockEntity, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
-		super(PBlockEntityTypes.PACKAGE, pos, state);
+		super(PBlockEntityTypes.PACKAGE.get(), pos, state);
 	}
 	
 	private PackageStyle style = PackageStyle.ERROR_LOL;
@@ -68,7 +68,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 		if(action.isInsert()) didAnything = playerInsert(player, hand, action, false);
 		else didAnything = playerTakeDropLeftovers(player, hand, action, false);
 		
-		if(didAnything && level != null && Packages.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
+		if(didAnything && level != null && Packages.instance.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
 			SoundEvent event = action.getSoundEvent();
 			if(event != null) level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, action.getSoundVolume(), action.getSoundPitch(level));
 		}
@@ -282,7 +282,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	//<editor-fold desc="Nameable">
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE.getDescriptionId());
+		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE.get().getDescriptionId());
 	}
 	
 	@Override
