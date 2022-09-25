@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.platform.fabric;
 
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -69,6 +70,11 @@ public class FabricPlatformSupport implements PlatformSupport {
 	@Override
 	public void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		DispenserBlock.registerBehavior(item.get(), behavior);
+	}
+	
+	@Override
+	public void registerGlobalPacketHandler(ResourceLocation packetId, GlobalPacketHandler blah) {
+		ServerPlayNetworking.registerGlobalReceiver(packetId, (server, player, handler, buf, resp) -> blah.handle(server, player, buf));
 	}
 	
 	@Override

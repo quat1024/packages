@@ -47,7 +47,7 @@ public abstract class Packages {
 		PItemTags.onInitialize();
 		
 		PMenuTypes.onInitialize(plat);
-		PNetCommon.onInitialize();
+		PNetCommon.onInitialize(plat);
 		
 		PSoundEvents.onInitialize(plat);
 	}

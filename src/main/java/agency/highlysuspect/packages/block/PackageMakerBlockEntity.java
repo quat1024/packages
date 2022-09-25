@@ -5,7 +5,7 @@ import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PItemTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
+import agency.highlysuspect.packages.platform.SoftImplement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
-public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, MenuProvider, RenderAttachmentBlockEntity {
+public class PackageMakerBlockEntity extends BlockEntity implements Nameable, WorldlyContainer, MenuProvider {
 	public PackageMakerBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE_MAKER.get(), pos, state);
 	}
@@ -159,7 +159,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	//endregion
 	
 	//region RenderAttachmentBlockEntity
-	@Override
+	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
 	public @Nullable Object getRenderAttachmentData() {
 		ItemStack frameStack = inv.get(FRAME_SLOT);
 		ItemStack innerStack = inv.get(INNER_SLOT);

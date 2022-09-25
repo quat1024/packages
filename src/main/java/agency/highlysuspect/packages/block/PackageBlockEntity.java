@@ -4,10 +4,10 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.net.PackageAction;
+import agency.highlysuspect.packages.platform.SoftImplement;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
-public class PackageBlockEntity extends BlockEntity implements Container, RenderAttachmentBlockEntity, Nameable {
+public class PackageBlockEntity extends BlockEntity implements Container, Nameable {
 	public PackageBlockEntity(BlockPos pos, BlockState state) {
 		super(PBlockEntityTypes.PACKAGE.get(), pos, state);
 	}
@@ -306,7 +306,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Render
 	//</editor-fold>
 	
 	//<editor-fold desc="RenderAttachmentBlockEntity">
-	@Override
+	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
 	public Object getRenderAttachmentData() {
 		return getStyle();
 	}

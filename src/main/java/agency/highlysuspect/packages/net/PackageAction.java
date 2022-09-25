@@ -33,6 +33,10 @@ public enum PackageAction {
 		buf.writeByte(ordinal());
 	}
 	
+	public static PackageAction read(FriendlyByteBuf buf) {
+		return get(buf.readByte());
+	}
+	
 	public static PackageAction get(int netValue) {
 		if(netValue < PackageAction.values().length) return PackageAction.values()[netValue];
 		else return TAKE_ONE; //shrug
