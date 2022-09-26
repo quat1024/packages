@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "agency.highlysuspect.packages.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"mixins": [
+	],
+	"client": [
+		"client.MixinMinecraft"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"refmap": "packages.refmap.json"
+}

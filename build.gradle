@@ -1,80 +1,37 @@
-plugins {
-	id 'fabric-loom' version '0.12-SNAPSHOT'
-	id 'maven-publish'
-}
-
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
-	withSourcesJar()
-}
-
-archivesBaseName = "${project.modName}-${project.minecraftVersion}"
-
-repositories {
-	//Used for Frex and Dashloader but compat with those is turned off right now.
-	//TODO: includeGroup these when i readd them
-//	maven {
-//		url = "https://maven.dblsaiko.net"
-//	}
-//	
-//	maven {
-//		url = "https://server.bbkr.space/artifactory/libs-release/"
-//	}
-//	
-//	maven {
-//		url = "https://maven.shedaniel.me/"
-//	}
-//	
-//	maven {
-//		url "https://oskarstrom.net/maven"
-//	}
-	maven {
-		url "https://maven.vram.io/"
-		content { includeGroup("io.vram") }
-	}
-	maven {
-		url "https://maven.terraformersmc.com/"
-		content { includeGroup("com.terraformersmc") } //Grondaaaaag, canvas transitively deps on modmenu
-	}
-	maven {
-		url "https://api.modrinth.com/maven"
-		content { includeGroup "maven.modrinth" }
-	}
-}
-
-dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
-	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
+subprojects {
+	apply plugin: "java"
+	java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+	java.withSourcesJar()
 	
-	def runWithCanvas = false
-	def runWithSodium = false
-	
-	if(runWithCanvas) {
-		modImplementation "io.vram:frex-fabric-mc118:6.0.263"
-		modLocalRuntime "io.vram:canvas-fabric-mc118:1.0.2397"
-	} else {
-		modCompileOnly "io.vram:frex-fabric-mc118:6.0.263"
+	tasks.withType(JavaCompile).configureEach {
+		it.options.encoding = "UTF-8"
+		it.options.release = 17
 	}
 	
-	if(runWithSodium) {
-		//TODO: it's broken for some reason and doesn't load the joml jar in jar
-		//modLocalRuntime "maven.modrinth:sodium:mc1.18.2-0.4.1"
+	tasks.withType(GenerateModuleMetadata) {
+		enabled = false
 	}
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
+	
+	processResources {
+		inputs.property "version", project.version
+		
+		filesMatching(["**/fabric.mod.json", "**/mods.toml"]) {
+			expand "version": project.version
+		}
 	}
-}
-
-jar {
-	//todo does this work lol
-	exclude "unused/*"
+	
+	dependencies {
+		//This mf keeps disappearing on me
+		implementation "org.jetbrains:annotations:16.0.2"
+	}
+	
+	repositories {
+		maven {
+			name = "spunchbob"
+			url = "https://repo.spongepowered.org/repository/maven-public/"
+			content {
+				includeGroup "org.spongepowered"
+			}
+		}
+	}
 }
