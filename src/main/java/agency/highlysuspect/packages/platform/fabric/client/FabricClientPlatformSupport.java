@@ -2,7 +2,6 @@ package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.model.AbstractPackageModel;
-import agency.highlysuspect.packages.config.MeshBackend;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
@@ -13,6 +12,7 @@ import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPacka
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
+import net.fabricmc.fabric.api.client.model.ModelProviderContext;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.event.Event;
@@ -80,15 +80,13 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	@Override
 	public void setupCustomModelLoaders() {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
-			if(Packages.instance.config.meshBackend == MeshBackend.SKIP) return null;
-			
 			if(AbstractPackageModel.PACKAGE_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_ITEM_SPECIAL.equals(id)) {
-				if(packageModel == null) packageModel = createPackageModel();
+				if(packageModel == null) packageModel = createPackageModel(ctx);
 				return packageModel;
 			}
 			
 			if(AbstractPackageModel.PACKAGE_MAKER_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_MAKER_ITEM_SPECIAL.equals(id)) {
-				if(packageMakerModel == null) packageMakerModel = createPackageMakerModel();
+				if(packageMakerModel == null) packageMakerModel = createPackageMakerModel(ctx);
 				return packageMakerModel;
 			}
 			
@@ -102,21 +100,19 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 		}, Packages.id("dump_caches"), PackType.CLIENT_RESOURCES);
 	}
 	
-	@Override
-	public UnbakedModel createPackageModel() {
+	private UnbakedModel createPackageModel(ModelProviderContext ctx) {
 		return switch(Packages.instance.config.meshBackend) {
 			case FRAPI_MESH -> new FrapiMeshPackageModel();
 			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageModel();
-			case SKIP -> null;
+			case SKIP -> ctx.loadModel(Packages.id("block/package")); //load json model directly
 		};
 	}
 	
-	@Override
-	public UnbakedModel createPackageMakerModel() {
+	private UnbakedModel createPackageMakerModel(ModelProviderContext ctx) {
 		return switch(Packages.instance.config.meshBackend) {
 			case FRAPI_MESH -> new FrapiMeshPackageMakerModel();
 			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageMakerModel();
-			case SKIP -> null;
+			case SKIP -> ctx.loadModel(Packages.id("block/package_maker"));
 		};
 	}
 	

@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.platform;
 import agency.highlysuspect.packages.net.ActionPacket;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -38,8 +37,6 @@ public interface ClientPlatformSupport {
 	
 	//Weird bakedmodel stuff
 	void setupCustomModelLoaders();
-	UnbakedModel createPackageModel();
-	UnbakedModel createPackageMakerModel();
 	
 	//Networking
 	void sendActionPacket(ActionPacket packet);
