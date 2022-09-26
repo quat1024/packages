@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.junk;
 
-import agency.highlysuspect.packages.api.StackSensitiveContainerItemRules;
 import agency.highlysuspect.packages.item.PItems;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
@@ -9,7 +8,10 @@ import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.ContainerListener;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -84,11 +86,28 @@ public class PackageContainer implements Container {
 	//Whether you're ever allowed to put this item into a Package.
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean allowedInPackageAtAll(ItemStack stack) {
-		if(stack.getItem() instanceof StackSensitiveContainerItemRules r && !r.canFitInsideContainerItems(stack)) return false;
+		if(stack.is(PItemTags.BANNED_FROM_PACKAGE)) return false;
+		
+		boolean checkCanFitInsideContainerItems = true;
+		if(stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock) {
+			checkCanFitInsideContainerItems = false;
+			CompoundTag blockEntityTag = stack.getTagElement("BlockEntityTag");
+			if(blockEntityTag != null && !blockEntityTag.getList("Items", 10).isEmpty()) return false;
+		}
+		
+		if(stack.getItem() instanceof BundleItem) {
+			checkCanFitInsideContainerItems = false;
+			if(stack.isBarVisible()) return false;
+		}
+		
+		//canFitInsideContainerItems is a little overbearing; e.g. it doesn't make accomodations for *empty*
+		//shulker boxes, which are totally safe to put into containers. So the hardcoded exceptions will bypass this check.
+		//canFitInsideContainerItems doesn'tpass the ItemStack btw.
+		if(checkCanFitInsideContainerItems && !stack.getItem().canFitInsideContainerItems()) return false;
 		
 		PackageContainer cont = PackageContainer.fromItemStack(stack);
-		if(cont != null && cont.calcRecursionLevel() >= RECURSION_LIMIT) return false;
-		else return !stack.is(PItemTags.BANNED_FROM_PACKAGE);
+		if(cont == null) return true;
+		return cont.calcRecursionLevel() < RECURSION_LIMIT;
 	}
 	
 	//The amount of items per-internal-slot that a Package is allowed to hold, if it contained `stack`.
