@@ -73,7 +73,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 				SpriteUvBounds bounds = SpriteUvBounds.readOff(emitter);
 				
 				if(bounds.displaysSprite(specialFrameSprite)) {
-					if(frameBlock != null) {
+					if(frameSprite != null) {
 						bounds.normalizeEmitter(emitter, specialFrameSprite);
 						emitter.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED);
 						FrexCompat.PROXY.fancifyPackageQuad(emitter, frameState, frameSprite);
@@ -83,7 +83,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 				}
 				
 				if(bounds.displaysSprite(specialInnerSprite)) {
-					if(innerBlock != null) {
+					if(innerSprite != null) {
 						bounds.normalizeEmitter(emitter, specialInnerSprite);
 						emitter.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED);
 						FrexCompat.PROXY.fancifyPackageQuad(emitter, innerState, innerSprite);
@@ -100,7 +100,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 		return meshBuilder.build();
 	}
 	
-	record SpriteUvBounds(float minU, float maxU, float minV, float maxV) {
+	private static record SpriteUvBounds(float minU, float maxU, float minV, float maxV) {
 		static SpriteUvBounds readOff(QuadEmitter emitter) {
 			float minU = Float.POSITIVE_INFINITY;
 			float maxU = Float.NEGATIVE_INFINITY;
