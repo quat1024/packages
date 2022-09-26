@@ -9,6 +9,6 @@ public class PMenuTypes {
 	public static PlatformSupport.RegistryHandle<MenuType<PackageMakerMenu>> PACKAGE_MAKER;
 	
 	public static void onInitialize(PlatformSupport plat) {
-		PACKAGE_MAKER = plat.register(Registry.MENU, Packages.id("package_maker"), () -> new MenuType<>(PackageMakerMenu::new));
+		PACKAGE_MAKER = plat.register(Registry.MENU, Packages.id("package_maker"), () -> plat.makeMenuType(PackageMakerMenu::new));
 	}
 }

@@ -9,6 +9,9 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -33,6 +36,11 @@ public interface PlatformSupport {
 	
 	CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon);
 	void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior);
+	
+	<T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);
+	interface MyMenuSupplier<T extends AbstractContainerMenu> {
+		T create(int var1, Inventory var2);
+	}
 	
 	//Networking
 	void registerGlobalPacketHandler(ResourceLocation packetId, GlobalPacketHandler blah);

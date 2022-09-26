@@ -4,7 +4,6 @@ import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
-import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.RenderType;
 
 public abstract class PackagesClient {
@@ -22,7 +21,7 @@ public abstract class PackagesClient {
 	public void earlySetup() {
 		plat.setupCustomModelLoaders();
 		
-		MenuScreens.register(PMenuTypes.PACKAGE_MAKER.get(), PackageMakerScreen::new);
+		plat.registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
 		PackageMakerScreen.initIcons(plat);
 		
 		PClientBlockEventHandlers.onInitializeClient(plat);

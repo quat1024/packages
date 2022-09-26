@@ -13,6 +13,8 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -70,6 +72,11 @@ public class FabricPlatformSupport implements PlatformSupport {
 	@Override
 	public void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		DispenserBlock.registerBehavior(item.get(), behavior);
+	}
+	
+	@Override
+	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
+		return new MenuType<>(supplier::create);
 	}
 	
 	@Override
