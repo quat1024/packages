@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.platform.fabric.client.model;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.model.AbstractPackageModel;
 import agency.highlysuspect.packages.client.model.PackageModelBakery;
-import agency.highlysuspect.packages.junk.PackageMakerStyle;
+import agency.highlysuspect.packages.junk.PackageStyle;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
@@ -17,10 +17,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Random;
 import java.util.function.Supplier;
 
-public class FrapiPackageMakerModel extends AbstractPackageModel<Mesh> {
+public class FrapiMeshPackageModel extends AbstractPackageModel<Mesh> {
 	@Override
 	protected PackageModelBakery.Factory<Mesh> makeFactory() {
-		return new FrapiPackageModelBakeryFactory(Packages.id("block/package_maker"));
+		return new FrapiMeshModelBakeryFactory(Packages.id("block/package"));
 	}
 	
 	@Override
@@ -28,13 +28,13 @@ public class FrapiPackageMakerModel extends AbstractPackageModel<Mesh> {
 		return new Baked(factoryResult);
 	}
 	
-	public static class Baked extends ForwardingBakedModel {
+	private static class Baked extends ForwardingBakedModel {
 		public Baked(PackageModelBakery<Mesh> bakery) {
 			this.wrapped = bakery.getBaseModel();
 			this.bakery = bakery;
 		}
 		
-		public final PackageModelBakery<Mesh> bakery;
+		private final PackageModelBakery<Mesh> bakery;
 		
 		@Override
 		public boolean isVanillaAdapter() {
@@ -43,15 +43,15 @@ public class FrapiPackageMakerModel extends AbstractPackageModel<Mesh> {
 		
 		@Override
 		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
-			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageMakerStyle attachment) {
-				context.meshConsumer().accept(bakery.bake(attachment, attachment.color(), attachment.frameBlock(), attachment.innerBlock()));
+			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageStyle style) {
+				context.meshConsumer().accept(bakery.bake(style, style.color(), style.frameBlock(), style.innerBlock()));
 			}
 		}
 		
 		@Override
 		public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
-			//filters out all the special quads
-			context.meshConsumer().accept(bakery.bake(null, null, null, null));
+			PackageStyle style = PackageStyle.fromItemStack(stack);
+			context.meshConsumer().accept(bakery.bake(style, style.color(), style.frameBlock(), style.innerBlock()));
 		}
 	}
 }

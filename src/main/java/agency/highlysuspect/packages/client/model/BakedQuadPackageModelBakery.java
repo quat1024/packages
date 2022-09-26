@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@SuppressWarnings("ClassCanBeRecord")
 public class BakedQuadPackageModelBakery implements PackageModelBakery<List<BakedQuad>> {
 	public final BakedModel baseModel;
 	public final TextureAtlasSprite specialFrameSprite;
@@ -69,7 +68,10 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 	}
 	
 	private static BakedQuad copyQuad(BakedQuad in) {
-		return new BakedQuad(in.getVertices(), in.getTintIndex(), in.getDirection(), in.getSprite(), in.isShade());
+		int[] vertsCopy = new int[in.getVertices().length];
+		System.arraycopy(in.getVertices(), 0, vertsCopy, 0, vertsCopy.length);
+		
+		return new BakedQuad(vertsCopy, in.getTintIndex(), in.getDirection(), in.getSprite(), in.isShade());
 	}
 	
 	//Here's where things get fun!!!

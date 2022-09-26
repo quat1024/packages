@@ -4,6 +4,8 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PUtil;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
+import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -11,14 +13,18 @@ import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -35,22 +41,54 @@ public interface PackageModelBakery<T> {
 		//Also, yeehaw, throwing thread safety to the wind!!!
 		//ConcurrentHashMap turned out to have too much overhead - this is an append-only map, I want reads to be backed by simple code.
 		//Also because model baking is usually pretty fast anyways, I don't care about spurious cache misses caused by e.g. reading while rehashing
-		private final Map<Object, T> bakedModelCache = new HashMap<>();
+		private final Map<Object, T> cache = new HashMap<>();
 		private final Object UPDATE_LOCK = new Object();
 		
 		@Override
 		public T bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-			T result = bakedModelCache.get(cacheKey);
+			T result = cache.get(cacheKey);
 			if(result != null) return result;
 			
 			result = uncached.bake(cacheKey, faceColor, frameBlock, innerBlock);
-			synchronized(UPDATE_LOCK) { bakedModelCache.put(cacheKey, result); }
+			synchronized(UPDATE_LOCK) { cache.put(cacheKey, result); }
 			return result;
 		}
 		
 		@Override
 		public BakedModel getBaseModel() {
 			return uncached.getBaseModel();
+		}
+	}
+	
+	//Mainly an adapter for FrapiBakedQuadPackageModel, because fabric-renderer-api's fallbackConsumer can only accept entire bakedmodels at once
+	//and not simply a list<bakedquad>
+	@SuppressWarnings("ClassCanBeRecord")
+	class BakedQuadsToBakedModel implements PackageModelBakery<BakedModel> {
+		public BakedQuadsToBakedModel(PackageModelBakery<List<BakedQuad>> inner) { this.inner = inner; }
+		private final PackageModelBakery<List<BakedQuad>> inner;
+		
+		@Override
+		public BakedModel getBaseModel() {
+			return inner.getBaseModel();
+		}
+		
+		@Override
+		public BakedModel bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
+			return new Configured(inner.getBaseModel(), inner.bake(cacheKey, faceColor, frameBlock, innerBlock));
+		}
+		
+		public static class Configured extends ForwardingBakedModel {
+			public Configured(BakedModel wrapped, List<BakedQuad> list) {
+				this.wrapped = wrapped;
+				this.list = list;
+			}
+			
+			private final List<BakedQuad> list;
+			
+			@Override
+			public List<BakedQuad> getQuads(BlockState blockState, Direction face, Random rand) {
+				return list;
+			}
 		}
 	}
 	

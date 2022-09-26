@@ -20,7 +20,7 @@ public abstract class PackagesClient {
 	}
 	
 	public void earlySetup() {
-		PModelStuff.onInitializeClient();
+		plat.setupCustomModelLoaders();
 		
 		MenuScreens.register(PMenuTypes.PACKAGE_MAKER.get(), PackageMakerScreen::new);
 		PackageMakerScreen.initIcons(plat);

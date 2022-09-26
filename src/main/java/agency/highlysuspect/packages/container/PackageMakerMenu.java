@@ -41,6 +41,8 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		for(int col = 0; col < 9; col++) addSlot(new Slot(playerInventory, col, 8 + col * 18, 142));
 	}
 	
+	public final Container container;
+	
 	@Override
 	public boolean clickMenuButton(Player player, int id) {
 		if(id == 0 || id == 1) {
@@ -52,8 +54,6 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		
 		return false;
 	}
-	
-	public final Container container;
 	
 	@Override
 	public boolean stillValid(Player player) {
@@ -84,6 +84,7 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		return what;
 	}
 	
+	//These are destined for the block/item texture atlas (see PackageMakerScreen#initIcons)
 	public static final ResourceLocation FRAME_BG = Packages.id("gui/slot_frame");
 	public static final ResourceLocation INNER_BG = Packages.id("gui/slot_inner");
 	public static final ResourceLocation DYE_BG = Packages.id("gui/slot_dye");
@@ -96,7 +97,6 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 			this.mayPlace = mayPlace;
 		}
 		
-		//remember to register this to the block/item texture atlas (see PackageMakerScreen#onInitializeClient)
 		private final ResourceLocation background;
 		private final Predicate<ItemStack> mayPlace;
 		

@@ -37,6 +37,7 @@ public interface ClientPlatformSupport {
 	}
 	
 	//Weird bakedmodel stuff
+	void setupCustomModelLoaders();
 	UnbakedModel createPackageModel();
 	UnbakedModel createPackageMakerModel();
 	

@@ -12,7 +12,6 @@ public class FabricClientInit extends PackagesClient implements ClientModInitial
 	@Override
 	public void onInitializeClient() {
 		earlySetup();
-		
 		FrexCompat.onInitializeClient();
 	}
 }

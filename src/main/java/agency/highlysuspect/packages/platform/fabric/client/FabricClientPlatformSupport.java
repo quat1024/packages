@@ -1,12 +1,15 @@
 package agency.highlysuspect.packages.platform.fabric.client;
 
+import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.client.model.AbstractPackageModel;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
-import agency.highlysuspect.packages.platform.fabric.client.model.FrapiPackageMakerModel;
-import agency.highlysuspect.packages.platform.fabric.client.model.FrapiPackageModel;
+import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageMakerModel;
+import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageModel;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
+import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.event.Event;
@@ -19,6 +22,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -67,14 +71,43 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	
 	//modelshit !
 	
+	public static UnbakedModel packageModel;
+	public static UnbakedModel packageMakerModel;
+	
+	@Override
+	public void setupCustomModelLoaders() {
+		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
+			if(AbstractPackageModel.PACKAGE_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_ITEM_SPECIAL.equals(id)) {
+				if(packageModel == null) packageModel = createPackageModel();
+				return packageModel;
+			}
+			
+			if(AbstractPackageModel.PACKAGE_MAKER_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_MAKER_ITEM_SPECIAL.equals(id)) {
+				if(packageMakerModel == null) packageMakerModel = createPackageMakerModel();
+				return packageMakerModel;
+			}
+			
+			return null;
+		});
+		
+		//I'm pretty sure this is safe?
+		Packages.instance.plat.installResourceReloadListener(mgr -> {
+			packageModel = null;
+			packageMakerModel = null;
+		}, Packages.id("dump_caches"), PackType.CLIENT_RESOURCES);
+	}
+	
 	@Override
 	public UnbakedModel createPackageModel() {
-		return new FrapiPackageModel();
+		//TODO add a config toggle for which backend to use
+		//return new FrapiMeshPackageModel();
+		return new FrapiBakedQuadPackageModel();
 	}
 	
 	@Override
 	public UnbakedModel createPackageMakerModel() {
-		return new FrapiPackageMakerModel();
+		//return new FrapiMeshPackageMakerModel();
+		return new FrapiBakedQuadPackageMakerModel();
 	}
 	
 	//networking

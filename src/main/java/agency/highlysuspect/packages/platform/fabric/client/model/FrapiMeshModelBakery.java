@@ -25,12 +25,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Random;
 
 @SuppressWarnings("ClassCanBeRecord")
-public class FrapiPackageModelBakery implements PackageModelBakery<Mesh> {
+public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 	public final BakedModel baseModel;
 	public final TextureAtlasSprite specialFrameSprite;
 	public final TextureAtlasSprite specialInnerSprite;
 	
-	public FrapiPackageModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
+	public FrapiMeshModelBakery(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
 		this.baseModel = baseModel;
 		this.specialFrameSprite = specialFrameSprite;
 		this.specialInnerSprite = specialInnerSprite;

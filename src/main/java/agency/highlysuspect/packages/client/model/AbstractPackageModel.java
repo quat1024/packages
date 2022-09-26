@@ -16,6 +16,10 @@ import java.util.function.Function;
 
 public abstract class AbstractPackageModel<T> implements UnbakedModel {
 	private final PackageModelBakery.Factory<T> MODEL_BAKERY_FACTORY = makeFactory();
+	public static final ResourceLocation PACKAGE_BLOCK_SPECIAL = Packages.id("special/package");
+	public static final ResourceLocation PACKAGE_ITEM_SPECIAL = Packages.id("item/package");
+	public static final ResourceLocation PACKAGE_MAKER_BLOCK_SPECIAL = Packages.id("special/package_maker");
+	public static final ResourceLocation PACKAGE_MAKER_ITEM_SPECIAL = Packages.id("item/package_maker");
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
