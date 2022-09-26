@@ -4,7 +4,7 @@ import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PItemTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
-import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
+import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.platform.SoftImplement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -169,7 +169,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		Block innerBlock = !innerStack.isEmpty() && innerStack.getItem() instanceof BlockItem innerItem ? innerItem.getBlock() : null;
 		DyeColor dyeColor = !dyeStack.isEmpty() && dyeStack.getItem() instanceof DyeItem dyeItem ? dyeItem.getDyeColor() : null;
 		
-		return new PackageMakerRenderAttachment(frameBlock, innerBlock, dyeColor);
+		return new PackageMakerStyle(frameBlock, innerBlock, dyeColor);
 	}
 	//endregion
 	

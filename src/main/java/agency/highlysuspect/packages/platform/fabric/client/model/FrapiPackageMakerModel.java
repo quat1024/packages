@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.platform.fabric.client.model;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.model.AbstractPackageModel;
 import agency.highlysuspect.packages.client.model.PackageModelBakery;
-import agency.highlysuspect.packages.junk.PackageMakerRenderAttachment;
+import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
@@ -43,7 +43,7 @@ public class FrapiPackageMakerModel extends AbstractPackageModel<Mesh> {
 		
 		@Override
 		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
-			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageMakerRenderAttachment attachment) {
+			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageMakerStyle attachment) {
 				context.meshConsumer().accept(bakery.bake(attachment, attachment.color(), attachment.frameBlock(), attachment.innerBlock()));
 			}
 		}
