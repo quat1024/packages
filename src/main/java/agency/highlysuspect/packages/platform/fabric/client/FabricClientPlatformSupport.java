@@ -2,11 +2,14 @@ package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.model.AbstractPackageModel;
+import agency.highlysuspect.packages.config.MeshBackend;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageMakerModel;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageModel;
+import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageMakerModel;
+import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageModel;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
@@ -77,6 +80,8 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	@Override
 	public void setupCustomModelLoaders() {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
+			if(Packages.instance.config.meshBackend == MeshBackend.SKIP) return null;
+			
 			if(AbstractPackageModel.PACKAGE_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_ITEM_SPECIAL.equals(id)) {
 				if(packageModel == null) packageModel = createPackageModel();
 				return packageModel;
@@ -99,15 +104,20 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	
 	@Override
 	public UnbakedModel createPackageModel() {
-		//TODO add a config toggle for which backend to use
-		//return new FrapiMeshPackageModel();
-		return new FrapiBakedQuadPackageModel();
+		return switch(Packages.instance.config.meshBackend) {
+			case FRAPI_MESH -> new FrapiMeshPackageModel();
+			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageModel();
+			case SKIP -> null;
+		};
 	}
 	
 	@Override
 	public UnbakedModel createPackageMakerModel() {
-		//return new FrapiMeshPackageMakerModel();
-		return new FrapiBakedQuadPackageMakerModel();
+		return switch(Packages.instance.config.meshBackend) {
+			case FRAPI_MESH -> new FrapiMeshPackageMakerModel();
+			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageMakerModel();
+			case SKIP -> null;
+		};
 	}
 	
 	//networking

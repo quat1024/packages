@@ -1,5 +1,7 @@
 package agency.highlysuspect.packages.config;
 
+import net.minecraft.util.StringRepresentable;
+
 import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,13 +12,16 @@ import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * based on paste from Auto Third Person, modified to hardcode writers and readers a little bit less
@@ -179,6 +184,23 @@ public class ConfigShape2 {
 			return makeSimple(parser, Objects::toString);
 		}
 	}
+	
+	public static record EnumSerde<T extends Enum<T>>(Class<T> enumClass) implements SerializerDeserializer<T> {
+		@Override
+		public T parse(Field field, String value) {
+			value = value.trim().toLowerCase(Locale.ROOT);
+			for(T x : enumClass.getEnumConstants()) {
+				if(value.equals(write(x))) return x;
+			}
+			
+			throw new ConfigParseException("Name '" + value + "' must be one of " + Arrays.stream(enumClass.getEnumConstants()).map(this::write).collect(Collectors.joining(", ")));
+		}
+		
+		@Override
+		public String write(T value) {
+			return (value instanceof StringRepresentable str ? str.getSerializedName() : value.name()).toLowerCase(Locale.ROOT);
+		}
+	} 
 	
 	@SuppressWarnings("unchecked") //actually kind of dangerous lol
 	public <T> SerializerDeserializer<T> getSerde(Field field) {

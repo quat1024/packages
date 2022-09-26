@@ -15,6 +15,7 @@ public class PackagesConfig {
 	public static ConfigShape2 makeConfigShape() {
 		return new ConfigShape2()
 			.installSerializer(PackageActionBinding.class, new PackageActionBinding.SerializerDeserializer())
+			.installSerializer(MeshBackend.class, new ConfigShape2.EnumSerde<>(MeshBackend.class))
 			.readPropsFromPojo(new PackagesConfig());
 	}
 	
@@ -81,15 +82,30 @@ public class PackagesConfig {
 	public double fontVerticalShift = 0;
 	
 	@Comment({
+		"The method Packages uses to render its models. After changing the option, reload resources (F3+T) uhh, twice (models get loaded before the config file :cry:)",
+		"Possible values:",
+		"'frapi_mesh' uses many features from Fabric Renderer API.",
+		"   It has received the most testing and performs surprisingly well. It has special compatibility features with FREX.",
+		"   If you have Sodium, you need Indium to use frapi_mesh.",
+		"'frapi_bakedquad' uses a small amount of the Fabric Renderer API.",
+		"   It doesn't perform as well, but may be more compatible. It doesn't have compat with FREX.",
+		"   If you have Sodium, you also need Indium to use frapi_bakedquad.",
+		"'skip' bypasses the custom model pipeline entirely. Packages will render its blocks using placeholder textures.",
+		"   This is intended for debugging, resource-packmaking, getting into the world if the other renderers have a crash bug, etc."
+	})
+	public MeshBackend meshBackend = MeshBackend.FRAPI_MESH;
+	
+	@Comment({
 		"If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
-		"I'm not gonna lie - this probably helps performance less than it sounds like it would. I can barely tell the difference.",
-		"I'll leave the option in in case you have a slow implementation of fabric renderer api."
+		"With the frapi_mesh backend, this probably helps performance less than it sounds like it would.",
+		"Might make more of a difference on other backends."
 	})
 	public boolean cacheMeshes = false;
 	
 	@Comment({
 		"If 'true' and FREX is loaded, materials on block models will be forwarded into the various Packages block models.",
-		"Use this if you have funky Canvas shaders that make blocks glow, or whatnot. Requires game restart."
+		"Use this if you have funky Canvas shaders that make blocks glow, or whatnot.",
+		"Requires a game restart to activate and deactivate."
 	})
 	public boolean frexSupport = true;
 	
