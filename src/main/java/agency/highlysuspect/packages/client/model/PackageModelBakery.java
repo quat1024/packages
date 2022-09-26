@@ -4,7 +4,6 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PUtil;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
-import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -77,7 +76,7 @@ public interface PackageModelBakery<T> {
 			return new Configured(inner.getBaseModel(), inner.bake(cacheKey, faceColor, frameBlock, innerBlock));
 		}
 		
-		public static class Configured extends ForwardingBakedModel {
+		public static class Configured extends SimpleForwardingBakedModel {
 			public Configured(BakedModel wrapped, List<BakedQuad> list) {
 				this.wrapped = wrapped;
 				this.list = list;
