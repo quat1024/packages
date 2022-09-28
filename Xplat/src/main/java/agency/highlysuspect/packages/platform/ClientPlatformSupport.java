@@ -24,31 +24,21 @@ import net.minecraft.world.phys.BlockHitResult;
 public interface ClientPlatformSupport {
 	//Menustuff
 	<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(PlatformSupport.RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons);
-	interface MyScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> {
-		U create(T var1, Inventory var2, Component var3);
-	}
+	interface MyScreenConstructor<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> { U create(T var1, Inventory var2, Component var3); }
 	
 	//Rendering
 	void bakeSpritesOnto(ResourceLocation atlasTexture, ResourceLocation... sprites);
 	<T extends BlockEntity> void setBlockEntityRenderer(PlatformSupport.RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
 	void setRenderType(PlatformSupport.RegistryHandle<? extends Block> block, RenderType type);
+	void setupCustomModelLoaders(); //place to hide all the weird bakedmodel stuff
 	
 	//Interactions
 	void installEarlyClientsideLeftClickCallback(EarlyClientsideLeftClickCallback callback);
-	interface EarlyClientsideLeftClickCallback {
-		boolean interact(Player player, Level level, BlockPos pos, Direction direction);
-	}
+	interface EarlyClientsideLeftClickCallback { boolean interact(Player player, Level level, BlockPos pos, Direction direction); }
 	void installClientsideHoldLeftClickCallback(ClientsideHoldLeftClickCallback callback);
-	interface ClientsideHoldLeftClickCallback {
-		InteractionResult interact(Player player, Level world, InteractionHand hand, BlockPos pos, Direction direction);
-	}
+	interface ClientsideHoldLeftClickCallback { InteractionResult interact(Player player, Level world, InteractionHand hand, BlockPos pos, Direction direction); }
 	void installClientsideUseBlockCallback(ClientsideUseBlockCallback callback);
-	interface ClientsideUseBlockCallback {
-		InteractionResult interact(Player player, Level world, InteractionHand hand, BlockHitResult hitResult);
-	}
-	
-	//Weird bakedmodel stuff
-	void setupCustomModelLoaders();
+	interface ClientsideUseBlockCallback { InteractionResult interact(Player player, Level world, InteractionHand hand, BlockHitResult hitResult); }
 	
 	//Networking
 	void sendActionPacket(ActionPacket packet);

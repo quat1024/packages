@@ -3,10 +3,7 @@ package agency.highlysuspect.packages.platform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,29 +25,19 @@ public interface PlatformSupport {
 	//Registration
 	<T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker);
 	interface RegistryHandle<T> extends Supplier<T> { ResourceLocation getId(); }
-	record ImmediateRegistryHandle<T>(ResourceLocation id, T thing) implements RegistryHandle<T> {
-		@Override public ResourceLocation getId() { return id; }
-		@Override public T get() { return thing; }
-	} 
-	
-	<T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
-	interface BlockEntityFactory<T extends BlockEntity> {
-		T create(BlockPos blockPos, BlockState blockState);
-	}
 	
 	CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon);
 	void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior);
 	
+	//Weird-to-construct types
+	<T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
+	interface BlockEntityFactory<T extends BlockEntity> { T create(BlockPos blockPos, BlockState blockState); }
+	
 	<T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);
-	interface MyMenuSupplier<T extends AbstractContainerMenu> {
-		T create(int var1, Inventory var2);
-	}
+	interface MyMenuSupplier<T extends AbstractContainerMenu> { T create(int var1, Inventory var2); }
 	
 	//Networking
-	void registerGlobalPacketHandler(ResourceLocation packetId, GlobalPacketHandler blah);
-	interface GlobalPacketHandler {
-		void handle(MinecraftServer server, ServerPlayer player, FriendlyByteBuf buf);
-	}
+	void registerActionPacketHandler();
 	
 	//Misc
 	Path getConfigFolder();

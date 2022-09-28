@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 public abstract class AbstractPackageModel<T> implements UnbakedModel {
-	private final PackageModelBakery.Factory<T> MODEL_BAKERY_FACTORY = makeFactory();
+	protected final PackageModelBakery.Factory<T> modelBakeryFactory = makeFactory();
 	public static final ResourceLocation PACKAGE_BLOCK_SPECIAL = Packages.id("special/package");
 	public static final ResourceLocation PACKAGE_ITEM_SPECIAL = Packages.id("item/package");
 	public static final ResourceLocation PACKAGE_MAKER_BLOCK_SPECIAL = Packages.id("special/package_maker");
@@ -23,21 +23,21 @@ public abstract class AbstractPackageModel<T> implements UnbakedModel {
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return MODEL_BAKERY_FACTORY.getDependencies();
+		return modelBakeryFactory.getDependencies();
 	}
 	
 	@Override
 	public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
-		return MODEL_BAKERY_FACTORY.getMaterials(unbakedModelGetter, unresolvedTextureReferences);
+		return modelBakeryFactory.getMaterials(unbakedModelGetter, unresolvedTextureReferences);
 	}
 	
 	@Override
 	public BakedModel bake(ModelBakery loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
-		PackageModelBakery<T> bakery = MODEL_BAKERY_FACTORY.make(loader, textureGetter, rotationContainer, modelId);
+		PackageModelBakery<T> bakery = modelBakeryFactory.make(loader, textureGetter, rotationContainer, modelId);
 		if(Packages.instance.config.cacheMeshes) bakery = new PackageModelBakery.Caching<>(bakery);
-		return bake(bakery);
+		return toBakedModel(bakery);
 	}
 	
 	protected abstract PackageModelBakery.Factory<T> makeFactory();
-	protected abstract BakedModel bake(PackageModelBakery<T> factoryResult);
+	protected abstract BakedModel toBakedModel(PackageModelBakery<T> factoryResult);
 }

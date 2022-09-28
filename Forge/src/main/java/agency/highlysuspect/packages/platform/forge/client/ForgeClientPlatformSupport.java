@@ -1,8 +1,11 @@
 package agency.highlysuspect.packages.platform.forge.client;
 
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
+import agency.highlysuspect.packages.platform.forge.ForgeInit;
+import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageModel;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -18,6 +21,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.client.model.ForgeModelBakery;
+import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -33,6 +38,18 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyBakeSpritesOnto);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetBlockEntityRenderers);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetRenderTypes);
+		
+		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelRegistryEvent e) -> {
+			ModelLoaderRegistry.registerLoader(ForgePackageModel.Loader.ID, new ForgePackageModel.Loader());
+			//TODO package maker model too, i gotta figure out one before doing both though lol
+		});
+		
+		//Forge's model system (IModelGeometry) cannot specify dependencies between models.
+		//Its documentation states that it's a superset of UnbakedModel; this is a lie and we need to help it along here
+		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelRegistryEvent e) -> {
+			ForgeModelBakery.addSpecialModel(Packages.id("block/package"));
+			ForgeModelBakery.addSpecialModel(Packages.id("block/package_maker"));
+		});
 	}
 	
 	///
@@ -112,11 +129,11 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 	
 	@Override
 	public void setupCustomModelLoaders() {
-		//Big TODO
+		//Already set up above
 	}
 	
 	@Override
 	public void sendActionPacket(ActionPacket packet) {
-		//TODO networking
+		ForgeInit.CHANNEL.sendToServer(packet);
 	}
 }

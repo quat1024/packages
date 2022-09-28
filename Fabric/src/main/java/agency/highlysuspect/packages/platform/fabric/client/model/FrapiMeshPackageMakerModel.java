@@ -24,7 +24,7 @@ public class FrapiMeshPackageMakerModel extends AbstractPackageModel<Mesh> {
 	}
 	
 	@Override
-	protected BakedModel bake(PackageModelBakery<Mesh> factoryResult) {
+	protected BakedModel toBakedModel(PackageModelBakery<Mesh> factoryResult) {
 		return new Baked(factoryResult);
 	}
 	

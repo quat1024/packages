@@ -1,11 +1,11 @@
 {
 	"required": true,
-	"package": "agency.highlysuspect.packages.mixin",
+	"package": "agency.highlysuspect.packages.platform.fabric.mixin",
 	"compatibilityLevel": "JAVA_16",
 	"mixins": [
 	],
 	"client": [
-		"fabric.client.MixinMinecraft"
+		"MixinMinecraft"
 	],
 	"injectors": {
 		"defaultRequire": 1

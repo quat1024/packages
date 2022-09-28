@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.mixin.client;
+package agency.highlysuspect.packages.platform.fabric.mixin;
 
 import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.platform.fabric.client.FabricClientPlatformSupport;

@@ -1,10 +1,12 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
@@ -23,6 +25,7 @@ import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -37,19 +40,19 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ForgePlatformSupport implements PlatformSupport {
-	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
-	private final Map<RegistryHandle<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
-	
 	public ForgePlatformSupport() {
-		MinecraftForge.EVENT_BUS.addListener((FMLCommonSetupEvent e) -> actuallyRegisterDispenserBehaviors());
+		MinecraftForge.EVENT_BUS.addListener(this::actuallyRegisterDispenserBehaviors);
 	}
+	
+	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
 	
 	@SuppressWarnings({
 		"unchecked", //casting magic
-		"deprecation" //forge presumptiously deprecating all the vanilla registries
+		"deprecation" //forge presumptiously deprecating all the vanilla registries! :tada:
 	})
 	private <T extends IForgeRegistryEntry<T>> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
 		IForgeRegistry<T> what;
+		//Is there really no better way to do this
 		if(reg == Registry.BLOCK) {
 			what = (IForgeRegistry<T>) ForgeRegistries.BLOCKS;
 		} else if(reg == Registry.BLOCK_ENTITY_TYPE) {
@@ -60,7 +63,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 			what = (IForgeRegistry<T>) ForgeRegistries.CONTAINERS; //I Love To Rename Shit For Aesthetic Reasons
 		} else if(reg == Registry.SOUND_EVENT) {
 			what = (IForgeRegistry<T>) ForgeRegistries.SOUND_EVENTS;
-		} else throw new IllegalStateException("i forgot a registry lol " + reg);
+		} else throw new IllegalStateException("quat forgot a registry lol " + reg);
 		
 		return (DeferredRegister<T>) deferredRegistries.computeIfAbsent(reg, __ -> {
 			DeferredRegister<T> deferred = DeferredRegister.create(what, Packages.MODID);
@@ -72,7 +75,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
-		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces a modid for some reason in DeferredRegister");
+		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces one modid per DeferredRegister for some reason");
 		
 		RegistryObject<T> obj = ((DeferredRegister<T>) getDeferredRegister(registry)).register(id.getPath(), thingMaker);
 		return new RegistryObjectRegistryHandle<>(obj);
@@ -93,7 +96,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 	@SuppressWarnings("ConstantConditions") //null DFU type
 	@Override
 	public <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
-		return new BlockEntityType<>(factory::create, Set.of(blocks), null);
+		return new BlockEntityType<>(factory::create, Set.of(blocks), null); //Access widened by forge
 	}
 	
 	@Override
@@ -106,28 +109,38 @@ public class ForgePlatformSupport implements PlatformSupport {
 		};
 	}
 	
+	private final Map<RegistryHandle<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
+	
 	@Override
 	public void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior) {
 		dispenseBehaviorsToRegister.put(item, behavior);
 	}
 	
-	private void actuallyRegisterDispenserBehaviors() {
+	private void actuallyRegisterDispenserBehaviors(FMLCommonSetupEvent e) {
 		dispenseBehaviorsToRegister.forEach((handle, behavior) -> DispenserBlock.registerBehavior(handle.get(), behavior));
 	}
 	
 	@Override
 	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
-		//looks the same as on fabric, but it's access widened by both modloaders so i can't use it in common source
+		//Looks the same as on FabricPlatformSupport but it's private in mojang source so i can't use it there without access widening
 		return new MenuType<>(supplier::create);
 	}
 	
 	@Override
-	public void registerGlobalPacketHandler(ResourceLocation packetId, GlobalPacketHandler blah) {
-		//TODO forge networking is weird!
+	public void registerActionPacketHandler() {
+		ForgeInit.CHANNEL.registerMessage(ActionPacket.SHORT_ID, ActionPacket.class, ActionPacket::write, ActionPacket::read, (action, ctxSupplier) -> {
+			NetworkEvent.Context ctx = ctxSupplier.get();
+			//Forge uses the same networkstuff for client -> server and server -> client packets.
+			//This is a client -> server packet, so of course the sender is a nonnull player, but Forge doesn't statically know that
+			ServerPlayer player = ctx.getSender(); if(player == null) return;
+			action.handle(player);
+			ctx.setPacketHandled(true);
+		});
 	}
 	
 	@Override
 	public Path getConfigFolder() {
+		//TODO real forge config instead of my janky shit, because forge players deserve nice things
 		return FMLPaths.CONFIGDIR.get();
 	}
 	

@@ -1,0 +1,4 @@
+{
+	"parent": "packages:block/package",
+	"loader": "packages:forge_package_model_loader"
+}

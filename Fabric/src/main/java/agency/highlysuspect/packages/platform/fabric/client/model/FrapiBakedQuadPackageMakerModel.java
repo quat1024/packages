@@ -26,7 +26,7 @@ public class FrapiBakedQuadPackageMakerModel extends AbstractPackageModel<List<B
 	}
 	
 	@Override
-	protected BakedModel bake(PackageModelBakery<List<BakedQuad>> factoryResult) {
+	protected BakedModel toBakedModel(PackageModelBakery<List<BakedQuad>> factoryResult) {
 		//performance is when you add more layers of indirection :TM:
 		PackageModelBakery<BakedModel> b = new PackageModelBakery.BakedQuadsToBakedModel(factoryResult);
 		if(Packages.instance.config.cacheMeshes) b = new PackageModelBakery.Caching<>(b);

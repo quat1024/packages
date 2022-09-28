@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.platform.fabric;
 
+import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -80,8 +81,8 @@ public class FabricPlatformSupport implements PlatformSupport {
 	}
 	
 	@Override
-	public void registerGlobalPacketHandler(ResourceLocation packetId, GlobalPacketHandler blah) {
-		ServerPlayNetworking.registerGlobalReceiver(packetId, (server, player, handler, buf, resp) -> blah.handle(server, player, buf));
+	public void registerActionPacketHandler() {
+		ServerPlayNetworking.registerGlobalReceiver(ActionPacket.LONG_ID, (server, player, handler, buf, resp) -> ActionPacket.read(buf).handle(player));
 	}
 	
 	@Override
