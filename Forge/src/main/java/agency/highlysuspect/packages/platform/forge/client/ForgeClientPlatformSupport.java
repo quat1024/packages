@@ -6,7 +6,6 @@ import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import agency.highlysuspect.packages.platform.forge.ForgeInit;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageModel;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -15,16 +14,12 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ForgeModelBakery;
@@ -127,6 +122,8 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 	
 	///
 	
+	public final List<EarlyClientsideLeftClickCallback> earlyLeftClickCallbacks = new ArrayList<>();
+	
 	@Override
 	public void installEarlyClientsideLeftClickCallback(EarlyClientsideLeftClickCallback callback) {
 		//I was going to be like "hey, credit where it's due, I needed a kludge for this on Fabric".
@@ -140,34 +137,10 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		//mine the block, not all the other spam times.
 		//
 		//But because Forge fucking fires this event in continueAttack as well, completely defeating the purpose
-		//of offering a click event separate from LeftClickBlock in the first place, I have to use a timer kludge just
-		//to tell these two trivial situations apart.
-		//...
-		//The mixin is prettier.
-		//I should probably just use the mixin. In the older fabric versions of the mod
-		//I tried using a similar timer kludge and it sucked, dropped doubleclicks all the time etc.
-		MinecraftForge.EVENT_BUS.addListener(new EarlyClickHandler(callback)::handleClick);
-	}
-	
-	private static final class EarlyClickHandler {
-		private EarlyClickHandler(EarlyClientsideLeftClickCallback callback) { this.callback = callback; }
-		private final EarlyClientsideLeftClickCallback callback;
-		
-		private long lastClickTick = 0;
-		
-		void handleClick(InputEvent.ClickInputEvent e) {
-			if(Minecraft.getInstance().hitResult instanceof BlockHitResult bhr && e.isAttack()) {
-				Player player = Minecraft.getInstance().player;
-				Level level = Minecraft.getInstance().level;
-				if(player == null || level == null || !level.isClientSide) return;
-				
-				if(level.getGameTime() - lastClickTick >= 1 && callback.interact(player, level, bhr.getBlockPos(), bhr.getDirection())) {
-					e.setCanceled(true);
-				}
-				
-				lastClickTick = level.getGameTime();
-			}
-		}
+		//of offering a click event separate from LeftClickBlock in the first place, mixin it is then.
+		//
+		//See MixinMinecraft.
+		earlyLeftClickCallbacks.add(callback);
 	}
 	
 	@Override
