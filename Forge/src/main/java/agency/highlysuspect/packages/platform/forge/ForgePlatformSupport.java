@@ -38,6 +38,11 @@ import java.util.function.Supplier;
 
 public class ForgePlatformSupport implements PlatformSupport {
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
+	private final Map<RegistryHandle<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
+	
+	public ForgePlatformSupport() {
+		MinecraftForge.EVENT_BUS.addListener((FMLCommonSetupEvent e) -> actuallyRegisterDispenserBehaviors());
+	}
 	
 	@SuppressWarnings({
 		"unchecked", //casting magic
@@ -52,7 +57,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 		} else if(reg == Registry.ITEM) {
 			what = (IForgeRegistry<T>) ForgeRegistries.ITEMS;
 		} else if(reg == Registry.MENU) {
-			what = (IForgeRegistry<T>) ForgeRegistries.CONTAINERS; //?????
+			what = (IForgeRegistry<T>) ForgeRegistries.CONTAINERS; //I Love To Rename Shit For Aesthetic Reasons
 		} else if(reg == Registry.SOUND_EVENT) {
 			what = (IForgeRegistry<T>) ForgeRegistries.SOUND_EVENTS;
 		} else throw new IllegalStateException("i forgot a registry lol " + reg);
@@ -64,9 +69,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 		});
 	}
 	
-	@SuppressWarnings({
-		"unchecked", //casting magic
-	})
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
 		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces a modid for some reason in DeferredRegister");
@@ -105,8 +108,11 @@ public class ForgePlatformSupport implements PlatformSupport {
 	
 	@Override
 	public void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior) {
-		//todo dont spam events
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((FMLCommonSetupEvent e) -> DispenserBlock.registerBehavior(item.get(), behavior));
+		dispenseBehaviorsToRegister.put(item, behavior);
+	}
+	
+	private void actuallyRegisterDispenserBehaviors() {
+		dispenseBehaviorsToRegister.forEach((handle, behavior) -> DispenserBlock.registerBehavior(handle.get(), behavior));
 	}
 	
 	@Override
