@@ -28,6 +28,10 @@ public interface PlatformSupport {
 	//Registration
 	<T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker);
 	interface RegistryHandle<T> extends Supplier<T> { ResourceLocation getId(); }
+	record ImmediateRegistryHandle<T>(ResourceLocation id, T thing) implements RegistryHandle<T> {
+		@Override public ResourceLocation getId() { return id; }
+		@Override public T get() { return thing; }
+	} 
 	
 	<T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	interface BlockEntityFactory<T extends BlockEntity> {

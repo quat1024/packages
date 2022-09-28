@@ -15,5 +15,6 @@ pluginManagement {
 rootProject.name = "packages"
 include(
 	"Xplat",
-	"Fabric"
+	"Fabric",
+	"Forge"
 )
