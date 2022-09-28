@@ -78,12 +78,10 @@ public class PClientBlockEventHandlers {
 			if(!level.isClientSide || player.isSpectator()) return InteractionResult.PASS;
 			
 			BlockPos pos = hitResult.getBlockPos();
-			Direction direction = hitResult.getDirection();
-			if(pos == null || direction == null) return InteractionResult.PASS; //is this even needed lmao
-			
 			BlockState state = level.getBlockState(pos);
 			BlockEntity be = level.getBlockEntity(pos);
 			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return InteractionResult.PASS;
+			Direction direction = hitResult.getDirection();
 			
 			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
 			if(direction != frontDir) return InteractionResult.PASS;

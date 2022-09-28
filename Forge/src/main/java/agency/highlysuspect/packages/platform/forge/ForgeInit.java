@@ -10,7 +10,8 @@ import net.minecraftforge.network.simple.SimpleChannel;
 @Mod("packages")
 public class ForgeInit extends Packages {
 	//Idk where else to put this
-	public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(id("n"), () -> "0", __ -> true, __ -> true);
+	private static final String NET_VERSION = "0";
+	public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(id("n"), () -> NET_VERSION, NET_VERSION::equals, NET_VERSION::equals);
 	
 	public ForgeInit() {
 		super(new ForgePlatformSupport());
