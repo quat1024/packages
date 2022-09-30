@@ -6,6 +6,7 @@ import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import agency.highlysuspect.packages.platform.forge.ForgeInit;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageModel;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -13,13 +14,19 @@ import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.client.model.ForgeModelBakery;
@@ -152,11 +159,11 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		//event in a way that suppresses the packet. (See Forge's patches to MultiPlayerGameMode, ctrl-f for "LeftClick".)
 		//
 		//I need to suppress the packet because sending the action seems to tick up the serverside creative mode breaking
-		//timer, or something? Basically after clicking the package for more than 5 cumulative ticks it would break.
+		//timer, or something? Basically, after clicking the package for more than ~5ish cumulative ticks, it would break.
 		//
 		//This isn't an issue on Fabric because cancelling the "i am about to start breaking this block" event on the client
-		//actually suppresses the "i am about to start breaking this block" packet too, which is arguably the correct behavior.
-		//I'm not sure where the other case makes sense.
+		//suppresses the "i am about to start breaking this block" packet too, which is arguably the correct behavior.
+		//I'm not sure in what cases Forge behavior makes sense.
 		//
 		//See MixinMultiPlayerGameMode.
 		holdLeftClickCallbacksForCreativeMode.add(callback);
@@ -179,20 +186,24 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 	
 	@Override
 	public void installClientsideUseBlockCallback(ClientsideUseBlockCallback callback) {
-		MinecraftForge.EVENT_BUS.addListener((PlayerInteractEvent.RightClickBlock event) -> {
-			if(event.isCanceled() || event.getSide() != LogicalSide.CLIENT) return;
+		//I originally tried PlayerInteractEvent.RightClickBlock. However, there is also no way to cancel this event
+		//in a way that suppresses the "i just right clicked this item" packet as well. This is on purpose?
+		//There's a line of code in MultiPlayerGameMode#useItemOn that sends a use-item packet when the event *is* cancelled.
+		//This honestly just seems like a mistake, or poor api design that I can't wrap my head around.
+		
+		MinecraftForge.EVENT_BUS.addListener((InputEvent.ClickInputEvent event) -> {
+			if(event.isCanceled() || !event.isUseItem()) return;
 			
-			//this SHOULD NOT BE REQUIRED because i cancel the event with InteractionResult.CONSUME
-			//which should make it not try the other hand
-			//if(event.getHand() != InteractionHand.MAIN_HAND) return;
+			Minecraft minecraft = Minecraft.getInstance();
+			Player player = minecraft.player;
+			Level level = minecraft.level;
+			HitResult hit = minecraft.hitResult;
+			if(player == null || level == null || !(hit instanceof BlockHitResult bhr)) return;
 			
-			InteractionResult r = callback.interact(event.getPlayer(), event.getWorld(), event.getHand(), event.getHitVec());
-			if(r.consumesAction()) {
-				event.setCanceled(true);
-				event.setCancellationResult(InteractionResult.CONSUME);
-				event.setUseBlock(Event.Result.DENY); //I handled it
-				event.setUseItem(Event.Result.DENY);
-			}
+			//TODO: Since I can't use RightClickBlock, I might have to reimplement hand logic?
+			//In practice the mod's "take items from places other than the active hand" system seems to work okay
+			InteractionResult r = callback.interact(player, level, InteractionHand.MAIN_HAND, bhr);
+			if(r.consumesAction()) event.setCanceled(true);
 		});
 	}
 	
