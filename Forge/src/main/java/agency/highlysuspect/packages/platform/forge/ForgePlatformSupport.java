@@ -1,8 +1,10 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.config.PlatformConfigBuilder;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.PlatformSupport;
+import agency.highlysuspect.packages.platform.forge.config.ForgeConfigBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
@@ -164,5 +166,10 @@ public class ForgePlatformSupport implements PlatformSupport {
 				}
 			});
 		});
+	}
+	
+	@Override
+	public PlatformConfigBuilder makePlatformConfigBuilder() {
+		return new ForgeConfigBuilder();
 	}
 }

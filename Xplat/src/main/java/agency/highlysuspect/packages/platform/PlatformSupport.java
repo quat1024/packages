@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.platform;
 
+import agency.highlysuspect.packages.config.PlatformConfigBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
@@ -42,4 +43,5 @@ public interface PlatformSupport {
 	//Misc
 	Path getConfigFolder();
 	void installResourceReloadListener(Consumer<ResourceManager> listener, ResourceLocation name, PackType... types);
+	PlatformConfigBuilder makePlatformConfigBuilder();
 }
