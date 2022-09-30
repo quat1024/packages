@@ -3,9 +3,13 @@
 	"package": "agency.highlysuspect.packages.platform.fabric.mixin",
 	"compatibilityLevel": "JAVA_16",
 	"mixins": [
+		"particleslol.MixinEntity",
+		"particleslol.MixinLivingEntity"
 	],
 	"client": [
-		"MixinMinecraft"
+		"MixinMinecraft",
+		"particleslol.AccessorTextureSheetParticle",
+		"particleslol.MixinTerrainParticle"
 	],
 	"injectors": {
 		"defaultRequire": 1

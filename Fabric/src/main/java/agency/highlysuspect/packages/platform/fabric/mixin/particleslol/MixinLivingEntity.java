@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.mixin.particleslol;
+package agency.highlysuspect.packages.platform.fabric.mixin.particleslol;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlockEntity;

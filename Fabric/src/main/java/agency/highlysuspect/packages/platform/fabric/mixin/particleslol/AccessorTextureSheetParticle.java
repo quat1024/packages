@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.mixin.particleslol;
+package agency.highlysuspect.packages.platform.fabric.mixin.particleslol;
 
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;

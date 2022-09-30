@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.platform.forge.client.model;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.client.model.BakedQuadPackageModelBakeryFactory;
 import agency.highlysuspect.packages.client.model.PackageModelBakery;
@@ -9,6 +10,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -23,6 +25,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.IModelConfiguration;
@@ -42,6 +45,9 @@ import java.util.function.Function;
 
 public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 	protected static final ModelProperty<PackageStyle> STYLE_PROPERTY = new ModelProperty<>();
+	
+	protected static final ModelProperty<BlockAndTintGetter> BATG_PROPERTY = new ModelProperty<>(); //To support getParticleIcon.
+	protected static final ModelProperty<BlockPos> BLOCKPOS_PROPERTY = new ModelProperty<>();//To support getParticleIcon.
 	
 	protected final BakedQuadPackageModelBakeryFactory modelBakeryFactory = new BakedQuadPackageModelBakeryFactory(Packages.id("block/package"));
 	
@@ -73,7 +79,11 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
 			if(level.getBlockEntity(pos) instanceof PackageBlockEntity be) {
 				//Do not fall for the forbidden fruit of IModelData#setModel. It does nothing
-				return new ModelDataMap.Builder().withInitial(STYLE_PROPERTY, be.getStyle()).build();
+				return new ModelDataMap.Builder()
+					.withInitial(STYLE_PROPERTY, be.getStyle())
+					.withInitial(BATG_PROPERTY, level)
+					.withInitial(BLOCKPOS_PROPERTY, pos)
+					.build();
 			}
 			return modelData;
 		}
@@ -85,6 +95,21 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 			if(style == null) style = PackageStyle.ERROR_LOL; //shouldn't happen, hasProperty checked, u never know though
 			
 			return factory.bake(style, style.color(), style.frameBlock(), style.innerBlock());
+		}
+		
+		//Nice Forge API for overriding particle textures from your baked model. This is cool!
+		//This is implemented on Fabric using a couple of mixins (see "particleslol").
+		//Only thing with this API is it's kind of hard to get access to level/pos,
+		//but that's only important if you call into someone else's implementation
+		@Override
+		public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
+			PackageStyle style = data.getData(STYLE_PROPERTY);
+			BlockAndTintGetter batg = data.getData(BATG_PROPERTY);
+			BlockPos pos = data.getData(BLOCKPOS_PROPERTY);
+			
+			if(batg instanceof Level level && pos != null && style != null && !(style.innerBlock() instanceof PackageBlock)) {
+				return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getTexture(style.innerBlock().defaultBlockState(), level, pos);
+			} else return super.getParticleIcon(data);
 		}
 	}
 	
