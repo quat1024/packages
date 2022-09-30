@@ -143,10 +143,29 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		earlyLeftClickCallbacks.add(callback);
 	}
 	
+	public final List<ClientsideHoldLeftClickCallback> holdLeftClickCallbacksForCreativeMode = new ArrayList<>();
+	
 	@Override
 	public void installClientsideHoldLeftClickCallback(ClientsideHoldLeftClickCallback callback) {
+		//I originally only used PlayerInteractEvent.LeftClickBlock in all situations. However, in Creative mode, this
+		//event is fired *after* sending the START_DESTROY_BLOCK action to the server, and there is no way to cancel the
+		//event in a way that suppresses the packet. (See Forge's patches to MultiPlayerGameMode, ctrl-f for "LeftClick".)
+		//
+		//I need to suppress the packet because sending the action seems to tick up the serverside creative mode breaking
+		//timer, or something? Basically after clicking the package for more than 5 cumulative ticks it would break.
+		//
+		//This isn't an issue on Fabric because cancelling the "i am about to start breaking this block" event on the client
+		//actually suppresses the "i am about to start breaking this block" packet too, which is arguably the correct behavior.
+		//I'm not sure where the other case makes sense.
+		//
+		//See MixinMultiPlayerGameMode.
+		holdLeftClickCallbacksForCreativeMode.add(callback);
+		
+		//Still, let's try to be good netizens and use the standard LeftClickBlock event in noncreative.
+		//In non creative gamemodes it works just fine for my purposes.
 		MinecraftForge.EVENT_BUS.addListener((PlayerInteractEvent.LeftClickBlock event) -> {
-			if(event.isCanceled() || event.getSide() != LogicalSide.CLIENT) return;
+			if(event.isCanceled() || event.getSide() != LogicalSide.CLIENT || event.getPlayer().isSpectator()) return;
+			if(event.getPlayer().isCreative()) return; //Creative mode handled via mixin
 			
 			InteractionResult r = callback.interact(event.getPlayer(), event.getWorld(), event.getHand(), event.getPos(), event.getFace());
 			if(r.consumesAction()) {
