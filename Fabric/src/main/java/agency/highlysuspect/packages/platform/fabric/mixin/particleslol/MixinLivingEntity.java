@@ -26,6 +26,7 @@ public class MixinLivingEntity {
 		lastFallCheckPos = pos;
 	}
 	
+	@SuppressWarnings("ConstantConditions") //cast magic
 	@ModifyArg(
 		method = "checkFallDamage",
 		at = @At(value = "INVOKE", target = "Lnet/minecraft/core/particles/BlockParticleOption;<init>(Lnet/minecraft/core/particles/ParticleType;Lnet/minecraft/world/level/block/state/BlockState;)V"),
