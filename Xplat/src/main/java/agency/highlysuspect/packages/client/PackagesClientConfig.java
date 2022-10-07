@@ -22,7 +22,8 @@ public class PackagesClientConfig {
 		cfg.punchRepeat = cfgSource.punchRepeat();
 		cfg.fontVerticalShift = cfgSource.fontVerticalShift();
 		cfg.meshBackend = cfgSource.meshBackend();
-		cfg.cacheMeshes = cfgSource.cacheMeshes (); 
+		cfg.cacheMeshes = cfgSource.cacheMeshes();
+		cfg.swapRedAndBlue = cfgSource.swapRedAndBlue();
 		cfg.frexSupport = cfgSource.frexSupport();
 
 		cfg.finish();
@@ -44,6 +45,7 @@ public class PackagesClientConfig {
 	public double fontVerticalShift = 0;
 	public MeshBackend meshBackend = MeshBackend.FRAPI_MESH;
 	public boolean cacheMeshes = false;
+	public boolean swapRedAndBlue = false;
 	public boolean frexSupport = true;
 	
 	//Bindings sorted such that the more specific ones are at the front of the list (check ctrl-shift-alt, before ctrl-alt, before alt)

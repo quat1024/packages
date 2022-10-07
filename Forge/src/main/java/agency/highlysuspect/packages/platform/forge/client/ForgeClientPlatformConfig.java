@@ -46,6 +46,12 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 			"   If you have Sodium, you also need Indium to use frapi_bakedquad.",
 			"'skip' bypasses the custom model pipeline entirely. Packages will render its blocks using placeholder textures.",
 			"   This is intended for debugging, resource-packmaking, getting into the world if the other renderers have a crash bug, etc.").defineEnum("meshBackend", MeshBackend.FRAPI_MESH); //TODO forg
+		
+		swapRedAndBlue = bob.comment(
+			"For some reason I need this on Forge only, to make the front face of Packages render with the correct color.",
+			"If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
+		).define("swapRedAndBlue", true);
+		
 		cacheMeshes = bob.comment("If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
 			"With the frapi_mesh backend, this probably helps performance less than it sounds like it would.",
 			"Might make more of a difference on other backends.").define("cacheMeshes", false);
@@ -74,6 +80,7 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 	private ForgeConfigSpec.ConfigValue<Double> fontVerticalShift;
 	
 	private ForgeConfigSpec.EnumValue<MeshBackend> meshBackend;
+	private ForgeConfigSpec.ConfigValue<Boolean> swapRedAndBlue;
 	private ForgeConfigSpec.ConfigValue<Boolean> cacheMeshes;
 	
 	@Override
@@ -124,6 +131,11 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 	@Override
 	public boolean cacheMeshes() {
 		return cacheMeshes.get();
+	}
+	
+	@Override
+	public boolean swapRedAndBlue() {
+		return swapRedAndBlue.get();
 	}
 	
 	@Override

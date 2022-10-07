@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.block.PBlocks;
+import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.junk.PUtil;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
@@ -52,6 +53,7 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 				if(quad.getTintIndex() == 1) {
 					if(faceColor != null) {
 						int tint = 0xFF000000 | faceColor.getMaterialColor().col;
+						if(PackagesClient.instance.config.swapRedAndBlue) tint = swapRedAndBlue(tint);
 						
 						BakedQuad copy = copyQuad(quad);
 						setTintColor(copy, tint, tint, tint, tint);
@@ -149,6 +151,11 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 		in.getVertices()[    vertexStride + vertexColorOffset] = color2;
 		in.getVertices()[2 * vertexStride + vertexColorOffset] = color3;
 		in.getVertices()[3 * vertexStride + vertexColorOffset] = color4;
+	}
+	
+	//Converts a color from AARRGGBB format to AABBGGRR. Vanilla takes ARGB, Forge takes ABGR. No idea why.
+	private int swapRedAndBlue(int color) {
+		return ((color & 0x00FF0000) >> 16) | ((color & 0x000000FF) << 16) | (color & 0xFF00FF00);
 	}
 	
 	private float getU(BakedQuad in, int vertex) {

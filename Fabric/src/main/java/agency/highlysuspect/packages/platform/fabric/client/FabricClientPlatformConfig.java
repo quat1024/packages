@@ -39,6 +39,7 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 				case "fontVerticalShift" -> fontVerticalShift = Double.parseDouble(value);
 				case "meshBackend" -> meshBackend = parseEnum(MeshBackend.class, value);
 				case "cacheMeshes" -> cacheMeshes = Boolean.parseBoolean(value);
+				case "swapRedAndBlue" -> swapRedAndBlue = Boolean.parseBoolean(value);
 				case "frexSupport" -> frexSupport = Boolean.parseBoolean(value);
 				
 				default -> Packages.LOGGER.warn("unknown config key " + key);
@@ -118,6 +119,12 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 			"# Default: false",
 			"cacheMeshes = " + cacheMeshes,
 			"",
+			"# This is needed to make the front face of Packages render with the correct color on Forge. It shouldn't be needed here,",
+			"# but it doesn't hurt to add the option. If you need to change it, I'd be interested in hearing what mods you're using.",
+			"# Also this only does anything on the bakedquad model backend.",
+			"# Default: false",
+			"swapRedAndBlue = " + swapRedAndBlue,
+			"",
 			"# If 'true' and FREX is loaded, materials on block models will be forwarded into the various Packages block models.",
 			"# Use this if you have funky Canvas shaders that make blocks glow, or whatnot.",
 			"# Requires a game restart to activate and deactivate.",
@@ -147,6 +154,7 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 	private double fontVerticalShift = 0;
 	private MeshBackend meshBackend = MeshBackend.FRAPI_MESH;
 	private boolean cacheMeshes = false;
+	private boolean swapRedAndBlue = false;
 	private boolean frexSupport = true;
 	
 	@Override
@@ -197,6 +205,11 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 	@Override
 	public boolean cacheMeshes() {
 		return cacheMeshes;
+	}
+	
+	@Override
+	public boolean swapRedAndBlue() {
+		return swapRedAndBlue;
 	}
 	
 	@Override

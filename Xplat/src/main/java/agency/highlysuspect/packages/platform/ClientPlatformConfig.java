@@ -15,6 +15,7 @@ public interface ClientPlatformConfig {
 	double fontVerticalShift();
 	MeshBackend meshBackend();
 	boolean cacheMeshes();
+	boolean swapRedAndBlue();
 	boolean frexSupport();
 	
 	///
