@@ -1,8 +1,8 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.platform.CommonPlatformConfig;
 import agency.highlysuspect.packages.net.ActionPacket;
+import agency.highlysuspect.packages.platform.CommonPlatformConfig;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
@@ -22,9 +22,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.HashMap;
@@ -39,27 +39,12 @@ public class ForgePlatformSupport implements PlatformSupport {
 	
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
 	
-	@SuppressWarnings({
-		"unchecked", //casting magic
-		"deprecation" //forge presumptiously deprecating all the vanilla registries! :tada:
-	})
+	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.
 	private <T extends IForgeRegistryEntry<T>> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
-		IForgeRegistry<T> what;
-		//Is there really no better way to do this
-		if(reg == Registry.BLOCK) {
-			what = (IForgeRegistry<T>) ForgeRegistries.BLOCKS;
-		} else if(reg == Registry.BLOCK_ENTITY_TYPE) {
-			what = (IForgeRegistry<T>) ForgeRegistries.BLOCK_ENTITIES;
-		} else if(reg == Registry.ITEM) {
-			what = (IForgeRegistry<T>) ForgeRegistries.ITEMS;
-		} else if(reg == Registry.MENU) {
-			what = (IForgeRegistry<T>) ForgeRegistries.CONTAINERS; //I Love To Rename Shit For Aesthetic Reasons
-		} else if(reg == Registry.SOUND_EVENT) {
-			what = (IForgeRegistry<T>) ForgeRegistries.SOUND_EVENTS;
-		} else throw new IllegalStateException("quat forgot a registry lol " + reg);
+		IForgeRegistry<T> registrySpicy = RegistryManager.ACTIVE.getRegistry(((Registry<T>) reg).key());
 		
 		return (DeferredRegister<T>) deferredRegistries.computeIfAbsent(reg, __ -> {
-			DeferredRegister<T> deferred = DeferredRegister.create(what, Packages.MODID);
+			DeferredRegister<T> deferred = DeferredRegister.create(registrySpicy, Packages.MODID);
 			deferred.register(FMLJavaModLoadingContext.get().getModEventBus());
 			return deferred;
 		});
@@ -68,13 +53,20 @@ public class ForgePlatformSupport implements PlatformSupport {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
-		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces one modid per DeferredRegister for some reason");
+		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces one modid per DeferredRegister");
 		
 		RegistryObject<T> obj = ((DeferredRegister<T>) getDeferredRegister(registry)).register(id.getPath(), thingMaker);
 		return new RegistryObjectRegistryHandle<>(obj);
 	}
 	
-	static record RegistryObjectRegistryHandle<T>(RegistryObject<T> obj) implements RegistryHandle<T> {
+	@SuppressWarnings("ClassCanBeRecord")
+	private static class RegistryObjectRegistryHandle<T> implements RegistryHandle<T> {
+		RegistryObjectRegistryHandle(RegistryObject<T> obj) {
+			this.obj = obj;
+		}
+		
+		private final RegistryObject<T> obj;
+		
 		@Override
 		public T get() {
 			return obj.get();
