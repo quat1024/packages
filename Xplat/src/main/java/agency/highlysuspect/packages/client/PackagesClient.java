@@ -10,12 +10,14 @@ public abstract class PackagesClient {
 	public static PackagesClient instance;
 	
 	public final ClientPlatformSupport plat;
+	public PackagesClientConfig config = null;
 	
 	public PackagesClient(ClientPlatformSupport plat) {
 		if(instance != null) throw new IllegalStateException("Initializing PackagesClient twice!");
 		instance = this;
 		
 		this.plat = plat;
+		plat.makeClientPlatformConfig().registerAndLoadAndAllThatJazz();
 	}
 	
 	public void earlySetup() {

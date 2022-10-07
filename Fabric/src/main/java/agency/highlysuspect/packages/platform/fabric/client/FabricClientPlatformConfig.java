@@ -1,26 +1,20 @@
-package agency.highlysuspect.packages.platform.fabric;
+package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.config.MeshBackend;
-import agency.highlysuspect.packages.config.PackageActionBinding;
-import agency.highlysuspect.packages.config.PackagesConfig;
-import agency.highlysuspect.packages.config.PlatformConfig;
+import agency.highlysuspect.packages.client.MeshBackend;
+import agency.highlysuspect.packages.client.PackageActionBinding;
+import agency.highlysuspect.packages.client.PackagesClient;
+import agency.highlysuspect.packages.client.PackagesClientConfig;
 import agency.highlysuspect.packages.net.PackageAction;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.resources.ResourceLocation;
+import agency.highlysuspect.packages.platform.ClientPlatformConfig;
+import agency.highlysuspect.packages.platform.fabric.AbstractFabricPlatformConfig;
 import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
 
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Locale;
 
-public class FabricPlatformConfig implements PlatformConfig {
-	private void parse(List<String> lines) {
+public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig implements ClientPlatformConfig {
+	@Override
+	protected void parse(List<String> lines) {
 		for(String line : lines) {
 			line = line.trim();
 			if(line.startsWith("#")) continue; //comments
@@ -34,9 +28,6 @@ public class FabricPlatformConfig implements PlatformConfig {
 			//dispatch to the correct field
 			//Todo this needs Way better error handling/recovery
 			switch(key) {
-				case "inventoryInteractions" -> inventoryInteractions = Boolean.parseBoolean(value);
-				case "interactionSounds" -> interactionSounds = Boolean.parseBoolean(value);
-				
 				case "insertOne" -> insertOneBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
 				case "insertStack" -> insertStackBinding = PackageActionBinding.fromString(PackageAction.INSERT_STACK, value);
 				case "insertAll" -> insertAllBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
@@ -55,24 +46,13 @@ public class FabricPlatformConfig implements PlatformConfig {
 		}
 	}
 	
-	private List<String> write() {
-		//todo this sucks SHIT !
+	@Override
+	protected List<String> write() {
 		return List.of(
-			"##############",
-			"## Features ##",
-			"##############",
-			"",
-			"# Allow interacting with Packages in the player inventory, kinda like a bundle.",
-			"# Default: true",
-			"inventoryInteractions = " + inventoryInteractions,
-			"",
-			"# Play sounds when players interact with a Package.",
-			"# Default: true",
-			"interactionSounds = " + interactionSounds,
-			"",
-			"############",
-			"## Client ##",
-			"############",
+			"# (This file will be reloaded when loading resource packs with F3+T.)",
+			"##########",
+			"## Keys ##",
+			"##########",
 			"",
 			"# Specify at least 'use' (right click) or 'punch' (left click), and optionally add",
 			"# any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
@@ -110,6 +90,10 @@ public class FabricPlatformConfig implements PlatformConfig {
 			"# Default: -1",
 			"punchRepeat = " + punchRepeat,
 			"",
+			"###########",
+			"## Model ##",
+			"###########",
+			"",
 			"# Vertically shift the numeric display on Packages up by this many blocks.",
 			"# Nudge this to recenter fonts with a different baseline from vanilla.",
 			"# Default: 0",
@@ -142,8 +126,15 @@ public class FabricPlatformConfig implements PlatformConfig {
 		);
 	}
 	
-	private boolean inventoryInteractions = true;
-	private boolean interactionSounds = true;
+	@Override
+	protected void install() {
+		PackagesClient.instance.config = PackagesClientConfig.makeConfig(this);
+	}
+	
+	@Override
+	public void registerAndLoadAndAllThatJazz() {
+		setup(PackType.CLIENT_RESOURCES, "packages-client.cfg");
+	}
 	
 	private PackageActionBinding insertOneBinding = new PackageActionBinding.Builder(PackageAction.INSERT_ONE).use().build();
 	private PackageActionBinding insertStackBinding = new PackageActionBinding.Builder(PackageAction.INSERT_STACK).use().sneak().build();
@@ -157,29 +148,6 @@ public class FabricPlatformConfig implements PlatformConfig {
 	private MeshBackend meshBackend = MeshBackend.FRAPI_MESH;
 	private boolean cacheMeshes = false;
 	private boolean frexSupport = true;
-	
-	@SuppressWarnings("SameParameterValue") //i KNOW i'm overabstracting
-	private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
-		for(E e : enumClass.getEnumConstants()) {
-			if(e.name().equalsIgnoreCase(value)) return e;
-		}
-		//TODO sauce this error handling up a bit
-		throw new IllegalArgumentException("not valid enum value");
-	}
-	
-	private String writeEnum(Enum<?> e) {
-		return e.name().toLowerCase(Locale.ROOT);
-	}
-	
-	@Override
-	public boolean inventoryInteractions() {
-		return inventoryInteractions;
-	}
-	
-	@Override
-	public boolean interactionSounds() {
-		return interactionSounds;
-	}
 	
 	@Override
 	public PackageActionBinding insertOneBinding() {
@@ -234,46 +202,5 @@ public class FabricPlatformConfig implements PlatformConfig {
 	@Override
 	public boolean frexSupport() {
 		return frexSupport;
-	}
-	
-	@Override
-	public void registerAndLoadAndAllThatJazz() {
-		Path configPath = FabricLoader.getInstance().getConfigDir().resolve("packages.cfg");
-		
-		//load it once now
-		configStuff(configPath);
-		
-		//and load it again on resource reload
-		for(PackType type : List.of(PackType.CLIENT_RESOURCES, PackType.SERVER_DATA)) {
-			ResourceManagerHelper.get(type).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-				@Override
-				public ResourceLocation getFabricId() {
-					return Packages.id("fabric-config-reload-" + type.getDirectory()); //"assets" or "data"
-				}
-				
-				@Override
-				public void onResourceManagerReload(ResourceManager resourceManager) {
-					configStuff(configPath);
-				}
-			});
-		}
-	}
-	
-	private void configStuff(Path configPath) {
-		try {
-			//make the config directory
-			Files.createDirectories(configPath.getParent());
-			
-			//if a config file exists, read it
-			if(Files.exists(configPath)) parse(Files.readAllLines(configPath));
-			
-			//update the config global in Packages.instance to reflect my current state
-			Packages.instance.config = PackagesConfig.makeConfig(this);
-			
-			//always write the file back (in case i add a new option later, it should end up in the file)
-			Files.write(configPath, write(), StandardCharsets.UTF_8);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

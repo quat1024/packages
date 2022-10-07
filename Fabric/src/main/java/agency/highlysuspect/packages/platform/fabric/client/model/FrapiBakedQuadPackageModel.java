@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.platform.fabric.client.model;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.client.model.AbstractPackageModel;
 import agency.highlysuspect.packages.client.model.BakedQuadPackageModelBakeryFactory;
 import agency.highlysuspect.packages.client.model.PackageModelBakery;
@@ -29,7 +30,7 @@ public class FrapiBakedQuadPackageModel extends AbstractPackageModel<List<BakedQ
 	protected BakedModel toBakedModel(PackageModelBakery<List<BakedQuad>> factoryResult) {
 		//performance is when you add more layers of indirection :TM:
 		PackageModelBakery<BakedModel> b = new PackageModelBakery.BakedQuadsToBakedModel(factoryResult);
-		if(Packages.instance.config.cacheMeshes) b = new PackageModelBakery.Caching<>(b);
+		if(PackagesClient.instance.config.cacheMeshes) b = new PackageModelBakery.Caching<>(b);
 		return new Baked(b);
 	}
 	

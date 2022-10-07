@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.config.PlatformConfig;
+import agency.highlysuspect.packages.platform.CommonPlatformConfig;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.minecraft.core.Registry;
@@ -132,7 +132,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 	}
 	
 	@Override
-	public PlatformConfig makePlatformConfig() {
-		return new ForgePlatformConfig();
+	public CommonPlatformConfig makePlatformConfig() {
+		return new ForgeCommonPlatformConfig();
 	}
 }

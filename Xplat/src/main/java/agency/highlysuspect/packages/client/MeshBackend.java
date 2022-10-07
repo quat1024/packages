@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.config;
+package agency.highlysuspect.packages.client;
 
 public enum MeshBackend {
 	FRAPI_MESH,

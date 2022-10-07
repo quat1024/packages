@@ -1,32 +1,30 @@
-package agency.highlysuspect.packages.config;
+package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.net.PackageAction;
+import agency.highlysuspect.packages.platform.ClientPlatformConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-@SuppressWarnings("FieldMayBeFinal")
-public class PackagesConfig {
-	public static PackagesConfig makeConfig(PlatformConfig cfgSource) {
-		PackagesConfig cfg = new PackagesConfig();
-		cfg.inventoryInteractions = cfgSource.inventoryInteractions();
-		cfg.interactionSounds = cfgSource.interactionSounds();
-		
+public class PackagesClientConfig {
+	public static PackagesClientConfig makeConfig(ClientPlatformConfig cfgSource) {
+		PackagesClientConfig cfg = new PackagesClientConfig();
+
 		cfg.insertOne = cfgSource.insertOneBinding();
 		cfg.insertStack = cfgSource.insertStackBinding();
 		cfg.insertAll = cfgSource.insertAllBinding();
 		cfg.takeOne = cfgSource.takeOneBinding();
 		cfg.takeStack = cfgSource.takeStackBinding();
 		cfg.takeAll = cfgSource.takeAllBinding();
-		
+
 		cfg.punchRepeat = cfgSource.punchRepeat();
 		cfg.fontVerticalShift = cfgSource.fontVerticalShift();
 		cfg.meshBackend = cfgSource.meshBackend();
 		cfg.cacheMeshes = cfgSource.cacheMeshes (); 
 		cfg.frexSupport = cfgSource.frexSupport();
-		
+
 		cfg.finish();
 		
 		return cfg;
@@ -35,9 +33,6 @@ public class PackagesConfig {
 	//todo: none of these default values get used at all, that's something i should fix
 	// default values are an implementation detail of PlatformConfig2
 	// (the config situation in this mod is Very Bad)
-	public boolean inventoryInteractions = true;
-	public boolean interactionSounds = true;
-	
 	public PackageActionBinding insertOne = new PackageActionBinding.Builder(PackageAction.INSERT_ONE).use().build();
 	public PackageActionBinding insertStack = new PackageActionBinding.Builder(PackageAction.INSERT_STACK).use().sneak().build();
 	public PackageActionBinding insertAll = new PackageActionBinding.Builder(PackageAction.INSERT_ALL).use().ctrl().build();

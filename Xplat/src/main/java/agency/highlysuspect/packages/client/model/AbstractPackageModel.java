@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.client.PackagesClient;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -34,7 +35,7 @@ public abstract class AbstractPackageModel<T> implements UnbakedModel {
 	@Override
 	public BakedModel bake(ModelBakery loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
 		PackageModelBakery<T> bakery = modelBakeryFactory.make(loader, textureGetter, rotationContainer, modelId);
-		if(Packages.instance.config.cacheMeshes) bakery = new PackageModelBakery.Caching<>(bakery);
+		if(PackagesClient.instance.config.cacheMeshes) bakery = new PackageModelBakery.Caching<>(bakery);
 		return toBakedModel(bakery);
 	}
 	

@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.client.model;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.junk.PUtil;
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
@@ -118,7 +119,7 @@ public interface PackageModelBakery<T> {
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 			
 			PackageModelBakery<T> bakery = make(baseModel, specialFrameSprite, specialInnerSprite);
-			if(Packages.instance.config.cacheMeshes) bakery = new Caching<>(bakery);
+			if(PackagesClient.instance.config.cacheMeshes) bakery = new Caching<>(bakery);
 			return bakery;
 		}
 		

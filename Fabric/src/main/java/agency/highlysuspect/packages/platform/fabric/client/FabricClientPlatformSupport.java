@@ -1,8 +1,10 @@
 package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.client.model.AbstractPackageModel;
 import agency.highlysuspect.packages.net.ActionPacket;
+import agency.highlysuspect.packages.platform.ClientPlatformConfig;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageMakerModel;
@@ -122,7 +124,7 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	}
 	
 	private UnbakedModel createPackageModel(ModelProviderContext ctx) {
-		return switch(Packages.instance.config.meshBackend) {
+		return switch(PackagesClient.instance.config.meshBackend) {
 			case FRAPI_MESH -> new FrapiMeshPackageModel();
 			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageModel();
 			case SKIP -> ctx.loadModel(Packages.id("block/package")); //load json model directly
@@ -130,7 +132,7 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	}
 	
 	private UnbakedModel createPackageMakerModel(ModelProviderContext ctx) {
-		return switch(Packages.instance.config.meshBackend) {
+		return switch(PackagesClient.instance.config.meshBackend) {
 			case FRAPI_MESH -> new FrapiMeshPackageMakerModel();
 			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageMakerModel();
 			case SKIP -> ctx.loadModel(Packages.id("block/package_maker"));
@@ -144,5 +146,12 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 		FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
 		packet.write(buf);
 		ClientPlayNetworking.send(ActionPacket.LONG_ID, buf);
+	}
+	
+	//configshit
+	
+	@Override
+	public ClientPlatformConfig makeClientPlatformConfig() {
+		return new FabricClientPlatformConfig();
 	}
 }

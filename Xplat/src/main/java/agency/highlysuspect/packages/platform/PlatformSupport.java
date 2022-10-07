@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.platform;
 
-import agency.highlysuspect.packages.config.PlatformConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
@@ -37,5 +36,5 @@ public interface PlatformSupport {
 	void registerActionPacketHandler();
 	
 	//Configshit
-	PlatformConfig makePlatformConfig();
+	CommonPlatformConfig makePlatformConfig();
 }

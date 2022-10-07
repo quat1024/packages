@@ -2,7 +2,6 @@ package agency.highlysuspect.packages;
 
 import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
-import agency.highlysuspect.packages.config.PackagesConfig;
 import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.config;
+package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.net.PackageAction;

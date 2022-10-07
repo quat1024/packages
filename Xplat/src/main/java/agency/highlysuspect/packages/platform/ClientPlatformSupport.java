@@ -42,4 +42,7 @@ public interface ClientPlatformSupport {
 	
 	//Networking
 	void sendActionPacket(ActionPacket packet);
+	
+	//Configshit
+	ClientPlatformConfig makeClientPlatformConfig();
 }

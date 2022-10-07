@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.platform.forge.client;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.net.ActionPacket;
+import agency.highlysuspect.packages.platform.ClientPlatformConfig;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import agency.highlysuspect.packages.platform.forge.ForgeInit;
@@ -210,5 +211,10 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 	@Override
 	public void sendActionPacket(ActionPacket packet) {
 		ForgeInit.CHANNEL.sendToServer(packet);
+	}
+	
+	@Override
+	public ClientPlatformConfig makeClientPlatformConfig() {
+		return new ForgeClientPlatformConfig();
 	}
 }
