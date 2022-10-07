@@ -51,7 +51,7 @@ public class FabricPlatformSupport implements PlatformSupport {
 	
 	@Override
 	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
-		//It's safe to intialize and register the object right away on Fabric.
+		//It's safe to initialize and register the object right away on Fabric.
 		T thing = thingMaker.get();
 		Registry.register(registry, id, thing);
 		
