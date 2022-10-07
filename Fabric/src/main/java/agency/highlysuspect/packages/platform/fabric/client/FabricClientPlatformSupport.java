@@ -20,6 +20,8 @@ import net.fabricmc.fabric.api.event.EventFactory;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -29,6 +31,7 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Block;
@@ -104,10 +107,18 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 		});
 		
 		//I'm pretty sure this is safe?
-		Packages.instance.plat.installResourceReloadListener(mgr -> {
-			packageModel = null;
-			packageMakerModel = null;
-		}, Packages.id("dump_caches"), PackType.CLIENT_RESOURCES);
+		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+			@Override
+			public ResourceLocation getFabricId() {
+				return Packages.id("dump-models");
+			}
+			
+			@Override
+			public void onResourceManagerReload(ResourceManager resourceManager) {
+				packageModel = null;
+				packageMakerModel = null;
+			}
+		});
 	}
 	
 	private UnbakedModel createPackageModel(ModelProviderContext ctx) {

@@ -3,7 +3,6 @@ package agency.highlysuspect.packages;
 import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.config.PackagesConfig;
-import agency.highlysuspect.packages.config.PlatformConfig;
 import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;
@@ -22,16 +21,16 @@ public abstract class Packages {
 	
 	public final PlatformSupport plat;
 	
-	public PlatformConfig platConfig;
-	public PackagesConfig config = new PackagesConfig();
+	//This defaults to null on purpose. I initially had it set to a default instance to avoid errors, but I'd rather kaboom
+	//so I know I'm reading data that doesn't correspond to the config file, because that'd be effectively garbage data.
+	public PackagesConfig config = null;
 	
 	public Packages(PlatformSupport plat) {
 		if(instance != null) throw new IllegalStateException("Initializing Packages twice!");
 		instance = this;
 		
 		this.plat = plat;
-		this.platConfig = PackagesConfig.makePlatformConfig(plat);
-		this.platConfig.installConfigLoadListener(pc -> config = pc.mapToPojo());
+		plat.makePlatformConfig().registerAndLoadAndAllThatJazz();
 	}
 	
 	public void earlySetup() {

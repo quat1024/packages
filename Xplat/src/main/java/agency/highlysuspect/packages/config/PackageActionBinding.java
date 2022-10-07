@@ -4,9 +4,6 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.net.PackageAction;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -79,19 +76,6 @@ public record PackageActionBinding(PackageAction action, boolean ctrl, boolean s
 		
 		public PackageActionBinding build() {
 			return new PackageActionBinding(action, ctrl, sneak, alt, mainTrigger);
-		}
-	}
-	
-	@Retention(RetentionPolicy.RUNTIME) public @interface For { PackageAction value(); }
-	public static class SerializerDeserializer implements ConfigShape2.SerializerDeserializer<PackageActionBinding> {
-		@Override
-		public PackageActionBinding parse(Field field, String value) {
-			return PackageActionBinding.fromString(field.getAnnotation(For.class).value(), value);
-		}
-		
-		@Override
-		public String write(PackageActionBinding value) {
-			return value.asString();
 		}
 	}
 }

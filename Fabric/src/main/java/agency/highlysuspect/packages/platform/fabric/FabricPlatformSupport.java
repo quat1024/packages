@@ -1,19 +1,14 @@
 package agency.highlysuspect.packages.platform.fabric;
 
+import agency.highlysuspect.packages.config.PlatformConfig;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -24,8 +19,6 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.nio.file.Path;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class FabricPlatformSupport implements PlatformSupport {
@@ -40,7 +33,7 @@ public class FabricPlatformSupport implements PlatformSupport {
 	}
 	
 	@SuppressWarnings("ClassCanBeRecord")
-	static class ImmediateRegistryHandle<T> implements RegistryHandle<T> {
+	private static class ImmediateRegistryHandle<T> implements RegistryHandle<T> {
 		public ImmediateRegistryHandle(T thing, ResourceLocation id) {
 			this.thing = thing;
 			this.id = id;
@@ -86,24 +79,7 @@ public class FabricPlatformSupport implements PlatformSupport {
 	}
 	
 	@Override
-	public Path getConfigFolder() {
-		return FabricLoader.getInstance().getConfigDir();
-	}
-	
-	@Override
-	public void installResourceReloadListener(Consumer<ResourceManager> listener, ResourceLocation name, PackType... types) {
-		IdentifiableResourceReloadListener hello = new SimpleSynchronousResourceReloadListener() {
-			@Override
-			public ResourceLocation getFabricId() {
-				return name;
-			}
-			
-			@Override
-			public void onResourceManagerReload(ResourceManager resourceManager) {
-				listener.accept(resourceManager);
-			}
-		};
-		
-		for(PackType type : types) ResourceManagerHelper.get(type).registerReloadListener(hello);
+	public PlatformConfig makePlatformConfig() {
+		return new FabricPlatformConfig();
 	}
 }

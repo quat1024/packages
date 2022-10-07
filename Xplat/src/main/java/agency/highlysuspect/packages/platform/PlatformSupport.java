@@ -1,12 +1,10 @@
 package agency.highlysuspect.packages.platform;
 
-import agency.highlysuspect.packages.config.PlatformConfigBuilder;
+import agency.highlysuspect.packages.config.PlatformConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -18,8 +16,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.nio.file.Path;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface PlatformSupport {
@@ -40,8 +36,6 @@ public interface PlatformSupport {
 	//Networking
 	void registerActionPacketHandler();
 	
-	//Misc
-	Path getConfigFolder();
-	void installResourceReloadListener(Consumer<ResourceManager> listener, ResourceLocation name, PackType... types);
-	PlatformConfigBuilder makePlatformConfigBuilder();
+	//Configshit
+	PlatformConfig makePlatformConfig();
 }

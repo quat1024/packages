@@ -1,18 +1,13 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.config.PlatformConfigBuilder;
+import agency.highlysuspect.packages.config.PlatformConfig;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.PlatformSupport;
-import agency.highlysuspect.packages.platform.forge.config.ForgeConfigBuilder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
-import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -23,10 +18,8 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -34,11 +27,9 @@ import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryObject;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ForgePlatformSupport implements PlatformSupport {
@@ -141,35 +132,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 	}
 	
 	@Override
-	public Path getConfigFolder() {
-		//TODO real forge config instead of my janky shit, because forge players deserve nice things
-		return FMLPaths.CONFIGDIR.get();
-	}
-	
-	@Override
-	public void installResourceReloadListener(Consumer<ResourceManager> listener, ResourceLocation name, PackType... types) {
-		MinecraftForge.EVENT_BUS.addListener((AddReloadListenerEvent e) -> {
-			e.addListener(new SimplePreparableReloadListener<>() {
-				@Override
-				public String getName() {
-					return name.toString();
-				}
-				
-				@Override
-				protected Object prepare(ResourceManager mgr, ProfilerFiller prof) {
-					return null;
-				}
-				
-				@Override
-				protected void apply(Object preparedObject, ResourceManager mgr, ProfilerFiller prof) {
-					listener.accept(mgr);
-				}
-			});
-		});
-	}
-	
-	@Override
-	public PlatformConfigBuilder makePlatformConfigBuilder() {
-		return new ForgeConfigBuilder();
+	public PlatformConfig makePlatformConfig() {
+		return new ForgePlatformConfig();
 	}
 }
