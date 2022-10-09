@@ -123,6 +123,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 			return itemOverride;
 		}
 		
+		//non static
 		public class WeirdItemOverrideThing extends ItemOverrides {
 			private final PackageModelBakery<BakedModel> help = new PackageModelBakery.Caching<>(new PackageModelBakery<>() {
 				@Override
@@ -132,6 +133,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 				
 				@Override
 				public BakedModel bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
+					//uhh it should be good to share the factory instance.... hm
 					List<BakedQuad> rehreh = factory.bake(cacheKey, faceColor, frameBlock, innerBlock);
 					return new BakedModelWrapper<>(getBaseModel()) {
 						@Override
@@ -144,6 +146,17 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 						public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
 							return rehreh;
 						}
+						
+						@Override
+						public ItemOverrides getOverrides() {
+							return ItemOverrides.EMPTY;
+						}
+						
+						@Override
+						public BakedModel handlePerspective(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack) {
+							super.handlePerspective(cameraTransformType, poseStack);
+							return this; //Smh
+						}
 					};
 				}
 			});
@@ -152,32 +165,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 			@Override
 			public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
 				PackageStyle style = PackageStyle.fromItemStack(stack);
-				//return help.bake(style, style.color(), style.frameBlock(), style.innerBlock());
-				List<BakedQuad> bakedSlow = factory.bake(style, style.color(), style.frameBlock(), style.innerBlock());
-				return new BakedModelWrapper<>(factory.getBaseModel()) {
-					@Override
-					public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
-						return bakedSlow;
-					}
-					
-					@NotNull
-					@Override
-					public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
-						return bakedSlow;
-					}
-					
-					@Override
-					public ItemOverrides getOverrides() {
-						return ItemOverrides.EMPTY;
-					}
-					
-					@Override
-					public BakedModel handlePerspective(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack) {
-						// ????
-						super.handlePerspective(cameraTransformType, poseStack);
-						return this;
-					}
-				};
+				return help.bake(style, style.color(), style.frameBlock(), style.innerBlock());
 			}
 		}
 	}
