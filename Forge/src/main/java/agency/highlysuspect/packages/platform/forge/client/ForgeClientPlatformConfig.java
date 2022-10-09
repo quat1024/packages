@@ -18,7 +18,7 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 			"any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
 			"Separate multiple items with hyphens. Disable an action entirely by leaving it blank.",
 			"",
-			"How do you insert one item into the package?").define("insertOne", "sneak-use");
+			"How do you insert one item into the package?").define("insertOne", "use");
 		insertStackBindingUnparsed = bob.comment("How do you insert one stack of items into the package?").define("insertStack", "sneak-use");
 		insertAllBindingUnparsed = bob.comment("How do you insert everything in your inventory that fits into the package?").define("insertAll", "ctrl-use");
 		takeOneBindingUnparsed = bob.comment("How do you take one item from the package?").define("takeOne", "punch");
