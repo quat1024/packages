@@ -152,7 +152,32 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 			@Override
 			public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
 				PackageStyle style = PackageStyle.fromItemStack(stack);
-				return help.bake(style, style.color(), style.frameBlock(), style.innerBlock());
+				//return help.bake(style, style.color(), style.frameBlock(), style.innerBlock());
+				List<BakedQuad> bakedSlow = factory.bake(style, style.color(), style.frameBlock(), style.innerBlock());
+				return new BakedModelWrapper<>(factory.getBaseModel()) {
+					@Override
+					public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, Random rand) {
+						return bakedSlow;
+					}
+					
+					@NotNull
+					@Override
+					public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
+						return bakedSlow;
+					}
+					
+					@Override
+					public ItemOverrides getOverrides() {
+						return ItemOverrides.EMPTY;
+					}
+					
+					@Override
+					public BakedModel handlePerspective(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack) {
+						// ????
+						super.handlePerspective(cameraTransformType, poseStack);
+						return this;
+					}
+				};
 			}
 		}
 	}
