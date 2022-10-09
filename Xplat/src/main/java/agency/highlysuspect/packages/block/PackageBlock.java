@@ -133,7 +133,7 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> stacks) {
-		//Worth nothing that BlockItem already checks CreativeModeTab#allowd?edIn.
+		//Worth noting that BlockItem already checks CreativeModeTab#allowd?edIn.
 		if(!(asItem() instanceof PackageItem p)) return;
 		
 		//wood types
