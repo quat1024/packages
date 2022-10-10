@@ -37,8 +37,6 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public Component getName(ItemStack stack) {
-		Component superName = super.getName(stack);
-		
 		PackageContainer contents = PackageContainer.fromItemStack(stack);
 		if(contents != null) {
 			ItemStack contained = contents.getFilterStack();
@@ -55,7 +53,7 @@ public class PackageItem extends BlockItem {
 					};
 					
 					if(nameReentrancy == 1) {
-						return new TranslatableComponent("block.packages.package.nonempty", superName, contentsComponent);
+						return new TranslatableComponent("block.packages.package.nonempty", super.getName(stack), contentsComponent);
 					} else {
 						return new TranslatableComponent("block.packages.package.nonempty.reentrant", contentsComponent);
 					}
@@ -65,7 +63,7 @@ public class PackageItem extends BlockItem {
 			}
 		}
 		
-		return superName;
+		return super.getName(stack);
 	}
 	
 	@Override
@@ -81,8 +79,8 @@ public class PackageItem extends BlockItem {
 				if(contents.computeAmplificationStatus()) {
 					tooltip.add(
 						new TranslatableComponent("packages.contents_tooltip.utimately",
-							new TranslatableComponent("block.packages.package.nonempty.contents", fullyMultipliedCount, root.getHoverName()).withStyle(ChatFormatting.DARK_RED))
-							.withStyle(ChatFormatting.DARK_GRAY)
+							new TranslatableComponent("block.packages.package.nonempty.contents", fullyMultipliedCount, root.getHoverName()).withStyle(ChatFormatting.DARK_RED)
+						).withStyle(ChatFormatting.DARK_GRAY)
 					);
 				}
 			}
