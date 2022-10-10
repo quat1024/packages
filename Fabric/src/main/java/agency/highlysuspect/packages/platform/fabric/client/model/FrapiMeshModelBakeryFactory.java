@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.platform.fabric.client.model;
 
-import agency.highlysuspect.packages.client.model.PackageModelBakery;
+import agency.highlysuspect.packages.client.PackageModelBakery;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;

@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.platform;
 
-import agency.highlysuspect.packages.client.MeshBackend;
 import agency.highlysuspect.packages.client.PackageActionBinding;
 
 public interface ClientPlatformConfig {
@@ -13,7 +12,6 @@ public interface ClientPlatformConfig {
 	
 	int punchRepeat();
 	double fontVerticalShift();
-	MeshBackend meshBackend();
 	boolean cacheMeshes();
 	boolean swapRedAndBlue();
 	boolean frexSupport();

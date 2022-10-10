@@ -1,7 +1,8 @@
-package agency.highlysuspect.packages.client.model;
+package agency.highlysuspect.packages.platform.forge.client.model;
 
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.client.PackagesClient;
+import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PUtil;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;

@@ -21,7 +21,6 @@ public class PackagesClientConfig {
 
 		cfg.punchRepeat = cfgSource.punchRepeat();
 		cfg.fontVerticalShift = cfgSource.fontVerticalShift();
-		cfg.meshBackend = cfgSource.meshBackend();
 		cfg.cacheMeshes = cfgSource.cacheMeshes();
 		cfg.swapRedAndBlue = cfgSource.swapRedAndBlue();
 		cfg.frexSupport = cfgSource.frexSupport();
@@ -43,7 +42,6 @@ public class PackagesClientConfig {
 	
 	public int punchRepeat = -1;
 	public double fontVerticalShift = 0;
-	public MeshBackend meshBackend = MeshBackend.FRAPI_MESH;
 	public boolean cacheMeshes = false;
 	public boolean swapRedAndBlue = false;
 	public boolean frexSupport = true;

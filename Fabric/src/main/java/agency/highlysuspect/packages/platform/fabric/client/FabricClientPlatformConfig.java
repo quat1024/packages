@@ -1,7 +1,6 @@
 package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.client.MeshBackend;
 import agency.highlysuspect.packages.client.PackageActionBinding;
 import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.client.PackagesClientConfig;
@@ -37,9 +36,7 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 				
 				case "punchRepeat" -> punchRepeat = Integer.parseInt(value);
 				case "fontVerticalShift" -> fontVerticalShift = Double.parseDouble(value);
-				case "meshBackend" -> meshBackend = parseEnum(MeshBackend.class, value);
 				case "cacheMeshes" -> cacheMeshes = Boolean.parseBoolean(value);
-				case "swapRedAndBlue" -> swapRedAndBlue = Boolean.parseBoolean(value);
 				case "frexSupport" -> frexSupport = Boolean.parseBoolean(value);
 				
 				default -> Packages.LOGGER.warn("unknown config key " + key);
@@ -100,30 +97,11 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 			"# Default: 0",
 			"fontVerticalShift = " + fontVerticalShift,
 			"",
-			"# The method Packages uses to render its models. After changing the option, reload resources (F3+T) uhh, twice (models get loaded before the config file :cry:)",
-			"# Possible values:",
-			"# 'frapi_mesh' uses many features from Fabric Renderer API.",
-			"#    It has received the most testing and performs surprisingly well. It has special compatibility features with FREX.",
-			"#    If you have Sodium, you need Indium to use frapi_mesh.",
-			"# 'frapi_bakedquad' uses a small amount of the Fabric Renderer API.",
-			"#    It doesn't perform as well, but may be more compatible. It doesn't have compat with FREX.",
-			"#    If you have Sodium, you also need Indium to use frapi_bakedquad.",
-			"# 'skip' bypasses the custom model pipeline entirely. Packages will render its blocks using placeholder textures.",
-			"#    This is intended for debugging, resource-packmaking, getting into the world if the other renderers have a crash bug, etc.",
-			"# Default: FRAPI_MESH",
-			"meshBackend = " + writeEnum(meshBackend),
-			"",
 			"# If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
 			"# With the frapi_mesh backend, this probably helps performance less than it sounds like it would.",
 			"# Might make more of a difference on other backends.",
 			"# Default: false",
 			"cacheMeshes = " + cacheMeshes,
-			"",
-			"# This is needed to make the front face of Packages render with the correct color on Forge. It shouldn't be needed here,",
-			"# but it doesn't hurt to add the option. If you need to change it, I'd be interested in hearing what mods you're using.",
-			"# Also this only does anything on the bakedquad model backend.",
-			"# Default: false",
-			"swapRedAndBlue = " + swapRedAndBlue,
 			"",
 			"# If 'true' and FREX is loaded, materials on block models will be forwarded into the various Packages block models.",
 			"# Use this if you have funky Canvas shaders that make blocks glow, or whatnot.",
@@ -152,9 +130,7 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 	
 	private int punchRepeat = -1;
 	private double fontVerticalShift = 0;
-	private MeshBackend meshBackend = MeshBackend.FRAPI_MESH;
 	private boolean cacheMeshes = false;
-	private boolean swapRedAndBlue = false;
 	private boolean frexSupport = true;
 	
 	@Override
@@ -198,18 +174,13 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 	}
 	
 	@Override
-	public MeshBackend meshBackend() {
-		return meshBackend;
-	}
-	
-	@Override
 	public boolean cacheMeshes() {
 		return cacheMeshes;
 	}
 	
 	@Override
 	public boolean swapRedAndBlue() {
-		return swapRedAndBlue;
+		return false; //Red-blue swaps aren't needed on the FrapiMeshModelBakery implementation.
 	}
 	
 	@Override

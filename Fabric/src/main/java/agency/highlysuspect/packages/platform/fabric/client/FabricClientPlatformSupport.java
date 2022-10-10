@@ -1,14 +1,10 @@
 package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.client.PackagesClient;
-import agency.highlysuspect.packages.client.model.AbstractPackageModel;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.ClientPlatformConfig;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
-import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageMakerModel;
-import agency.highlysuspect.packages.platform.fabric.client.model.FrapiBakedQuadPackageModel;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageMakerModel;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageModel;
 import io.netty.buffer.Unpooled;
@@ -95,12 +91,12 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	@Override
 	public void setupCustomModelLoaders() {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
-			if(AbstractPackageModel.PACKAGE_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_ITEM_SPECIAL.equals(id)) {
+			if(FrapiMeshPackageModel.BLOCK_SPECIAL.equals(id) || FrapiMeshPackageModel.ITEM_SPECIAL.equals(id)) {
 				if(packageModel == null) packageModel = createPackageModel(ctx);
 				return packageModel;
 			}
 			
-			if(AbstractPackageModel.PACKAGE_MAKER_BLOCK_SPECIAL.equals(id) || AbstractPackageModel.PACKAGE_MAKER_ITEM_SPECIAL.equals(id)) {
+			if(FrapiMeshPackageMakerModel.BLOCK_SPECIAL.equals(id) || FrapiMeshPackageMakerModel.ITEM_SPECIAL.equals(id)) {
 				if(packageMakerModel == null) packageMakerModel = createPackageMakerModel(ctx);
 				return packageMakerModel;
 			}
@@ -124,19 +120,11 @@ public class FabricClientPlatformSupport implements ClientPlatformSupport {
 	}
 	
 	private UnbakedModel createPackageModel(ModelProviderContext ctx) {
-		return switch(PackagesClient.instance.config.meshBackend) {
-			case FRAPI_MESH -> new FrapiMeshPackageModel();
-			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageModel();
-			case SKIP -> ctx.loadModel(Packages.id("block/package")); //load json model directly
-		};
+		return new FrapiMeshPackageModel();
 	}
 	
 	private UnbakedModel createPackageMakerModel(ModelProviderContext ctx) {
-		return switch(PackagesClient.instance.config.meshBackend) {
-			case FRAPI_MESH -> new FrapiMeshPackageMakerModel();
-			case FRAPI_BAKEDQUAD -> new FrapiBakedQuadPackageMakerModel();
-			case SKIP -> ctx.loadModel(Packages.id("block/package_maker"));
-		};
+		return new FrapiMeshPackageMakerModel();
 	}
 	
 	//networking

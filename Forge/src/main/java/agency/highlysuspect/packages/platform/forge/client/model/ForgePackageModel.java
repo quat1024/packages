@@ -3,8 +3,7 @@ package agency.highlysuspect.packages.platform.forge.client.model;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
-import agency.highlysuspect.packages.client.model.BakedQuadPackageModelBakeryFactory;
-import agency.highlysuspect.packages.client.model.PackageModelBakery;
+import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
@@ -103,7 +102,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 			//hasProperty does not imply getData will return nonnull. Ok, sure.
 			if(style == null) style = PackageStyle.ERROR_LOL;
 			
-			return factory.bake(style, style.color(), style.frameBlock(), style.innerBlock());
+			return factory.bake(style);
 		}
 		
 		//Nice Forge API for overriding particle textures from your baked model. This is cool!
@@ -167,8 +166,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 			@Nullable
 			@Override
 			public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
-				PackageStyle style = PackageStyle.fromItemStack(stack);
-				return help.bake(style, style.color(), style.frameBlock(), style.innerBlock());
+				return help.bake(PackageStyle.fromItemStack(stack));
 			}
 		}
 	}
