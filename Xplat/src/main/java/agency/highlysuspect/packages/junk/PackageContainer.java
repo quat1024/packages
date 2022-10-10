@@ -18,6 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * TODO: There's a lot of instances where we're just reading off of an itemstack and don't care to do much more
+ *  In that case, preparing the itemstacks for inventory actions (flattening them across the 8 slots) is wasteful
+ */
 public class PackageContainer implements Container {
 	/**
 	 * The number of internal slots in the Package. Packages hold eight stacks of items.
@@ -71,6 +75,27 @@ public class PackageContainer implements Container {
 		int count = 0;
 		for(ItemStack stack : inv) count += stack.getCount();
 		return count;
+	}
+	
+	//The item all the way at the bottom of the package chain.
+	public ItemStack computeRootContents() {
+		PackageContainer subcontents = PackageContainer.fromItemStack(getFilterStack());
+		return subcontents == null ? getFilterStack() : subcontents.computeRootContents();
+	}
+	
+	//If you unpackaged all nested packages, this is how many items it really contains.
+	public int computeFullyMultipliedCount() {
+		PackageContainer subcontents = PackageContainer.fromItemStack(getFilterStack());
+		return (subcontents == null ? 1 : subcontents.computeFullyMultipliedCount()) * getCount();
+	}
+	
+	//"amplification" -> "there is at least one package in the chain with more than one copy of itself"
+	//this will false positive when computeRootContents.isEmpty but yeah. i dont like this big garbage-factory recursive algorithm anyway
+	//TODO make the item tooltip not recurse into these expensive methods like three separate times
+	public boolean computeAmplificationStatus() {
+		PackageContainer subcontents = PackageContainer.fromItemStack(getFilterStack());
+		if(subcontents != null) return getCount() > 1 || subcontents.computeAmplificationStatus(); //short circuiting
+		else return false;
 	}
 	
 	public boolean isFull() {

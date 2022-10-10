@@ -3,7 +3,9 @@ package agency.highlysuspect.packages.item;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.SlotAccess;
@@ -13,9 +15,12 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
+import java.util.List;
 
 public class PackageItem extends BlockItem {
 	public PackageItem(Block block, Properties settings) {
@@ -28,28 +33,76 @@ public class PackageItem extends BlockItem {
 				new ItemStack(this)));
 	}
 	
+	private int nameReentrancy = 0;
+	
 	@Override
 	public Component getName(ItemStack stack) {
-		PackageContainer container = PackageContainer.fromItemStack(stack);
-		if(container != null) {
-			ItemStack contents = container.getFilterStack();
-			int count = container.getCount();
-			if(!contents.isEmpty() && count != 0) {
-				return new TranslatableComponent("block.packages.package.nonempty",
-					super.getName(stack),
-					count,
-					contents.getHoverName()
-				);
+		Component superName = super.getName(stack);
+		
+		PackageContainer contents = PackageContainer.fromItemStack(stack);
+		if(contents != null) {
+			ItemStack contained = contents.getFilterStack();
+			if(!contained.isEmpty()) {
+				MutableComponent contentsComponent;
+				try {
+					nameReentrancy++;
+					contentsComponent = new TranslatableComponent("block.packages.package.nonempty.contents", contents.getCount(), contained.getHoverName());
+					contentsComponent = switch(nameReentrancy) {
+						case 1  -> contentsComponent.withStyle(s -> s.withColor(0xD0D0D0));
+						case 2  -> contentsComponent.withStyle(s -> s.withColor(0xA0A0A0));
+						case 3  -> contentsComponent.withStyle(s -> s.withColor(0x858585));
+						default -> contentsComponent.withStyle(s -> s.withColor(0x666666));
+					};
+					
+					if(nameReentrancy == 1) {
+						return new TranslatableComponent("block.packages.package.nonempty", superName, contentsComponent);
+					} else {
+						return new TranslatableComponent("block.packages.package.nonempty.reentrant", contentsComponent);
+					}
+				} finally {
+					nameReentrancy--;
+				}
 			}
 		}
 		
-		return super.getName(stack);
+		return superName;
 	}
 	
-	public Optional<ItemStack> getContainedStack(ItemStack stack) {
-		return Optional.ofNullable(PackageContainer.fromItemStack(stack))
-			.map(PackageContainer::getFilterStack)
-			.filter(s -> !s.isEmpty());
+	@Override
+	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag mistake) {
+		PackageContainer contents = PackageContainer.fromItemStack(stack);
+		if(contents != null) {
+			//Find the item all the way at the bottom of the chain
+			ItemStack root = contents.computeRootContents();
+			if(!root.isEmpty()) {
+				//Find how many of that item you would get if you unrolled all layers of package
+				int fullyMultipliedCount = contents.computeFullyMultipliedCount();
+				//If there's at least one layer of nesting going on: advertise how many items there ultimately are in the package
+				if(contents.computeAmplificationStatus()) {
+					tooltip.add(
+						new TranslatableComponent("packages.contents_tooltip.utimately",
+							new TranslatableComponent("block.packages.package.nonempty.contents", fullyMultipliedCount, root.getHoverName()).withStyle(ChatFormatting.DARK_RED))
+							.withStyle(ChatFormatting.DARK_GRAY)
+					);
+				}
+			}
+		}
+		
+		PackageStyle style = PackageStyle.fromItemStack(stack);
+		Block frameBlock = style.frameBlock();
+		Block innerBlock = style.innerBlock();
+		if(frameBlock == innerBlock) {
+			tooltip.add(new TranslatableComponent("packages.style_tooltip.both", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+		} else {
+			tooltip.add(new TranslatableComponent("packages.style_tooltip.frame", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+			tooltip.add(new TranslatableComponent("packages.style_tooltip.inner", innerBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+		}
+		
+		DyeColor color = style.color();
+		tooltip.add(new TranslatableComponent("packages.style_tooltip.color",
+			new TranslatableComponent("packages.style_tooltip.color." + color.getSerializedName()).withStyle(s -> s.withColor((color == DyeColor.BLACK ? DyeColor.GRAY : color).getTextColor()).withItalic(true))));
+		
+		super.appendHoverText(stack, level, tooltip, mistake);
 	}
 	
 	@Override
@@ -132,6 +185,7 @@ public class PackageItem extends BlockItem {
 		if(insertionLeftover.getCount() == other.getCount()) return false;
 		
 		other.setCount(insertionLeftover.getCount());
+		//Not toggleable by Packages.instance.config.interactionSounds because bundles aren't toggleable either;)
 		player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
 		return true;
 	}

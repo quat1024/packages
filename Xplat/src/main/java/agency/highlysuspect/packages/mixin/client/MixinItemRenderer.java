@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.mixin.client;
 
 import agency.highlysuspect.packages.client.PackageRenderer;
 import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -15,21 +16,25 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * I'm aware that using a BlockEntityWithoutLevelRenderer would be more correct than hacking into item renderer guts.
- * I'm having skill issues implementing that though.
+ * I'm aware that using a BlockEntityWithoutLevelRenderer would be more correct than hacking into item renderer guts -
+ * I'm having skill issue implementing that though lol
  */
 @Mixin(value = ItemRenderer.class, priority = 990) //Earlier than Indigo's MixinItemRenderer, which uses the default of 1000
 public class MixinItemRenderer {
 	@Inject(method = "render", at = @At("HEAD"))
-	public void packages$renderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType transformMode, boolean invert, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int light, int overlay, BakedModel model, CallbackInfo ci) {
+	public void packages$renderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType mode, boolean invert, PoseStack pose, MultiBufferSource bufs, int light, int overlay, BakedModel model, CallbackInfo ci) {
 		if(stack.getItem() == PItems.PACKAGE.get()) {
-			PItems.PACKAGE.get().getContainedStack(stack).ifPresent(inner -> {
-				matrixStack.pushPose();
-				model.getTransforms().getTransform(transformMode).apply(invert, matrixStack);
-				PackageRenderer.applyRotation(matrixStack, TwelveDirection.NORTH);
-				PackageRenderer.drawItem(matrixStack, vertexConsumerProvider, inner, light);
-				matrixStack.popPose();
-			});
+			PackageContainer container = PackageContainer.fromItemStack(stack);
+			if(container == null) return;
+			
+			ItemStack inner = container.getFilterStack();
+			if(inner.isEmpty()) return;
+			
+			pose.pushPose();
+			model.getTransforms().getTransform(mode).apply(invert, pose);
+			PackageRenderer.applyRotation(pose, TwelveDirection.NORTH);
+			PackageRenderer.drawItem(pose, bufs, inner, light);
+			pose.popPose();
 		}
 	}
 }

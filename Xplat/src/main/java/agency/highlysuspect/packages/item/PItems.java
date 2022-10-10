@@ -32,5 +32,4 @@ public class PItems {
 		PACKAGE_MAKER = plat.register(Registry.ITEM, PBlocks.PACKAGE_MAKER.getId(), () -> new BlockItem(PBlocks.PACKAGE_MAKER.get(), new Item.Properties().tab(TAB)));
 		PACKAGE = plat.register(Registry.ITEM, PBlocks.PACKAGE.getId(), () -> new PackageItem(PBlocks.PACKAGE.get(), new Item.Properties().tab(TAB)));
 	}
-	
 }
