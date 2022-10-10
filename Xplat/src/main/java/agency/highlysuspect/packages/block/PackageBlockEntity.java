@@ -74,6 +74,10 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		}
 		return false;
 	}
+
+	public boolean isSticky() {
+		return canBeSticky() && !stickyStack.isEmpty();
+	}
 	
 	public void updateStickyStack() {
 		boolean anythingChanged = updateStickyStack0();
@@ -92,9 +96,9 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		
 		//If the package is allowed to be sticky, but doesn't have a filter stack, pick one.
 		//Empty containers will return ItemStack.EMPTY here
-		if(stickyStack.isEmpty()) {
+		if(stickyStack.isEmpty() || (!stickyStack.isEmpty() && !container.isEmpty())) {
 			stickyStack = container.getFilterStack().copy();
-			return !stickyStack.isEmpty(); //return whether i picke dup a new sticky stack
+			return !stickyStack.isEmpty(); //return whether i picked up a new sticky stack
 		}
 		return false;
 	}
@@ -104,15 +108,26 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	}
 	
 	//<editor-fold desc="Interactions">
-	public void performAction(Player player, InteractionHand hand, PackageAction action) {
+	public boolean performAction(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
 		boolean didAnything;
-		if(action.isInsert()) didAnything = playerInsert(player, hand, action, false);
-		else didAnything = playerTakeDropLeftovers(player, hand, action, false);
+		if(action.isInsert()) didAnything = playerInsert(player, hand, action, simulate);
+		else {
+			didAnything = playerTakeDropLeftovers(player, hand, action, simulate);
+			//If no real items were taken, try clearing the sticky stack
+			if(!didAnything && !stickyStack.isEmpty()) {
+				didAnything = true;
+				stickyStack = ItemStack.EMPTY;
+			}
+		}
+		
+		updateStickyStack0();
 		
 		if(didAnything && level != null && Packages.instance.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
 			SoundEvent event = action.getSoundEvent();
 			if(event != null) level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, action.getSoundVolume(), action.getSoundPitch(level));
 		}
+		
+		return didAnything;
 	}
 	
 	/**
@@ -130,9 +145,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		if(action == PackageAction.INSERT_ALL) {
 			//Insert the stack of items that the player is holding, followed by stacks from the rest of the player's inventory.
 			//If the player and package is not holding anything, look for the item type the player has the most of, and choose that.
-			int favoriteSlot;
-			if(player.getItemInHand(hand).isEmpty() && container.isEmpty()) favoriteSlot = slotWithALot(player).orElse(handSlot);
-			else favoriteSlot = handSlot;
+			int favoriteSlot = player.getItemInHand(hand).isEmpty() && container.isEmpty() ? slotWithALot(player).orElse(handSlot) : handSlot;
 			
 			boolean didAnything = false;
 			IntIterator iterator = handSlotFirst(player, favoriteSlot).intIterator();

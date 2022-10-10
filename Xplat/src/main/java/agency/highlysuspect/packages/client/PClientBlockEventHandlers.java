@@ -40,12 +40,12 @@ public class PClientBlockEventHandlers {
 		PackageAction action = getApplicableAction(player, MainTrigger.PUNCH);
 		if(action == null) return false;
 		
-		PackageBlockEntity.PlayerTakeResult result = pkg.playerTake(player, InteractionHand.MAIN_HAND, action, true);
-		if(result.successful()) {
+		if(pkg.performAction(player, InteractionHand.MAIN_HAND, action, true)) {
 			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
 			lastPunchTickLegacy = level.getGameTime();
 			return true;
-		} else return false;
+		}
+		return false;
 	}
 	
 	public static void onInitializeClient(ClientPlatformSupport plat) {
@@ -87,7 +87,7 @@ public class PClientBlockEventHandlers {
 			if(action == null) return InteractionResult.PASS;
 			
 			//Simulate performing the action. If anything happened...
-			if(pkg.playerInsert(player, hand, action, true)) {
+			if(pkg.performAction(player, hand, action, true)) {
 				//...send a packet to do it for real
 				//SUCCESS sends a block-place packet too because fabric api is weird, so we use CONSUME+swing to mark the action as successful.
 				PNetClient.performAction(pos, hand, action);

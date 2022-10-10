@@ -16,10 +16,10 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 		switch(key) {
 			case "insertOne" -> insertOneBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
 			case "insertStack" -> insertStackBinding = PackageActionBinding.fromString(PackageAction.INSERT_STACK, value);
-			case "insertAll" -> insertAllBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
+			case "insertAll" -> insertAllBinding = PackageActionBinding.fromString(PackageAction.INSERT_ALL, value);
 			case "takeOne" -> takeOneBinding = PackageActionBinding.fromString(PackageAction.TAKE_ONE, value);
 			case "takeStack" -> takeStackBinding = PackageActionBinding.fromString(PackageAction.TAKE_STACK, value);
-			case "takeAll" -> takeAllBinding = PackageActionBinding.fromString(PackageAction.TAKE_ONE, value);
+			case "takeAll" -> takeAllBinding = PackageActionBinding.fromString(PackageAction.TAKE_ALL, value);
 			
 			case "punchRepeat" -> punchRepeat = Integer.parseInt(value);
 			case "cacheMeshes" -> cacheMeshes = Boolean.parseBoolean(value);

@@ -39,7 +39,7 @@ public final class ActionPacket {
 	public void handle(ServerPlayer sender) {
 		sender.server.submit(() -> {
 			PackageBlockEntity be = getPackageChecked(sender.level, sender, pos);
-			if(be != null) be.performAction(sender, hand, action);
+			if(be != null) be.performAction(sender, hand, action, false);
 		});
 	}
 	

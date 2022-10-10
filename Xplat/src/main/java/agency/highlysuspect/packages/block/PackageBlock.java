@@ -1,11 +1,14 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.item.PackageItem;
+import agency.highlysuspect.packages.junk.PUtil;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -30,6 +33,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.PushReaction;
+
+import java.util.Random;
 
 public class PackageBlock extends Block implements EntityBlock {
 	public PackageBlock(Properties settings) {
@@ -98,6 +103,32 @@ public class PackageBlock extends Block implements EntityBlock {
 	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block fromBlock, BlockPos fromPos, boolean moved) {
 		super.neighborChanged(state, level, pos, fromBlock, fromPos, moved);
 		if(level.getBlockEntity(pos) instanceof PackageBlockEntity pkg) pkg.updateStickyStack();
+	}
+	
+	@Override
+	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {
+		Direction primaryFacing = state.getValue(FACING).primaryDirection;
+		if(rand.nextInt(primaryFacing == Direction.UP ? 15 : 5) == 0 && level.getBlockEntity(pos) instanceof PackageBlockEntity pkg && pkg.isSticky()) {
+			float minX = pos.getX() - 0.003f;
+			float minY = pos.getY() - 0.003f;
+			float minZ = pos.getZ() - 0.003f;
+			float maxX = pos.getX() + 1.003f;
+			float maxY = pos.getY() + 1.003f;
+			float maxZ = pos.getZ() + 1.003f;
+			//align to the front of the block
+			switch(primaryFacing) {
+				case UP -> minY = maxY;
+				case DOWN -> maxY = minY;
+				case WEST -> maxX = minX;
+				case EAST -> minX = maxX;
+				case NORTH -> maxZ = minZ;
+				case SOUTH -> minZ = maxZ;
+			}
+			float x = PUtil.rangeRemap(rand.nextFloat(), 0, 1, minX, maxX);
+			float y = PUtil.rangeRemap(rand.nextFloat(), 0, 1, minY, maxY);
+			float z = PUtil.rangeRemap(rand.nextFloat(), 0, 1, minZ, maxZ);
+			level.addParticle(ParticleTypes.FALLING_HONEY, x, y, z, 0, 0, 0);
+		}
 	}
 	
 	@Override
