@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.platform.fabric.client;
 
-import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.PackageActionBinding;
 import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.client.PackagesClientConfig;
@@ -13,35 +12,22 @@ import java.util.List;
 
 public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig implements ClientPlatformConfig {
 	@Override
-	protected void parse(List<String> lines) {
-		for(String line : lines) {
-			line = line.trim();
-			if(line.startsWith("#")) continue; //comments
+	protected boolean parseKeyValuePair(String key, String value) {
+		switch(key) {
+			case "insertOne" -> insertOneBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
+			case "insertStack" -> insertStackBinding = PackageActionBinding.fromString(PackageAction.INSERT_STACK, value);
+			case "insertAll" -> insertAllBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
+			case "takeOne" -> takeOneBinding = PackageActionBinding.fromString(PackageAction.TAKE_ONE, value);
+			case "takeStack" -> takeStackBinding = PackageActionBinding.fromString(PackageAction.TAKE_STACK, value);
+			case "takeAll" -> takeAllBinding = PackageActionBinding.fromString(PackageAction.TAKE_ONE, value);
 			
-			//Split on key-value pairs
-			int eqIndex = line.indexOf('=');
-			if(eqIndex == -1) continue;
-			String key = line.substring(0, eqIndex).trim();
-			String value = line.substring(eqIndex + 1).trim();
+			case "punchRepeat" -> punchRepeat = Integer.parseInt(value);
+			case "cacheMeshes" -> cacheMeshes = Boolean.parseBoolean(value);
+			case "frexSupport" -> frexSupport = Boolean.parseBoolean(value);
 			
-			//dispatch to the correct field
-			//Todo this needs Way better error handling/recovery
-			switch(key) {
-				case "insertOne" -> insertOneBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
-				case "insertStack" -> insertStackBinding = PackageActionBinding.fromString(PackageAction.INSERT_STACK, value);
-				case "insertAll" -> insertAllBinding = PackageActionBinding.fromString(PackageAction.INSERT_ONE, value);
-				case "takeOne" -> takeOneBinding = PackageActionBinding.fromString(PackageAction.TAKE_ONE, value);
-				case "takeStack" -> takeStackBinding = PackageActionBinding.fromString(PackageAction.TAKE_STACK, value);
-				case "takeAll" -> takeAllBinding = PackageActionBinding.fromString(PackageAction.TAKE_ONE, value);
-				
-				case "punchRepeat" -> punchRepeat = Integer.parseInt(value);
-				case "fontVerticalShift" -> fontVerticalShift = Double.parseDouble(value);
-				case "cacheMeshes" -> cacheMeshes = Boolean.parseBoolean(value);
-				case "frexSupport" -> frexSupport = Boolean.parseBoolean(value);
-				
-				default -> Packages.LOGGER.warn("unknown config key " + key);
-			}
+			default -> { return false; }
 		}
+		return true;
 	}
 	
 	@Override
@@ -55,7 +41,7 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 			"# Specify at least 'use' (right click) or 'punch' (left click), and optionally add",
 			"# any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
 			"# Separate multiple items with hyphens. Disable an action entirely by leaving it blank.",
-			"# ",
+			"",
 			"# How do you insert one item into the package?",
 			"# Default: use",
 			"insertOne = " + insertOneBinding.asString(),
@@ -92,14 +78,10 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 			"## Model ##",
 			"###########",
 			"",
-			"# Vertically shift the numeric display on Packages up by this many blocks.",
-			"# Nudge this to recenter fonts with a different baseline from vanilla.",
-			"# Default: 0",
-			"fontVerticalShift = " + fontVerticalShift,
-			"",
 			"# If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
-			"# With the frapi_mesh backend, this probably helps performance less than it sounds like it would.",
-			"# Might make more of a difference on other backends.",
+			"# The model bakery is quite fast; this probably helps chunk-bake performance less than it sounds like it would, and consumes memory.",
+			"# However I'm pretty sure it slightly improves the efficiency of item rendering. All's tradeoffs.",
+			"# F3+T will dump the cache.",
 			"# Default: false",
 			"cacheMeshes = " + cacheMeshes,
 			"",
@@ -127,9 +109,8 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 	private PackageActionBinding takeOneBinding = new PackageActionBinding.Builder(PackageAction.TAKE_ONE).punch().build();
 	private PackageActionBinding takeStackBinding = new PackageActionBinding.Builder(PackageAction.TAKE_STACK).punch().sneak().build();
 	private PackageActionBinding takeAllBinding = new PackageActionBinding.Builder(PackageAction.TAKE_ALL).punch().ctrl().build();
-	
 	private int punchRepeat = -1;
-	private double fontVerticalShift = 0;
+	
 	private boolean cacheMeshes = false;
 	private boolean frexSupport = true;
 	
@@ -166,11 +147,6 @@ public class FabricClientPlatformConfig extends AbstractFabricPlatformConfig imp
 	@Override
 	public int punchRepeat() {
 		return punchRepeat;
-	}
-	
-	@Override
-	public double fontVerticalShift() {
-		return fontVerticalShift;
 	}
 	
 	@Override

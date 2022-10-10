@@ -12,12 +12,12 @@ import net.minecraftforge.fml.config.ModConfig;
 public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig implements ClientPlatformConfig {
 	@Override
 	protected void configure(ForgeConfigSpec.Builder bob) {
-		bob.push("Keys");
-		insertOneBindingUnparsed = bob.comment("Specify at least 'use' (right click) or 'punch' (left click), and optionally add",
+		bob.comment(
+			"Specify at least 'use' (right click) or 'punch' (left click), and optionally add",
 			"any combination of 'ctrl', 'alt', or 'sneak' to require some modifier keys.",
-			"Separate multiple items with hyphens. Disable an action entirely by leaving it blank.",
-			"",
-			"How do you insert one item into the package?").define("insertOne", "use");
+			"Separate multiple items with hyphens. Disable an action entirely by leaving it blank."
+		).push("Keys");
+		insertOneBindingUnparsed = bob.comment("How do you insert one item into the package?").define("insertOne", "use");
 		insertStackBindingUnparsed = bob.comment("How do you insert one stack of items into the package?").define("insertStack", "sneak-use");
 		insertAllBindingUnparsed = bob.comment("How do you insert everything in your inventory that fits into the package?").define("insertAll", "ctrl-use");
 		takeOneBindingUnparsed = bob.comment("How do you take one item from the package?").define("takeOne", "punch");
@@ -31,18 +31,16 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 			"I've since actually fixed it, but I don't know if people had gotten used to the broken behavior :)",
 			"If you did and want it back, set this to 4."
 		).define("punchRepeat", -1);
-		fontVerticalShift = bob.comment(
-			"Vertically shift the numeric display on Packages up by this many blocks.",
-			"Nudge this to recenter fonts with a different baseline from vanilla."
-		).define("fontVerticalShift", 0d);
 		
 		bob.pop();
 		bob.push("Model");
 		
 		cacheMeshes = bob.comment(
 			"If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
-			"The model bakery is quite fast; this probably helps chunk-bake performance less than it sounds like it would, and consumes memory."
-		).define("cacheMeshes", false);
+			"The model bakery is quite fast; this probably helps chunk-bake performance less than it sounds like it would, and consumes memory.",
+			"However I'm pretty sure it slightly improves the efficiency of item rendering. All's tradeoffs.",
+			"F3+T will dump the cache."
+		).define("cacheMeshes", true);
 		swapRedAndBlue = bob.comment(
 			"For some reason I need this on Forge only, to make the front face of Packages render with the correct color.",
 			"If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
@@ -67,9 +65,7 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 	private ForgeConfigSpec.ConfigValue<String> takeOneBindingUnparsed;
 	private ForgeConfigSpec.ConfigValue<String> takeStackBindingUnparsed;
 	private ForgeConfigSpec.ConfigValue<String> takeAllBindingUnparsed;
-	
 	private ForgeConfigSpec.ConfigValue<Integer> punchRepeat;
-	private ForgeConfigSpec.ConfigValue<Double> fontVerticalShift;
 	
 	private ForgeConfigSpec.ConfigValue<Boolean> swapRedAndBlue;
 	private ForgeConfigSpec.ConfigValue<Boolean> cacheMeshes;
@@ -107,11 +103,6 @@ public class ForgeClientPlatformConfig extends AbstractForgePlatformConfig imple
 	@Override
 	public int punchRepeat() {
 		return punchRepeat.get();
-	}
-	
-	@Override
-	public double fontVerticalShift() {
-		return fontVerticalShift.get();
 	}
 	
 	@Override

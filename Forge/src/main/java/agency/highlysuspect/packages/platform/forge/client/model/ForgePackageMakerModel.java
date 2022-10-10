@@ -43,10 +43,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 public class ForgePackageMakerModel implements IModelGeometry<ForgePackageMakerModel> {
-	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
-	
-	protected static final ModelProperty<BlockAndTintGetter> BATG_PROPERTY = new ModelProperty<>(); //To support getParticleIcon.
-	protected static final ModelProperty<BlockPos> BLOCKPOS_PROPERTY = new ModelProperty<>();//To support getParticleIcon.
+	protected static final ModelProperty<PackageMakerStyle> MAKER_STYLE_PROPERTY = new ModelProperty<>();
 	
 	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker")) {
 		@Override
@@ -94,11 +91,7 @@ public class ForgePackageMakerModel implements IModelGeometry<ForgePackageMakerM
 		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
 			if(level.getBlockEntity(pos) instanceof PackageMakerBlockEntity be) {
 				//Do not fall for the forbidden fruit of IModelData#setModel. It does nothing
-				return new ModelDataMap.Builder()
-					.withInitial(STYLE_PROPERTY, be.getStyle())
-					.withInitial(BATG_PROPERTY, level)
-					.withInitial(BLOCKPOS_PROPERTY, pos)
-					.build();
+				return new ModelDataMap.Builder().withInitial(MAKER_STYLE_PROPERTY, be.getStyle()).build();
 			}
 			return modelData;
 		}
@@ -106,7 +99,7 @@ public class ForgePackageMakerModel implements IModelGeometry<ForgePackageMakerM
 		@NotNull
 		@Override
 		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
-			PackageMakerStyle style = extraData.hasProperty(STYLE_PROPERTY) ? extraData.getData(STYLE_PROPERTY) : PackageMakerStyle.NIL;
+			PackageMakerStyle style = extraData.hasProperty(MAKER_STYLE_PROPERTY) ? extraData.getData(MAKER_STYLE_PROPERTY) : PackageMakerStyle.NIL;
 			
 			//This shoudn't happen because I checked hasProperty, but forge javadocs specifically note that
 			//hasProperty does not imply getData will return nonnull. Ok, sure.

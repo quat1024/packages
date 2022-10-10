@@ -9,31 +9,17 @@ import java.util.List;
 
 public class FabricCommonPlatformConfig extends AbstractFabricPlatformConfig implements CommonPlatformConfig {
 	@Override
-	protected void parse(List<String> lines) {
-		for(String line : lines) {
-			line = line.trim();
-			if(line.startsWith("#")) continue; //comments
-			
-			//Split on key-value pairs
-			int eqIndex = line.indexOf('=');
-			if(eqIndex == -1) continue;
-			String key = line.substring(0, eqIndex).trim();
-			String value = line.substring(eqIndex + 1).trim();
-			
-			//dispatch to the correct field
-			//Todo this needs Way better error handling/recovery
-			switch(key) {
-				case "inventoryInteractions" -> inventoryInteractions = Boolean.parseBoolean(value);
-				case "interactionSounds" -> interactionSounds = Boolean.parseBoolean(value);
-				
-				default -> Packages.LOGGER.warn("unknown config key " + key);
-			}
+	protected boolean parseKeyValuePair(String key, String value) {
+		switch(key) {
+			case "inventoryInteractions" -> inventoryInteractions = Boolean.parseBoolean(value);
+			case "interactionSounds" -> interactionSounds = Boolean.parseBoolean(value);
+			default -> { return false; }
 		}
+		return true;
 	}
 	
 	@Override
 	protected List<String> write() {
-		//todo this sucks SHIT !
 		return List.of(
 			"# (This file will be reloaded when loading data packs with /reload.)",
 			"##############",

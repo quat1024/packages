@@ -22,7 +22,7 @@ public class ForgeInit extends Packages {
 			try {
 				Class.forName("agency.highlysuspect.packages.platform.forge.client.ForgeClientInit").getConstructor().newInstance();
 			} catch (ReflectiveOperationException e) {
-				throw new RuntimeException(e);
+				throw new RuntimeException("Packages had a problem initializing ForgeClientInit", e);
 			}
 		}
 	}

@@ -44,6 +44,7 @@ public class FabricPlatformSupport implements PlatformSupport {
 				Files.copy(legacyConfigFile, newClientConfigFile);
 				Files.delete(legacyConfigFile);
 			}
+			AbstractFabricPlatformConfig.FIRST_RUN_WITH_SPLIT_CONFIGS = true;
 		} catch (Exception e) {
 			e.printStackTrace(); //Not a big deal
 		}

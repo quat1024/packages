@@ -138,7 +138,7 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		
 		matrices.pushPose();
 		
-		matrices.translate(6 / 16d + 0.05, PackagesClient.instance.config.fontVerticalShift, 0);
+		matrices.translate(6 / 16d + 0.05, 0, 0);
 		matrices.scale(-1, -scale, scale);
 		matrices.translate(0, -4, 0);
 		matrices.mulPose(Vector3f.YP.rotationDegrees(90));

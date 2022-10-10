@@ -9,9 +9,8 @@ public interface ClientPlatformConfig {
 	PackageActionBinding takeOneBinding();
 	PackageActionBinding takeStackBinding();
 	PackageActionBinding takeAllBinding();
-	
 	int punchRepeat();
-	double fontVerticalShift();
+	
 	boolean cacheMeshes();
 	boolean swapRedAndBlue();
 	boolean frexSupport();
@@ -23,8 +22,8 @@ public interface ClientPlatformConfig {
 	 *
 	 * - Register the config with whatever platform config service exists
 	 * - Create the actual config file if it doesn't exist
-	 * - Load the initial state of the config and write it to Packages.instance.config
-	 * - Set it up so when a resource reload or platform-specific config file changes, Packages.instance.config changes too
+	 * - Load the initial state of the config and write it to PackagesClient.instance.config
+	 * - Set it up so when a resource reload or platform-specific config file changes, PackagesClient.instance.config changes too
 	 */
 	void registerAndLoadAndAllThatJazz();
 }

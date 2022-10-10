@@ -18,9 +18,8 @@ public class PackagesClientConfig {
 		cfg.takeOne = cfgSource.takeOneBinding();
 		cfg.takeStack = cfgSource.takeStackBinding();
 		cfg.takeAll = cfgSource.takeAllBinding();
-
 		cfg.punchRepeat = cfgSource.punchRepeat();
-		cfg.fontVerticalShift = cfgSource.fontVerticalShift();
+		
 		cfg.cacheMeshes = cfgSource.cacheMeshes();
 		cfg.swapRedAndBlue = cfgSource.swapRedAndBlue();
 		cfg.frexSupport = cfgSource.frexSupport();
@@ -31,7 +30,8 @@ public class PackagesClientConfig {
 	}
 	
 	//todo: none of these default values get used at all, that's something i should fix
-	// default values are an implementation detail of PlatformConfig2
+	// default values are an implementation detail of PlatformConfig
+	// but it's sometimes used intentionally to provide platform-specific defaults, like with cacheMeshes which is almost 0 impact on fabric
 	// (the config situation in this mod is Very Bad)
 	public PackageActionBinding insertOne = new PackageActionBinding.Builder(PackageAction.INSERT_ONE).use().build();
 	public PackageActionBinding insertStack = new PackageActionBinding.Builder(PackageAction.INSERT_STACK).use().sneak().build();
@@ -39,9 +39,8 @@ public class PackagesClientConfig {
 	public PackageActionBinding takeOne = new PackageActionBinding.Builder(PackageAction.TAKE_ONE).punch().build();
 	public PackageActionBinding takeStack = new PackageActionBinding.Builder(PackageAction.TAKE_STACK).punch().sneak().build();
 	public PackageActionBinding takeAll = new PackageActionBinding.Builder(PackageAction.TAKE_ALL).punch().ctrl().build();
-	
 	public int punchRepeat = -1;
-	public double fontVerticalShift = 0;
+	
 	public boolean cacheMeshes = false;
 	public boolean swapRedAndBlue = false;
 	public boolean frexSupport = true;
