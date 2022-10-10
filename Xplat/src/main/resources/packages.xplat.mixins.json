@@ -6,7 +6,6 @@
 		
   ],
   "client": [
-		"client.MixinClientPacketListener",
 		"client.MixinItemRenderer"
   ],
   "injectors": {

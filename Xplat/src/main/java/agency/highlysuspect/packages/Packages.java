@@ -7,6 +7,7 @@ import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;
 import agency.highlysuspect.packages.junk.PItemTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
+import agency.highlysuspect.packages.junk.SidedProxy;
 import agency.highlysuspect.packages.net.PNetCommon;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +24,9 @@ public abstract class Packages {
 	//This defaults to null on purpose. I initially had it set to a default instance to avoid errors, but I'd rather kaboom
 	//so I know I'm reading data that doesn't correspond to the config file, because that'd be effectively garbage data.
 	public PackagesConfig config = null;
+	
+	//Reset from PackagesClient
+	public SidedProxy proxy = new SidedProxy();
 	
 	public Packages(PlatformSupport plat) {
 		if(instance != null) throw new IllegalStateException("Initializing Packages twice!");

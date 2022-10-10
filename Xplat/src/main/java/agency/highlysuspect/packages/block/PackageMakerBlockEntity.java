@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PItemTags;
@@ -159,6 +160,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	//endregion
 	
 	//region RenderAttachmentBlockEntity
+	@SuppressWarnings("unused") //Fabric implements RenderAttachmentBlockEntity on all BlockEntities.
 	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
 	public @Nullable Object getRenderAttachmentData() {
 		ItemStack frameStack = inv.get(FRAME_SLOT);
@@ -317,6 +319,16 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			//the "extra" slot didn't exist yet; need to move slot 3 (old output slot) to slot 4 (new output slot)
 			inv.set(4, inv.get(3));
 			inv.set(3, ItemStack.EMPTY);
+		}
+		
+		//Force a chunk rerender when the contents of the container change.
+		//Or, yknow, really when any nbt changes. It's a bit sloppy.
+		//The "sided proxy" thing is overkill - compare this:
+		// https://github.com/QuiltMC/quilt-standard-libraries/blob/6a3d728ee74d158170c6b23efb3297625d2b266a/library/block/block_entity/src/testmod/java/org/quiltmc/qsl/block/entity/test/ColorfulBlockEntity.java#L71
+		//I still feel like it's weird that nonexistent classes can be referenced on the *interior* of a method as long as it's never called?
+		//Idk i don't trust it lol. (Is this defined behavior in the jvm spec or does it just happen to work on hotspot)
+		if(level != null && level.isClientSide()) {
+			Packages.instance.proxy.forceChunkRerender(level, getBlockPos());
 		}
 	}
 	

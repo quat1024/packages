@@ -1,5 +1,6 @@
 package agency.highlysuspect.packages.client;
 
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PMenuTypes;
@@ -21,6 +22,8 @@ public abstract class PackagesClient {
 	}
 	
 	public void earlySetup() {
+		Packages.instance.proxy = new ClientProxy();
+		
 		plat.setupCustomModelLoaders();
 		
 		plat.registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);

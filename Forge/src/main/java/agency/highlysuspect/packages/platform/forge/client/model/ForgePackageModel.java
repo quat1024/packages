@@ -98,7 +98,10 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 		@Override
 		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
 			PackageStyle style = extraData.hasProperty(STYLE_PROPERTY) ? extraData.getData(STYLE_PROPERTY) : PackageStyle.ERROR_LOL;
-			if(style == null) style = PackageStyle.ERROR_LOL; //shouldn't happen, hasProperty checked, u never know though
+			
+			//This shoudn't happen because I checked hasProperty, but forge javadocs specifically note that
+			//hasProperty does not imply getData will return nonnull. Ok, sure.
+			if(style == null) style = PackageStyle.ERROR_LOL;
 			
 			return factory.bake(style, style.color(), style.frameBlock(), style.innerBlock());
 		}
@@ -155,7 +158,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 						@Override
 						public BakedModel handlePerspective(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack) {
 							super.handlePerspective(cameraTransformType, poseStack);
-							return this; //Smh
+							return this; //Or else just Forge throws away all the work I put in to making a nontrivial baked model. Thanks.
 						}
 					};
 				}
@@ -179,8 +182,8 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 		}
 		
 		@Override
-		public void onResourceManagerReload(ResourceManager p_10758_) {
-			//Don't care
+		public void onResourceManagerReload(ResourceManager mgr) {
+			//The old ForgePackageModel and all caches derived from it should safely get garbage collected.
 		}
 	}
 }

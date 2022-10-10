@@ -14,6 +14,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * I'm aware that using a BlockEntityWithoutLevelRenderer would be more correct than hacking into item renderer guts.
+ * I'm having skill issues implementing that though.
+ */
 @Mixin(value = ItemRenderer.class, priority = 990) //Earlier than Indigo's MixinItemRenderer, which uses the default of 1000
 public class MixinItemRenderer {
 	@Inject(method = "render", at = @At("HEAD"))
