@@ -5,7 +5,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,7 +19,7 @@ public class MixinTerrainParticle {
 		require = 0 //Unimportant feature
 	)
 	private void packages$onInit(ClientLevel level, double d, double e, double f, double g, double h, double i, BlockState state, BlockPos pos, CallbackInfo ci) {
-		if(level.getBlockEntity(pos) instanceof PackageBlockEntity be && state.getBlock() != Blocks.SLIME_BLOCK) { //Hack for sticky package particles lol
+		if(level.getBlockEntity(pos) instanceof PackageBlockEntity be) {
 			((AccessorTextureSheetParticle) this).packages$setSprite(Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getParticleIcon(be.getStyle().innerBlock().defaultBlockState()));
 		}
 	}
