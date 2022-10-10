@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.block;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.junk.PItemTags;
+import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.platform.SoftImplement;
@@ -55,7 +55,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		
 		Item item = stack.getItem();
 		if(!(item instanceof BlockItem)) return false;
-		if(stack.is(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
+		if(stack.is(PTags.BANNED_FROM_PACKAGE_MAKER)) return false;
 		
 		Block b = ((BlockItem) item).getBlock();
 		BlockState state = b.defaultBlockState();
@@ -68,13 +68,13 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	public static boolean matchesDyeSlot(ItemStack stack) {
 		if(stack.isEmpty()) return false;
-		if(stack.is(PItemTags.BANNED_FROM_PACKAGE_MAKER)) return false;
+		if(stack.is(PTags.BANNED_FROM_PACKAGE_MAKER)) return false;
 		return stack.getItem() instanceof DyeItem;
 	}
 	
 	public static boolean matchesExtraSlot(ItemStack stack) {
 		if(stack.isEmpty()) return false;
-		else return stack.is(PItemTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING);
+		else return stack.is(PTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING);
 	}
 	
 	//Static because it's called from PackageMakerScreen, which doesn't have a blockentity available, to show the preview slot

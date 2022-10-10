@@ -95,6 +95,12 @@ public class PackageBlock extends Block implements EntityBlock {
 	}
 	
 	@Override
+	public void neighborChanged(BlockState state, Level level, BlockPos pos, Block fromBlock, BlockPos fromPos, boolean moved) {
+		super.neighborChanged(state, level, pos, fromBlock, fromPos, moved);
+		if(level.getBlockEntity(pos) instanceof PackageBlockEntity pkg) pkg.updateStickyStack();
+	}
+	
+	@Override
 	public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
 		super.playerWillDestroy(world, pos, state, player);
 		

@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.client;
 
-import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.client.PackageActionBinding.MainTrigger;
@@ -49,7 +48,6 @@ public class PClientBlockEventHandlers {
 		} else return false;
 	}
 	
-	//TODO This is probably really janky, yo ucan tell it was mechanically ported from fabric api callbacks
 	public static void onInitializeClient(ClientPlatformSupport plat) {
 		plat.installEarlyClientsideLeftClickCallback((player, level, pos, direction) -> {
 			if(!canAttack(player, level, pos, direction)) return false;

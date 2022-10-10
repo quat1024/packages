@@ -111,7 +111,7 @@ public class PackageContainer implements Container {
 	//Whether you're ever allowed to put this item into a Package.
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean allowedInPackageAtAll(ItemStack stack) {
-		if(stack.is(PItemTags.BANNED_FROM_PACKAGE)) return false;
+		if(stack.is(PTags.BANNED_FROM_PACKAGE)) return false;
 		
 		boolean checkCanFitInsideContainerItems = true;
 		if(stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock) {

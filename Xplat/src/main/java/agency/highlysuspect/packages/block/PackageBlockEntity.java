@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import agency.highlysuspect.packages.net.PackageAction;
@@ -9,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
@@ -47,6 +49,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	private PackageStyle style = PackageStyle.ERROR_LOL;
 	private final PackageContainer container = new PackageContainer().addListener(c -> this.setChanged());
+	private ItemStack stickyStack = ItemStack.EMPTY;
 	
 	private Component customName;
 	
@@ -60,6 +63,44 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	public PackageContainer getContainer() {
 		return container;
+	}
+	
+	//Stickiness
+	public boolean canBeSticky() {
+		if(level == null) return false;
+		
+		for(Direction dir : Direction.values()) {
+			if(level.getBlockState(getBlockPos().relative(dir)).is(PTags.STICKY)) return true;
+		}
+		return false;
+	}
+	
+	public void updateStickyStack() {
+		boolean anythingChanged = updateStickyStack0();
+		if(anythingChanged) setChanged();
+	}
+	
+	//Returns whether the sticky stack changed. A little caution is needed because updateStickyStack0 is called from setChanged...
+	//this is because containers call setChanged when they change the contents, and if the stickystack is empty i need to watch for
+	//items to be added to the container.
+	private boolean updateStickyStack0() {
+		//If the package is not allowed to be sticky, clear the sticky stack
+		if(!canBeSticky()) {
+			stickyStack = ItemStack.EMPTY;
+			return true;
+		}
+		
+		//If the package is allowed to be sticky, but doesn't have a filter stack, pick one.
+		//Empty containers will return ItemStack.EMPTY here
+		if(stickyStack.isEmpty()) {
+			stickyStack = container.getFilterStack().copy();
+			return !stickyStack.isEmpty(); //return whether i picke dup a new sticky stack
+		}
+		return false;
+	}
+	
+	public ItemStack getStickyStack() {
+		return stickyStack;
 	}
 	
 	//<editor-fold desc="Interactions">
@@ -270,12 +311,20 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
+		if(!stickyStack.isEmpty() && !ItemStack.isSameItemSameTags(stickyStack, stack)) return false;
 		return container.canPlaceItem(slot, stack);
 	}
 	
 	@Override
 	public void clearContent() {
 		container.clearContent();
+	}
+	
+	@Override
+	public void setChanged() {
+		updateStickyStack0();
+		super.setChanged();
+		if(level != null && !level.isClientSide) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 	}
 	//</editor-fold>
 	
@@ -306,6 +355,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	//</editor-fold>
 	
 	//<editor-fold desc="RenderAttachmentBlockEntity">
+	@SuppressWarnings("unused")
 	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
 	public Object getRenderAttachmentData() {
 		return getStyle();
@@ -317,7 +367,11 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	public void saveAdditional(CompoundTag tag) {
 		tag.put(PackageContainer.KEY, container.toTag());
 		tag.put(PackageStyle.KEY, style.toTag());
+		
 		if(customName != null) tag.putString("CustomName", Component.Serializer.toJson(customName));
+		
+		tag.put("StickyStack", stickyStack.save(new CompoundTag()));
+		
 		super.saveAdditional(tag);
 	}
 	
@@ -326,14 +380,11 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		super.load(tag);
 		container.readFromTag(tag.getCompound(PackageContainer.KEY));
 		style = PackageStyle.fromTag(tag.getCompound(PackageStyle.KEY));
+		
 		if(tag.contains("CustomName", 8)) customName = Component.Serializer.fromJson(tag.getString("CustomName"));
 		else customName = null;
-	}
-	
-	@Override
-	public void setChanged() {
-		super.setChanged();
-		if(level != null && !level.isClientSide) level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+		
+		stickyStack = ItemStack.of(tag.getCompound("StickyStack"));
 	}
 	
 	@Nullable

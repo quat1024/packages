@@ -5,7 +5,7 @@ import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.container.PMenuTypes;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;
-import agency.highlysuspect.packages.junk.PItemTags;
+import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.SidedProxy;
 import agency.highlysuspect.packages.net.PNetCommon;
@@ -42,7 +42,7 @@ public abstract class Packages {
 		PItems.onInitialize(plat);
 		
 		PDispenserBehaviors.onInitialize(plat);
-		PItemTags.onInitialize();
+		PTags.onInitialize();
 		
 		PMenuTypes.onInitialize(plat);
 		PNetCommon.onInitialize(plat);
