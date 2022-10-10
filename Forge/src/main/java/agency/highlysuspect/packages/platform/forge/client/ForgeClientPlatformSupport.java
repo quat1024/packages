@@ -6,6 +6,7 @@ import agency.highlysuspect.packages.platform.ClientPlatformConfig;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import agency.highlysuspect.packages.platform.PlatformSupport;
 import agency.highlysuspect.packages.platform.forge.ForgeInit;
+import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageMakerModel;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
@@ -57,7 +58,7 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 	public void setupCustomModelLoaders() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelRegistryEvent e) -> {
 			ModelLoaderRegistry.registerLoader(ForgePackageModel.Loader.ID, new ForgePackageModel.Loader());
-			//TODO package maker model too, i gotta figure out one before doing both though lol
+			ModelLoaderRegistry.registerLoader(ForgePackageMakerModel.Loader.ID, new ForgePackageMakerModel.Loader());
 		});
 		
 		//Forge's model system (IModelGeometry) cannot specify dependencies between models.

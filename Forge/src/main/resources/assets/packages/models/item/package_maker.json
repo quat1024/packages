@@ -1,0 +1,4 @@
+{
+	"parent": "minecraft:block/block",
+	"loader": "packages:forge_package_maker_model_loader"
+}

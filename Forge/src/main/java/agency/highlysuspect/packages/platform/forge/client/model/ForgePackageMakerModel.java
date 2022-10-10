@@ -1,15 +1,13 @@
 package agency.highlysuspect.packages.platform.forge.client.model;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.block.PackageBlock;
-import agency.highlysuspect.packages.block.PackageBlockEntity;
+import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.client.PackageModelBakery;
-import agency.highlysuspect.packages.junk.PackageStyle;
+import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
@@ -27,7 +25,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.IModelConfiguration;
@@ -45,13 +42,13 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 
-public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
-	protected static final ModelProperty<PackageStyle> STYLE_PROPERTY = new ModelProperty<>();
+public class ForgePackageMakerModel implements IModelGeometry<ForgePackageMakerModel> {
+	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
 	
 	protected static final ModelProperty<BlockAndTintGetter> BATG_PROPERTY = new ModelProperty<>(); //To support getParticleIcon.
 	protected static final ModelProperty<BlockPos> BLOCKPOS_PROPERTY = new ModelProperty<>();//To support getParticleIcon.
 	
-	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package")) {
+	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker")) {
 		@Override
 		public PackageModelBakery<List<BakedQuad>> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
 			return new BakedQuadPackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
@@ -79,7 +76,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 				@Nullable
 				@Override
 				public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
-					return itemCache.bake(PackageStyle.fromItemStack(stack));
+					return itemCache.bake((PackageMakerStyle) null);
 				}
 			};
 		}
@@ -95,7 +92,7 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 		@NotNull
 		@Override
 		public IModelData getModelData(@NotNull BlockAndTintGetter level, @NotNull BlockPos pos, @NotNull BlockState state, @NotNull IModelData modelData) {
-			if(level.getBlockEntity(pos) instanceof PackageBlockEntity be) {
+			if(level.getBlockEntity(pos) instanceof PackageMakerBlockEntity be) {
 				//Do not fall for the forbidden fruit of IModelData#setModel. It does nothing
 				return new ModelDataMap.Builder()
 					.withInitial(STYLE_PROPERTY, be.getStyle())
@@ -109,28 +106,13 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 		@NotNull
 		@Override
 		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull Random rand, @NotNull IModelData extraData) {
-			PackageStyle style = extraData.hasProperty(STYLE_PROPERTY) ? extraData.getData(STYLE_PROPERTY) : PackageStyle.ERROR_LOL;
+			PackageMakerStyle style = extraData.hasProperty(STYLE_PROPERTY) ? extraData.getData(STYLE_PROPERTY) : PackageMakerStyle.NIL;
 			
 			//This shoudn't happen because I checked hasProperty, but forge javadocs specifically note that
 			//hasProperty does not imply getData will return nonnull. Ok, sure.
-			if(style == null) style = PackageStyle.ERROR_LOL;
+			if(style == null) style = PackageMakerStyle.NIL;
 			
 			return factory.bake(style);
-		}
-		
-		//Nice Forge API for overriding particle textures from your baked model. This is cool!
-		//This is implemented on Fabric using a couple of mixins (see "particleslol").
-		//Only thing with this API is it's kind of hard to get access to level/pos,
-		//but that's only important if you call into someone else's implementation
-		@Override
-		public TextureAtlasSprite getParticleIcon(@NotNull IModelData data) {
-			PackageStyle style = data.getData(STYLE_PROPERTY);
-			BlockAndTintGetter batg = data.getData(BATG_PROPERTY);
-			BlockPos pos = data.getData(BLOCKPOS_PROPERTY);
-			
-			if(batg instanceof Level level && pos != null && style != null && !(style.innerBlock() instanceof PackageBlock)) {
-				return Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getTexture(style.innerBlock().defaultBlockState(), level, pos);
-			} else return super.getParticleIcon(data);
 		}
 		
 		@Override
@@ -139,17 +121,17 @@ public class ForgePackageModel implements IModelGeometry<ForgePackageModel> {
 		}
 	}
 	
-	public static class Loader implements IModelLoader<ForgePackageModel> {
-		public static final ResourceLocation ID = Packages.id("forge_package_model_loader");
+	public static class Loader implements IModelLoader<ForgePackageMakerModel> {
+		public static final ResourceLocation ID = Packages.id("forge_package_maker_model_loader");
 		
 		@Override
-		public ForgePackageModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
-			return new ForgePackageModel();
+		public ForgePackageMakerModel read(JsonDeserializationContext deserializationContext, JsonObject modelContents) {
+			return new ForgePackageMakerModel();
 		}
 		
 		@Override
 		public void onResourceManagerReload(ResourceManager mgr) {
-			//The old ForgePackageModel and all caches derived from it should safely get garbage collected.
+			//The old ForgePackageMakerModel and all caches derived from it should safely get garbage collected.
 		}
 	}
 }

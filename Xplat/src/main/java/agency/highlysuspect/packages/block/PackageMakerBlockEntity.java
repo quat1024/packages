@@ -163,6 +163,10 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	@SuppressWarnings("unused") //Fabric implements RenderAttachmentBlockEntity on all BlockEntities.
 	@SoftImplement("net.fabricmc.fabric.api.rendering.data.v1.RenderAttachmentBlockEntity")
 	public @Nullable Object getRenderAttachmentData() {
+		return getStyle();
+	}
+	
+	public PackageMakerStyle getStyle() {
 		ItemStack frameStack = inv.get(FRAME_SLOT);
 		ItemStack innerStack = inv.get(INNER_SLOT);
 		ItemStack dyeStack = inv.get(DYE_SLOT);

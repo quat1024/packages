@@ -34,7 +34,12 @@ public class FrapiMeshPackageModel implements UnbakedModel {
 	public static final ResourceLocation BLOCK_SPECIAL = Packages.id("special/package");
 	public static final ResourceLocation ITEM_SPECIAL = Packages.id("item/package");
 	
-	private final PackageModelBakery.Factory<Mesh> bakeryFactory = new FrapiMeshModelBakeryFactory(Packages.id("block/package"));
+	private final PackageModelBakery.Factory<Mesh> bakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package")) {
+		@Override
+		public PackageModelBakery<Mesh> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
+			return new FrapiMeshModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
+		}
+	};
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
