@@ -9,9 +9,8 @@ version="${version}"
 displayName="Packages"
 displayURL="https://github.com/quat1024/packages/"
 logoFile="packages-icon.png"
-credits="The opinionated storage mod. Worse Barrels descendant."
 authors="quaternary"
-description="Mobs don't attack players, or maybe they do! Configurable."
+description="The opinionated storage mod. Worse Barrels descendant. Now on Forge!"
 
 [[dependencies.packages]]
 modId="minecraft"
