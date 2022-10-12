@@ -16,5 +16,5 @@ rootProject.name = "packages"
 include(
 	"Xplat",
 	"Fabric",
-	"Forge"
+//	"Forge"
 )
