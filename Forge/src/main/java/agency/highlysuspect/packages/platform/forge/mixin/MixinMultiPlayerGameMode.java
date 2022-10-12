@@ -22,7 +22,7 @@ public class MixinMultiPlayerGameMode {
 	
 	@Inject(
 		method = "startDestroyBlock",
-		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;sendBlockAction(Lnet/minecraft/network/protocol/game/ServerboundPlayerActionPacket$Action;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", ordinal = 0),
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startPrediction(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/client/multiplayer/prediction/PredictiveAction;)V", ordinal = 0),
 		cancellable = true
 	)
 	private void packages$startDestroyBlock$creativeBreakBeforePacketSentToServer(BlockPos pos, Direction dir, CallbackInfoReturnable<Boolean> cir) {
@@ -31,7 +31,7 @@ public class MixinMultiPlayerGameMode {
 	
 	@Inject(
 		method = "continueDestroyBlock",
-		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;sendBlockAction(Lnet/minecraft/network/protocol/game/ServerboundPlayerActionPacket$Action;Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)V", ordinal = 0),
+		at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startPrediction(Lnet/minecraft/client/multiplayer/ClientLevel;Lnet/minecraft/client/multiplayer/prediction/PredictiveAction;)V", ordinal = 0),
 		cancellable = true
 	)
 	private void packages$continueDestroyBlock$creativeBreakBeforePacketSentToServer(BlockPos pos, Direction dir, CallbackInfoReturnable<Boolean> cir) {

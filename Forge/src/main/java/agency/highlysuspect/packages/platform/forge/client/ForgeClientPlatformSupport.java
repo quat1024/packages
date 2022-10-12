@@ -29,10 +29,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
-import net.minecraftforge.client.model.ForgeModelBakery;
-import net.minecraftforge.client.model.ModelLoaderRegistry;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
@@ -56,16 +54,16 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 	
 	@Override
 	public void setupCustomModelLoaders() {
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelRegistryEvent e) -> {
-			ModelLoaderRegistry.registerLoader(ForgePackageModel.Loader.ID, new ForgePackageModel.Loader());
-			ModelLoaderRegistry.registerLoader(ForgePackageMakerModel.Loader.ID, new ForgePackageMakerModel.Loader());
+		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelEvent.RegisterGeometryLoaders e) -> {
+			e.register(ForgePackageModel.Loader.ID.getPath(), new ForgePackageModel.Loader());
+			e.register(ForgePackageMakerModel.Loader.ID.getPath(), new ForgePackageMakerModel.Loader());
 		});
 		
-		//Forge's model system (IModelGeometry) cannot specify dependencies between models.
+		//Forge's model system (IUnbakedGeometry) cannot specify dependencies between models.
 		//Its documentation states that it's a superset of UnbakedModel; this is a lie and we need to help it along here
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelRegistryEvent e) -> {
-			ForgeModelBakery.addSpecialModel(Packages.id("block/package"));
-			ForgeModelBakery.addSpecialModel(Packages.id("block/package_maker"));
+		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelEvent.RegisterAdditional e) -> {
+			e.register(Packages.id("block/package"));
+			e.register(Packages.id("block/package_maker"));
 		});
 	}
 	
@@ -125,7 +123,8 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		renderTypesToRegister.put(block, type);
 	}
 	
-	private void actuallySetRenderTypes(ModelRegistryEvent e) {
+	@SuppressWarnings("removal") //ItemBlockRenderTypes is deprecated in favor of some bespoke forge json bullshit. No thanks.
+	private void actuallySetRenderTypes(FMLClientSetupEvent e) {
 		renderTypesToRegister.forEach((handle, layer) -> ItemBlockRenderTypes.setRenderLayer(handle.get(), layer));
 	}
 	
@@ -173,10 +172,10 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		//Still, let's try to be good netizens and use the standard LeftClickBlock event in noncreative.
 		//In non creative gamemodes it works just fine for my purposes.
 		MinecraftForge.EVENT_BUS.addListener((PlayerInteractEvent.LeftClickBlock event) -> {
-			if(event.isCanceled() || event.getSide() != LogicalSide.CLIENT || event.getPlayer().isSpectator()) return;
-			if(event.getPlayer().isCreative()) return; //Creative mode handled via mixin
+			if(event.isCanceled() || event.getSide() != LogicalSide.CLIENT || event.getEntity().isSpectator()) return;
+			if(event.getEntity().isCreative()) return; //Creative mode handled via mixin
 			
-			InteractionResult r = callback.interact(event.getPlayer(), event.getWorld(), event.getHand(), event.getPos(), event.getFace());
+			InteractionResult r = callback.interact(event.getEntity(), event.getLevel(), event.getHand(), event.getPos(), event.getFace());
 			if(r.consumesAction()) {
 				event.setCanceled(true);
 				event.setCancellationResult(InteractionResult.CONSUME);
@@ -193,7 +192,7 @@ public class ForgeClientPlatformSupport implements ClientPlatformSupport {
 		//There's a line of code in MultiPlayerGameMode#useItemOn that sends a use-item packet when the event *is* cancelled.
 		//This honestly just seems like a mistake, or poor api design that I can't wrap my head around.
 		
-		MinecraftForge.EVENT_BUS.addListener((InputEvent.ClickInputEvent event) -> {
+		MinecraftForge.EVENT_BUS.addListener((InputEvent.InteractionKeyMappingTriggered event) -> {
 			if(event.isCanceled() || !event.isUseItem()) return;
 			
 			Minecraft minecraft = Minecraft.getInstance();
