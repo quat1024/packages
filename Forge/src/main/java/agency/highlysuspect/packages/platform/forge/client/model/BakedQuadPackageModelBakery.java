@@ -12,15 +12,16 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.EmptyModelData;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class BakedQuadPackageModelBakery implements PackageModelBakery<List<BakedQuad>> {
@@ -45,14 +46,14 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 		
 		BlockRenderDispatcher mgr = Minecraft.getInstance().getBlockRenderer();
 		@Nullable BlockState frameState = frameBlock == null ? null : frameBlock.defaultBlockState();
-		@Nullable TextureAtlasSprite frameSprite = frameState == null ? null : mgr.getBlockModel(frameState).getParticleIcon(EmptyModelData.INSTANCE);
+		@Nullable TextureAtlasSprite frameSprite = frameState == null ? null : mgr.getBlockModel(frameState).getParticleIcon(ModelData.EMPTY);
 		
 		@Nullable BlockState innerState = innerBlock == null ? null : innerBlock.defaultBlockState();
-		@Nullable TextureAtlasSprite innerSprite = innerState == null ? null : mgr.getBlockModel(innerState).getParticleIcon(EmptyModelData.INSTANCE);
+		@Nullable TextureAtlasSprite innerSprite = innerState == null ? null : mgr.getBlockModel(innerState).getParticleIcon(ModelData.EMPTY);
 		
-		Random random = new Random(42);
+		RandomSource random = new LegacyRandomSource(42);
 		for(Direction cullFace : PUtil.DIRECTIONS_AND_NULL) {
-			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random, EmptyModelData.INSTANCE)) {
+			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random, ModelData.EMPTY, null)) {
 				if(quad.getTintIndex() == 1) {
 					if(faceColor != null) {
 						int tint = 0xFF000000 | faceColor.getMaterialColor().col;

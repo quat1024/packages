@@ -23,7 +23,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -40,7 +39,7 @@ public class ForgePlatformSupport implements PlatformSupport {
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
 	
 	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.
-	private <T extends IForgeRegistryEntry<T>> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
+	private <T> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
 		IForgeRegistry<T> registrySpicy = RegistryManager.ACTIVE.getRegistry(((Registry<T>) reg).key());
 		
 		return (DeferredRegister<T>) deferredRegistries.computeIfAbsent(reg, __ -> {
@@ -50,12 +49,11 @@ public class ForgePlatformSupport implements PlatformSupport {
 		});
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
 		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces one modid per DeferredRegister");
 		
-		RegistryObject<T> obj = ((DeferredRegister<T>) getDeferredRegister(registry)).register(id.getPath(), thingMaker);
+		RegistryObject<T> obj = (getDeferredRegister(registry)).register(id.getPath(), thingMaker);
 		return new RegistryObjectRegistryHandle<>(obj);
 	}
 	
