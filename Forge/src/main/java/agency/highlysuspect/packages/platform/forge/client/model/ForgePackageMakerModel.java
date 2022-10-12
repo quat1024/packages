@@ -43,7 +43,7 @@ import java.util.function.Function;
 public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMakerModel> {
 	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
 	
-	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package")) {
+	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker")) {
 		@Override
 		public PackageModelBakery<List<BakedQuad>> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
 			return new BakedQuadPackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);

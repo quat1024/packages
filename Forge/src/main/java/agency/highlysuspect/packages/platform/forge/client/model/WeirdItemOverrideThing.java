@@ -2,10 +2,12 @@ package agency.highlysuspect.packages.platform.forge.client.model;
 
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.client.PackagesClient;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
@@ -42,6 +44,17 @@ public abstract class WeirdItemOverrideThing extends ItemOverrides {
 					@Override
 					public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
 						return rehreh;
+					}
+					
+					@Override
+					public BakedModel applyTransform(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+						super.applyTransform(cameraTransformType, poseStack, applyLeftHandTransform);
+						return this; //Or else Forge throws away all the work i put in to making a nontrivial BakedModelWrapper.
+					}
+					
+					@Override
+					public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
+						return List.of(this); //THIS ONE TOO, in 1.19
 					}
 					
 					@Override
