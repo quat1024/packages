@@ -1,0 +1,21 @@
+modLoader="javafml"
+loaderVersion="[38,)"
+license="LGPL-3.0-or-later"
+issueTrackerURL="https://github.com/quat1024/packages/issues"
+
+[[mods]]
+modId="packages"
+version="${version}"
+displayName="Packages"
+displayURL="https://github.com/quat1024/packages/"
+logoFile="packages-icon.png"
+credits="The opinionated storage mod. Worse Barrels descendant."
+authors="quaternary"
+description="Mobs don't attack players, or maybe they do! Configurable."
+
+[[dependencies.packages]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.18,1.19)"
+ordering="NONE"
+side="BOTH"

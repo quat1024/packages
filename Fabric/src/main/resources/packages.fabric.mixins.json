@@ -1,0 +1,18 @@
+{
+	"required": true,
+	"package": "agency.highlysuspect.packages.platform.fabric.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"mixins": [
+		"particleslol.MixinEntity",
+		"particleslol.MixinLivingEntity"
+	],
+	"client": [
+		"MixinMinecraft",
+		"particleslol.AccessorTextureSheetParticle",
+		"particleslol.MixinTerrainParticle"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"refmap": "packages.refmap.json"
+}

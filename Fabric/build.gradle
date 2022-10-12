@@ -1,0 +1,77 @@
+plugins {
+	id 'fabric-loom' version '1.0-SNAPSHOT'
+	id 'maven-publish'
+}
+
+archivesBaseName = "${rootProject.name}-fabric-${project.minecraftVersion}"
+
+repositories {
+	maven {
+		url "https://maven.vram.io/"
+		content { includeGroup("io.vram") }
+	}
+	maven {
+		url "https://maven.terraformersmc.com/"
+		content { includeGroup("com.terraformersmc") } //Grondaaaaag, canvas transitively deps on modmenu
+	}
+	maven {
+		url "https://api.modrinth.com/maven"
+		content { includeGroup "maven.modrinth" }
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
+	
+	implementation project(":Xplat") //funny xplat
+	
+	def runWithCanvas = false
+	def runWithSodium = false
+	
+	if(runWithCanvas) {
+		modImplementation "io.vram:frex-fabric-mc118:6.0.263"
+		modLocalRuntime "io.vram:canvas-fabric-mc118:1.0.2397"
+	} else {
+		modCompileOnly "io.vram:frex-fabric-mc118:6.0.263"
+	}
+	
+	if(runWithSodium) {
+		//TODO: it's broken for some reason and doesn't load the joml jar in jar
+		//modLocalRuntime "maven.modrinth:sodium:mc1.18.2-0.4.1"
+	}
+}
+
+//funny xplat
+processResources {
+	from project(":Xplat").sourceSets.main.resources
+}
+
+tasks.withType(JavaCompile) {
+	source(project(":Xplat").sourceSets.main.allSource)
+}
+
+//loom doesn't generate run configs by default in subprojects
+loom {
+	runs {
+		client {
+			client()
+			setConfigName("Fabric Client")
+			ideConfigGenerated(true)
+			runDir("run")
+		}
+		server {
+			server()
+			setConfigName("Fabric Server")
+			ideConfigGenerated(true)
+			runDir("run")
+		}
+	}
+	
+	//nor can it figure out the refmap name in this situation
+	mixin {
+		defaultRefmapName = "${project.modName}.refmap.json"
+	}
+}

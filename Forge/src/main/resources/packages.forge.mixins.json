@@ -1,0 +1,15 @@
+{
+	"required": true,
+	"package": "agency.highlysuspect.packages.platform.forge.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"mixins": [
+	],
+	"client": [
+		"MixinMinecraft",
+		"MixinMultiPlayerGameMode"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"refmap": "packages.refmap.json"
+}

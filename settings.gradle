@@ -1,10 +1,20 @@
 pluginManagement {
-    repositories {
-        jcenter()
-        maven {
-            name = 'Fabric'
-            url = 'https://maven.fabricmc.net/'
-        }
-        gradlePluginPortal()
-    }
+	repositories {
+		gradlePluginPortal()
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		maven {
+			name = 'Sponge Snapshots'
+			url = 'https://repo.spongepowered.org/repository/maven-public/'
+		}
+	}
 }
+
+rootProject.name = "packages"
+include(
+	"Xplat",
+	"Fabric",
+	"Forge"
+)
