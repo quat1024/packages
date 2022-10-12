@@ -32,10 +32,10 @@ dependencies {
 	def runWithSodium = false
 	
 	if(runWithCanvas) {
-		modImplementation "io.vram:frex-fabric-mc118:6.0.263"
-		modLocalRuntime "io.vram:canvas-fabric-mc118:1.0.2397"
+		modImplementation "io.vram:frex-fabric-mc119:6.1.301"
+		modLocalRuntime "io.vram:canvas-fabric-mc119:1.0.2487"
 	} else {
-		modCompileOnly "io.vram:frex-fabric-mc118:6.0.263"
+		modCompileOnly "io.vram:frex-fabric-mc119:6.1.301"
 	}
 	
 	if(runWithSodium) {
