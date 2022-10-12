@@ -71,7 +71,7 @@ public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMake
 				@Nullable
 				@Override
 				public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk) {
-					return itemCache.bake((PackageMakerStyle) null);
+					return itemModelMaker.bake((PackageMakerStyle) null);
 				}
 			};
 		}

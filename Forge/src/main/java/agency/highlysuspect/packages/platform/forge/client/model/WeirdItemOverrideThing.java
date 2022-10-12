@@ -33,45 +33,56 @@ public abstract class WeirdItemOverrideThing extends ItemOverrides {
 			
 			@Override
 			public BakedModel bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-				//uhh it should be good to share the factory instance.... hm
-				List<BakedQuad> rehreh = factory.bake(cacheKey, faceColor, frameBlock, innerBlock);
-				return new BakedModelWrapper<>(getBaseModel()) {
-					@Override
-					public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
-						return rehreh;
-					}
-					
-					@Override
-					public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
-						return rehreh;
-					}
-					
-					@Override
-					public BakedModel applyTransform(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack, boolean applyLeftHandTransform) {
-						super.applyTransform(cameraTransformType, poseStack, applyLeftHandTransform);
-						return this; //Or else Forge throws away all the work i put in to making a nontrivial BakedModelWrapper.
-					}
-					
-					@Override
-					public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
-						return List.of(this); //THIS ONE TOO, in 1.19
-					}
-					
-					@Override
-					public ItemOverrides getOverrides() {
-						return ItemOverrides.EMPTY;
-					}
-				};
+				return new EpicModel(getBaseModel(), factory.bake(cacheKey, faceColor, frameBlock, innerBlock));
 			}
 		};
 		
 		if(PackagesClient.instance.config.cacheMeshes) bakeybake = new PackageModelBakery.Caching<>(bakeybake);
-		this.itemCache = bakeybake;
+		this.itemModelMaker = bakeybake;
 	}
 	
-	protected final PackageModelBakery<BakedModel> itemCache;
+	protected final PackageModelBakery<BakedModel> itemModelMaker;
 	
+	//This is the magic method from ItemOverrides. Implementations should draw models out of itemModelMaker.
 	@Nullable
 	@Override
 	public abstract BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity player, int idk);
+	
+	private static class EpicModel extends BakedModelWrapper<BakedModel> {
+		public EpicModel(BakedModel originalModel, List<BakedQuad> quads) {
+			super(originalModel);
+			this.quads = quads;
+		}
+		
+		private final List<BakedQuad> quads;
+		private final List<BakedModel> thisButList = List.of(this);
+		
+		@Override
+		public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, RandomSource rand) {
+			return quads;
+		}
+		
+		@Override
+		public @NotNull List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @NotNull RandomSource rand, @NotNull ModelData extraData, @Nullable RenderType renderType) {
+			return quads;
+		}
+		
+		@Override
+		public ItemOverrides getOverrides() {
+			return ItemOverrides.EMPTY;
+		}
+		
+		@Override
+		public BakedModel applyTransform(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+			//Have to override this or Forge throws away all your work making a nontrivial BakedModelWrapper.
+			super.applyTransform(cameraTransformType, poseStack, applyLeftHandTransform);
+			return this;
+		}
+		
+		@Override
+		public List<BakedModel> getRenderPasses(ItemStack itemStack, boolean fabulous) {
+			//This one too.
+			return thisButList;
+		}
+	}
 }
