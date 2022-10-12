@@ -12,6 +12,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
@@ -33,8 +34,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.PushReaction;
-
-import java.util.Random;
 
 public class PackageBlock extends Block implements EntityBlock {
 	public PackageBlock(Properties settings) {
@@ -106,7 +105,7 @@ public class PackageBlock extends Block implements EntityBlock {
 	}
 	
 	@Override
-	public void animateTick(BlockState state, Level level, BlockPos pos, Random rand) {
+	public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource rand) {
 		Direction primaryFacing = state.getValue(FACING).primaryDirection;
 		if(rand.nextInt(primaryFacing == Direction.UP ? 15 : 5) == 0 && level.getBlockEntity(pos) instanceof PackageBlockEntity pkg && pkg.isSticky()) {
 			float minX = pos.getX() - 0.003f;

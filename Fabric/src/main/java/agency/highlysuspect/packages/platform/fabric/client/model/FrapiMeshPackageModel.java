@@ -16,12 +16,12 @@ import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collection;
-import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -70,14 +70,14 @@ public class FrapiMeshPackageModel implements UnbakedModel {
 		}
 		
 		@Override
-		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<Random> randomSupplier, RenderContext context) {
+		public void emitBlockQuads(BlockAndTintGetter blockView, BlockState state, BlockPos pos, Supplier<RandomSource> randomSupplier, RenderContext context) {
 			if(((RenderAttachedBlockView) blockView).getBlockEntityRenderAttachment(pos) instanceof PackageStyle style) {
 				context.meshConsumer().accept(bakery.bake(style));
 			}
 		}
 		
 		@Override
-		public void emitItemQuads(ItemStack stack, Supplier<Random> randomSupplier, RenderContext context) {
+		public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
 			context.meshConsumer().accept(bakery.bake(PackageStyle.fromItemStack(stack)));
 		}
 	}

@@ -1,9 +1,9 @@
 package agency.highlysuspect.packages.platform.fabric.client.model;
 
 import agency.highlysuspect.packages.block.PBlocks;
-import agency.highlysuspect.packages.platform.fabric.compat.frex.FrexCompat;
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PUtil;
+import agency.highlysuspect.packages.platform.fabric.compat.frex.FrexCompat;
 import net.fabricmc.fabric.api.renderer.v1.Renderer;
 import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
@@ -17,12 +17,12 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Random;
 
 @SuppressWarnings("ClassCanBeRecord")
 public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
@@ -54,8 +54,8 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 		
 		@Nullable BlockState innerState = innerBlock == null ? null : innerBlock.defaultBlockState();
 		@Nullable TextureAtlasSprite innerSprite = innerState == null ? null : mgr.getBlockModel(innerState).getParticleIcon();
-		
-		Random random = new Random(42);
+	
+		RandomSource random = new LegacyRandomSource(42);
 		for(Direction cullFace : PUtil.DIRECTIONS_AND_NULL) {
 			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random)) {
 				emitter.fromVanilla(quad, null, cullFace);
