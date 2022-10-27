@@ -1,11 +1,24 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.block.PackageBlockEntity;
+import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.items.wrapper.SidedInvWrapper;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @Mod("packages")
 public class ForgeInit extends Packages {
@@ -25,5 +38,26 @@ public class ForgeInit extends Packages {
 				throw new RuntimeException("Packages had a problem initializing ForgeClientInit", e);
 			}
 		}
+		
+		//Funny moments.
+		//Apparently Forge doesn't automagically wrap Containers with IItemHandlers anymore, that's a bit annoying.
+		//Oh well, I think doing a bespoke implementation is fine anyway.
+		MinecraftForge.EVENT_BUS.addGenericListener(BlockEntity.class, (AttachCapabilitiesEvent<BlockEntity> e) -> {
+			if(e.getObject() instanceof PackageBlockEntity pkg) {
+				e.addCapability(Packages.id("a"), new ICapabilityProvider() {
+					@Override
+					public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+						return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new PackageItemHandler(pkg.getContainer())).cast());
+					}
+				});
+			} else if(e.getObject() instanceof PackageMakerBlockEntity pmbe) {
+				e.addCapability(Packages.id("b"), new ICapabilityProvider() {
+					@Override
+					public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+						return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new SidedInvWrapper(pmbe, side)));
+					}
+				});
+			}
+		});
 	}
 }
