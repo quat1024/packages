@@ -135,23 +135,21 @@ public class PackageItem extends BlockItem {
 		//instead of putting one inside the other. They can always be nested in-world.
 		if(ItemStack.isSameItemSameTags(me, other)) return false;
 		
-		return PackageContainer.mutateItemStack(me, container -> {
+		else return PackageContainer.mutateItemStack(me, container -> {
 			if(other.isEmpty() && !container.isEmpty()) {
 				//The package contains items, but the slot is empty. Take one stack of items from the package and deposit it into the slot.
-				doDeposit(player, container, slot, container.getFilterStack().getMaxStackSize());
-				return true;
+				return dropIntoSlot(player, container, slot);
 			} else if(!other.isEmpty()) {
 				//The slot is not empty. Try to sponge up items from the slot into the package.
-				boolean absorbSuccess = doAbsorb(player, container, other);
+				boolean absorbSuccess = absorbFromSlot(player, container, slot);
 				if(absorbSuccess) return true;
 				else if(container.matches(other) && container.isFull()) {
 					//If we're here, we're in a situation where the player clicked a slot that has an item matching the package's contents,
 					//but we couldn't draw any of the items into the package because it was full.
-					//In this case, we should replenish the slot's contents with more items from the package. Confirmed, better than bundles lolol gottem
+					//In this case, we should replenish the slot's contents with more items from the package.
 					int remainingSpaceInSlot = Math.max(0, other.getMaxStackSize() - other.getCount());
 					if(remainingSpaceInSlot != 0) {
-						doDeposit(player, container, slot, remainingSpaceInSlot);
-						return true;
+						return dropIntoSlot(player, container, slot);
 					}
 				}
 			}
@@ -168,27 +166,74 @@ public class PackageItem extends BlockItem {
 		//instead of putting one inside the other. They can always be nested in-world.
 		if(ItemStack.isSameItemSameTags(me, other)) return false;
 		
-		return PackageContainer.mutateItemStack(me, container -> {
+		//Otherwise try to eat up those items.
+		else return PackageContainer.mutateItemStack(me, container -> {
 			if(container.matches(other)) {
-				doAbsorb(player, container, other);
+				ItemStack insertionLeftover = container.insert(other, Integer.MAX_VALUE, false);
+				//We can't directly set the ItemStack on the player's cursor, but we can leverage how `insertionLeftover` and
+				//`other` both have the same item and nbt tags.
+				other.setCount(insertionLeftover.getCount());
+				player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
 				return true;
 			}
 			return false;
 		}, false);
 	}
 	
-	private boolean doAbsorb(Player player, PackageContainer container, ItemStack other) {
-		ItemStack insertionLeftover = container.insert(other, Integer.MAX_VALUE, false);
-		if(insertionLeftover.getCount() == other.getCount()) return false;
+	//Mop up items from a slot into the PackageContainer. Always grabs as much as it can.
+	//Assumes that the contents of `slot` can stack with the contents of the PackageContainer.
+	private boolean absorbFromSlot(Player player, PackageContainer container, Slot slot) {
+		if(slot.getItem().isEmpty()) return false;
+		if(!container.matches(slot.getItem())) return false;
 		
-		other.setCount(insertionLeftover.getCount());
-		//Not toggleable by Packages.instance.config.interactionSounds because bundles aren't toggleable either;)
+		int remainingSpaceInPackage = container.getMaxStackSize() * 8 - container.getCount(); //todo break this out into a method on packagecontainer probably
+		
+		//pull it out of the slot... this happens for real, no take backsies past this point
+		//for a slot with !allowModification (which, in practice, is crafting slots) the second argument is used as a threshold.
+		//you can't take less than arg#2 items from an !allowModification slot. this covers cases like, there being one remaining
+		//spot in the package, but the crafting output slot has 4 items in it - it just wont take at all
+		//for all slots the smaller of the two numeric arguments is used as the maximum amount to take. overspecifying won't dupe
+		ItemStack grabbedFromSlot = slot.safeTake(remainingSpaceInPackage, remainingSpaceInPackage, player);
+		if(grabbedFromSlot.isEmpty()) return false;
+		
+		ItemStack insertionLeftover = container.insert(grabbedFromSlot, Integer.MAX_VALUE, false);
+		
+		if(!insertionLeftover.isEmpty()) {
+			//TODO: what happens if `insert` returns nonempty stack? what cases might this come up in?
+			Packages.LOGGER.warn("Non-empty stack (" + insertionLeftover + ") appeared in absorbFromSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this?");
+		}
+		
 		player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
 		return true;
 	}
 	
-	private void doDeposit(Player player, PackageContainer container, Slot slot, int amountToTake) {
-		slot.safeInsert(container.take(amountToTake, false));
-		player.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
+	//Drop a stack of items from a PackageContainer into a slot.
+	private boolean dropIntoSlot(Player player, PackageContainer container, Slot slot) {
+		//really checking if the *slot* matches the *container*, but slot doesnt have a handy method for that
+		if(!container.matches(slot.getItem())) return false;
+		
+		int remainingSpaceInSlot = Math.max(0, slot.getMaxStackSize() - slot.getItem().getCount());
+		if(remainingSpaceInSlot == 0) return false; //No room to add any more items.
+		
+		//Intentionally using getFilterStack().getMaxStackSize() here, instead of PackageContainer#getMaxStackSize(),
+		//because for cases where you have a package of packages, I want to deposit the slot-side concept of "one stack" (all of them)
+		//and not the package's idea of "one stack" (one of them).
+		int oneStackFromPackage = container.getFilterStack().getMaxStackSize();
+		
+		int amountToDrop = Math.min(remainingSpaceInSlot, oneStackFromPackage);
+		ItemStack toPlace = container.take(amountToDrop, true);
+		if(slot.mayPlace(toPlace)) {
+			toPlace = container.take(amountToDrop, false);
+			ItemStack slotInsertionLeftover = slot.safeInsert(toPlace);
+			
+			if(!slotInsertionLeftover.isEmpty()) {
+				//TODO: what happens if `safeInsert` returns nonempty stack? what cases might this come up in?
+				Packages.LOGGER.warn("Non-empty stack (" + slotInsertionLeftover + ") appeared in dropIntoSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this? Thanks.");
+			}
+			
+			player.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
+			return true;
+		}
+		return false;
 	}
 }
