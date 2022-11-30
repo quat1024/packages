@@ -85,19 +85,26 @@ public class PackageItem extends BlockItem {
 			}
 		}
 		
-		PackageStyle style = PackageStyle.fromItemStack(stack);
-		Block frameBlock = style.frameBlock();
-		Block innerBlock = style.innerBlock();
-		if(frameBlock == innerBlock) {
-			tooltip.add(Component.translatable("packages.style_tooltip.both", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+		if(Packages.instance.proxy.hasShiftDownForTooltip()) {
+			PackageStyle style = PackageStyle.fromItemStack(stack);
+			Block frameBlock = style.frameBlock();
+			Block innerBlock = style.innerBlock();
+			if(frameBlock == innerBlock) {
+				tooltip.add(Component.translatable("packages.style_tooltip.both", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+			} else {
+				tooltip.add(Component.translatable("packages.style_tooltip.frame", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+				tooltip.add(Component.translatable("packages.style_tooltip.inner", innerBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+			}
+			
+			DyeColor color = style.color();
+			tooltip.add(Component.translatable("packages.style_tooltip.color",
+				Component.translatable("packages.style_tooltip.color." + color.getSerializedName()).withStyle(s -> s.withColor((color == DyeColor.BLACK ? DyeColor.GRAY : color).getTextColor()).withItalic(true))));
 		} else {
-			tooltip.add(Component.translatable("packages.style_tooltip.frame", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
-			tooltip.add(Component.translatable("packages.style_tooltip.inner", innerBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+			//Lifting this stylization from Create, not out of trying to steal their thunder, more so a modpack has fewer unique kinds of "hold shift for xx" tooltips lol
+			tooltip.add(Component.translatable("packages.style_tooltip.hold_for_composition",
+				Component.translatable("packages.style_tooltip.shift").withStyle(ChatFormatting.DARK_GRAY)
+			).withStyle(ChatFormatting.GRAY));
 		}
-		
-		DyeColor color = style.color();
-		tooltip.add(Component.translatable("packages.style_tooltip.color",
-			Component.translatable("packages.style_tooltip.color." + color.getSerializedName()).withStyle(s -> s.withColor((color == DyeColor.BLACK ? DyeColor.GRAY : color).getTextColor()).withItalic(true))));
 		
 		super.appendHoverText(stack, level, tooltip, mistake);
 	}
