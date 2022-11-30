@@ -49,7 +49,23 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	private final NonNullList<ItemStack> inv = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
 	
+	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesFrameSlot(ItemStack stack) {
+		if(!matchesFrameOrInnerSlotLogic(stack)) return false;
+		if(Packages.instance.config.packageMakerAllowlistMode && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_FRAME)) return false;
+		
+		return true;
+	}
+	
+	@SuppressWarnings("RedundantIfStatement")
+	public static boolean matchesInnerSlot(ItemStack stack) {
+		if(!matchesFrameOrInnerSlotLogic(stack)) return false;
+		if(Packages.instance.config.packageMakerAllowlistMode && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_INNER)) return false;
+		return true;
+	}
+	
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted") //shush
+	private static boolean matchesFrameOrInnerSlotLogic(ItemStack stack) {
 		if(stack.isEmpty()) return false;
 		
 		Item item = stack.getItem();
@@ -59,10 +75,6 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 		Block b = ((BlockItem) item).getBlock();
 		BlockState state = b.defaultBlockState();
 		return state.canOcclude();
-	}
-	
-	public static boolean matchesInnerSlot(ItemStack stack) {
-		return matchesFrameSlot(stack);
 	}
 	
 	public static boolean matchesDyeSlot(ItemStack stack) {

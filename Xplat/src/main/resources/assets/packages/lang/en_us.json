@@ -29,7 +29,10 @@
 	"packages.style_tooltip.color.black": "Black",
 	
 	"packages.contents_tooltip.utimately": "Ultimately contains %s",
-
+	
+	"packages.zzzzzzzzz.hello.1": "(NOTE TO PEOPLE POKING AROUND IN THIS FILE: the number of lines in the below slot-tooltip keys is dynamic.)",
+	"packages.zzzzzzzzz.hello.2": "(if you would like to add more lines, simply add more language keys with increasing numbers.)",
+	"packages.zzzzzzzzz.hello.3": "(setting the language key to the string ZZZ will cause it to act as an end-of-list signal, if you want to make it shorter)",
 	"packages.package_maker.frame": "Frame",
 	"packages.package_maker.frame.1": "Choose a theme for the border of the Package.",
 	"packages.package_maker.frame.2": "Automation can insert from the top.",
@@ -42,7 +45,6 @@
 	"packages.package_maker.extra": "Extra",
 	"packages.package_maker.extra.1": "Add a copper ingot.",
 	"packages.package_maker.extra.2": "Automation can insert from the top or side.",
-	
 	"packages.package_maker.output": "Result",
 	"packages.package_maker.output.1": "Automation can extract from the bottom.",
 	
