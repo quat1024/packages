@@ -10,4 +10,9 @@ public class SidedProxy {
 	public void forceChunkRerender(Level level, BlockPos pos) {
 		//No-op in common code
 	}
+	
+	public boolean hasShiftDownForTooltip() {
+		//Anything sniffing tooltips server-side (I forget if this is safe or not, lol) should get all info
+		return true;
+	}
 }

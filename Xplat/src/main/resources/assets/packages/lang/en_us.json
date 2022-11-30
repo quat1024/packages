@@ -7,6 +7,8 @@
 	"block.packages.package.nonempty.reentrant": "(%s)",
 	"block.packages.package.nonempty.contents": "%sx %s",
 	
+	"packages.style_tooltip.hold_for_composition": "Hold [%s] for Composition",
+	"packages.style_tooltip.shift": "Shift",
 	"packages.style_tooltip.frame": "%s Frame",
 	"packages.style_tooltip.inner": "%s Core",
 	"packages.style_tooltip.both": "%s Frame and Core",
@@ -28,7 +30,7 @@
 	"packages.style_tooltip.color.red": "Red",
 	"packages.style_tooltip.color.black": "Black",
 	
-	"packages.contents_tooltip.utimately": "Ultimately contains %s",
+	"packages.contents_tooltip.utimately": "-> %s",
 	
 	"packages.zzzzzzzzz.hello.1": "(NOTE TO PEOPLE POKING AROUND IN THIS FILE: the number of lines in the below slot-tooltip keys is dynamic.)",
 	"packages.zzzzzzzzz.hello.2": "(if you would like to add more lines, simply add more language keys with increasing numbers.)",

@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.junk.SidedProxy;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
@@ -16,5 +17,10 @@ public class ClientProxy extends SidedProxy {
 				SectionPos.blockToSectionCoord(pos.getZ())
 			);
 		}
+	}
+	
+	@Override
+	public boolean hasShiftDownForTooltip() {
+		return Screen.hasShiftDown();
 	}
 }
