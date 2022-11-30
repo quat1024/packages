@@ -186,7 +186,7 @@ public class PackageItem extends BlockItem {
 		if(slot.getItem().isEmpty()) return false;
 		if(!container.matches(slot.getItem())) return false;
 		
-		int remainingSpaceInPackage = container.getMaxStackSize() * 8 - container.getCount(); //todo break this out into a method on packagecontainer probably
+		int remainingSpaceInPackage = container.maxStackAmountAllowed(slot.getItem()) * 8 - container.getCount(); //todo break this out into a method on packagecontainer probably
 		
 		//pull it out of the slot... this happens for real, no take backsies past this point
 		//for a slot with !allowModification (which, in practice, is crafting slots) the second argument is used as a threshold.
