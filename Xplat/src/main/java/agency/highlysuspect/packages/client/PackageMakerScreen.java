@@ -76,7 +76,11 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 				
 				for(int k = 1; true; k++) {
 					String line = tooltip + "." + k;
-					if(Language.getInstance().has(line)) toot.add(new TranslatableComponent(line).withStyle(ChatFormatting.DARK_GRAY));
+					if(Language.getInstance().has(line)) {
+						//this lets you make the tooltip have fewer lines using a resourcepack (which can't actually remove lang keys, only override them)
+						if(Language.getInstance().getOrDefault(line).contains("ZZZ")) break;
+						toot.add(new TranslatableComponent(line).withStyle(ChatFormatting.DARK_GRAY));
+					}
 					else break;
 				}
 				

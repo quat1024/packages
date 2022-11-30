@@ -7,6 +7,7 @@ public class PackagesConfig {
 		PackagesConfig cfg = new PackagesConfig();
 		cfg.inventoryInteractions = cfgSource.inventoryInteractions();
 		cfg.interactionSounds = cfgSource.interactionSounds();
+		cfg.packageMakerAllowlistMode = cfgSource.packageMakerAllowlistMode();
 		return cfg;
 	}
 	
@@ -15,4 +16,6 @@ public class PackagesConfig {
 	// (the config situation in this mod is Very Bad)
 	public boolean inventoryInteractions = true;
 	public boolean interactionSounds = true;
+	
+	public boolean packageMakerAllowlistMode = false;
 }

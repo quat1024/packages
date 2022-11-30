@@ -13,6 +13,7 @@ public class FabricCommonPlatformConfig extends AbstractFabricPlatformConfig imp
 		switch(key) {
 			case "inventoryInteractions" -> inventoryInteractions = Boolean.parseBoolean(value);
 			case "interactionSounds" -> interactionSounds = Boolean.parseBoolean(value);
+			case "packageMakerAllowlistMode" -> packageMakerAllowlistMode = Boolean.parseBoolean(value);
 			default -> { return false; }
 		}
 		return true;
@@ -34,7 +35,13 @@ public class FabricCommonPlatformConfig extends AbstractFabricPlatformConfig imp
 			"# Default: true",
 			"interactionSounds = " + interactionSounds,
 			"",
-			"# (Other values have moved to packages-client.cfg! Sorry for the trouble)"
+			"# If 'true', the item tags `packages:allowlist_package_maker_frame` and `packages:allowlist_package_maker_inner`",
+			"# will be read, and only the items specified in those tags will be allowed to enter the Frame and Core slots of",
+			"# the Package Maker. This is mainly for modpackers to mess with; you should also probably add something to the tooltip",
+			"# lang keys (`packages.package_maker.frame.X`, where X is a one-indexed line number) to describe the behavior you create.",
+			"# Default: false",
+			"packageMakerAllowlistMode = " + packageMakerAllowlistMode,
+			""
 		);
 	}
 	
@@ -51,6 +58,8 @@ public class FabricCommonPlatformConfig extends AbstractFabricPlatformConfig imp
 	private boolean inventoryInteractions = true;
 	private boolean interactionSounds = true;
 	
+	private boolean packageMakerAllowlistMode = false;
+	
 	@Override
 	public boolean inventoryInteractions() {
 		return inventoryInteractions;
@@ -59,5 +68,10 @@ public class FabricCommonPlatformConfig extends AbstractFabricPlatformConfig imp
 	@Override
 	public boolean interactionSounds() {
 		return interactionSounds;
+	}
+	
+	@Override
+	public boolean packageMakerAllowlistMode() {
+		return packageMakerAllowlistMode;
 	}
 }

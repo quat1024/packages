@@ -4,6 +4,8 @@ public interface CommonPlatformConfig {
 	boolean inventoryInteractions();
 	boolean interactionSounds();
 	
+	boolean packageMakerAllowlistMode();
+	
 	///
 	
 	/**
