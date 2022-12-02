@@ -103,8 +103,8 @@ public class PackageItem extends BlockItem {
 		} else {
 			//Lifting this stylization from Create, not out of trying to steal their thunder, more so a modpack has fewer unique kinds of "hold shift for xx" tooltips lol
 			tooltip.add(ILoveMojang.translatable("packages.style_tooltip.hold_for_composition",
-				ILoveMojang.translatable("packages.style_tooltip.shift").withStyle(ChatFormatting.DARK_GRAY)
-			).withStyle(ChatFormatting.GRAY));
+				ILoveMojang.translatable("packages.style_tooltip.shift").withStyle(ChatFormatting.GRAY)
+			).withStyle(ChatFormatting.DARK_GRAY));
 		}
 		
 		super.appendHoverText(stack, level, tooltip, mistake);
