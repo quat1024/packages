@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.junk.ILoveMojang;
 import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
@@ -343,7 +344,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	//<editor-fold desc="Nameable">
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE.get().getDescriptionId());
+		return hasCustomName() ? customName : ILoveMojang.translatable(PBlocks.PACKAGE.get().getDescriptionId());
 	}
 	
 	@Override
