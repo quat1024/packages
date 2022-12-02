@@ -178,11 +178,13 @@ public class PackageItem extends BlockItem {
 		else return PackageContainer.mutateItemStack(me, container -> {
 			if(container.matches(other)) {
 				ItemStack insertionLeftover = container.insert(other, Integer.MAX_VALUE, false);
-				//We can't directly set the ItemStack on the player's cursor, but we can leverage how `insertionLeftover` and
-				//`other` both have the same item and nbt tags.
-				other.setCount(insertionLeftover.getCount());
-				player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
-				return true;
+				if(insertionLeftover.getCount() != other.getCount()) { //If the amount of items changed
+					//We can't directly set the ItemStack on the player's cursor, but we can leverage how `insertionLeftover` and
+					//`other` both have the same item and nbt tags.
+					other.setCount(insertionLeftover.getCount());
+					player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
+					return true;
+				}
 			}
 			return false;
 		}, false);
@@ -193,6 +195,7 @@ public class PackageItem extends BlockItem {
 	private boolean absorbFromSlot(Player player, PackageContainer container, Slot slot) {
 		if(slot.getItem().isEmpty()) return false;
 		if(!container.matches(slot.getItem())) return false;
+		if(!container.allowedInPackageAtAll(slot.getItem())) return false; //todo this shouldn't be an ad-hoc check...... reh!
 		
 		int remainingSpaceInPackage = container.maxStackAmountAllowed(slot.getItem()) * 8 - container.getCount(); //todo break this out into a method on packagecontainer probably
 		
