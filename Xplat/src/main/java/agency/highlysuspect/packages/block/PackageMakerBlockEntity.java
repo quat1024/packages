@@ -3,8 +3,9 @@ package agency.highlysuspect.packages.block;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.junk.PTags;
+import agency.highlysuspect.packages.junk.ILoveMojang;
 import agency.highlysuspect.packages.junk.PSoundEvents;
+import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.platform.SoftImplement;
 import net.minecraft.core.BlockPos;
@@ -12,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -284,7 +284,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : new TranslatableComponent(PBlocks.PACKAGE_MAKER.get().getDescriptionId());
+		return hasCustomName() ? customName : ILoveMojang.translatable(PBlocks.PACKAGE_MAKER.get().getDescriptionId());
 	}
 	
 	@Override

@@ -1,12 +1,12 @@
 package agency.highlysuspect.packages.item;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.junk.ILoveMojang;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
@@ -44,7 +44,7 @@ public class PackageItem extends BlockItem {
 				MutableComponent contentsComponent;
 				try {
 					nameReentrancy++;
-					contentsComponent = new TranslatableComponent("block.packages.package.nonempty.contents", contents.getCount(), contained.getHoverName());
+					contentsComponent = ILoveMojang.translatable("block.packages.package.nonempty.contents", contents.getCount(), contained.getHoverName());
 					contentsComponent = switch(nameReentrancy) {
 						case 1  -> contentsComponent.withStyle(s -> s.withColor(0xD0D0D0));
 						case 2  -> contentsComponent.withStyle(s -> s.withColor(0xA0A0A0));
@@ -53,9 +53,9 @@ public class PackageItem extends BlockItem {
 					};
 					
 					if(nameReentrancy == 1) {
-						return new TranslatableComponent("block.packages.package.nonempty", super.getName(stack), contentsComponent);
+						return ILoveMojang.translatable("block.packages.package.nonempty", super.getName(stack), contentsComponent);
 					} else {
-						return new TranslatableComponent("block.packages.package.nonempty.reentrant", contentsComponent);
+						return ILoveMojang.translatable("block.packages.package.nonempty.reentrant", contentsComponent);
 					}
 				} finally {
 					nameReentrancy--;
@@ -78,8 +78,8 @@ public class PackageItem extends BlockItem {
 				//If there's at least one layer of nesting going on: advertise how many items there ultimately are in the package
 				if(contents.computeAmplificationStatus()) {
 					tooltip.add(
-						new TranslatableComponent("packages.contents_tooltip.utimately",
-							new TranslatableComponent("block.packages.package.nonempty.contents", fullyMultipliedCount, root.getHoverName()).withStyle(ChatFormatting.DARK_RED)
+						ILoveMojang.translatable("packages.contents_tooltip.utimately",
+							ILoveMojang.translatable("block.packages.package.nonempty.contents", fullyMultipliedCount, root.getHoverName()).withStyle(ChatFormatting.DARK_RED)
 						).withStyle(ChatFormatting.DARK_GRAY)
 					);
 				}
@@ -91,19 +91,19 @@ public class PackageItem extends BlockItem {
 			Block frameBlock = style.frameBlock();
 			Block innerBlock = style.innerBlock();
 			if(frameBlock == innerBlock) {
-				tooltip.add(new TranslatableComponent("packages.style_tooltip.both", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+				tooltip.add(ILoveMojang.translatable("packages.style_tooltip.both", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
 			} else {
-				tooltip.add(new TranslatableComponent("packages.style_tooltip.frame", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
-				tooltip.add(new TranslatableComponent("packages.style_tooltip.inner", innerBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+				tooltip.add(ILoveMojang.translatable("packages.style_tooltip.frame", frameBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
+				tooltip.add(ILoveMojang.translatable("packages.style_tooltip.inner", innerBlock.getName().withStyle(ChatFormatting.GRAY, ChatFormatting.ITALIC)));
 			}
 			
 			DyeColor color = style.color();
-			tooltip.add(new TranslatableComponent("packages.style_tooltip.color",
-				new TranslatableComponent("packages.style_tooltip.color." + color.getSerializedName()).withStyle(s -> s.withColor((color == DyeColor.BLACK ? DyeColor.GRAY : color).getTextColor()).withItalic(true))));
+			tooltip.add(ILoveMojang.translatable("packages.style_tooltip.color",
+				ILoveMojang.translatable("packages.style_tooltip.color." + color.getSerializedName()).withStyle(s -> s.withColor((color == DyeColor.BLACK ? DyeColor.GRAY : color).getTextColor()).withItalic(true))));
 		} else {
 			//Lifting this stylization from Create, not out of trying to steal their thunder, more so a modpack has fewer unique kinds of "hold shift for xx" tooltips lol
-			tooltip.add(new TranslatableComponent("packages.style_tooltip.hold_for_composition",
-				new TranslatableComponent("packages.style_tooltip.shift").withStyle(ChatFormatting.DARK_GRAY)
+			tooltip.add(ILoveMojang.translatable("packages.style_tooltip.hold_for_composition",
+				ILoveMojang.translatable("packages.style_tooltip.shift").withStyle(ChatFormatting.DARK_GRAY)
 			).withStyle(ChatFormatting.GRAY));
 		}
 		

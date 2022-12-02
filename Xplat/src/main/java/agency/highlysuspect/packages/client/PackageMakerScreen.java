@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
+import agency.highlysuspect.packages.junk.ILoveMojang;
 import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -12,7 +13,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -44,7 +44,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	@Override
 	protected void init() {
 		super.init();
-		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, new TranslatableComponent(Packages.MODID + ".package_maker.craft_button"), (button) -> {
+		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, ILoveMojang.translatable(Packages.MODID + ".package_maker.craft_button"), (button) -> {
 			if(hasShiftDown()) sendButtonClick(1);
 			else sendButtonClick(0);
 		}));
@@ -72,14 +72,14 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
 			if(tooltip != null) {
 				List<Component> toot = new ArrayList<>();
-				toot.add(new TranslatableComponent(tooltip));
+				toot.add(ILoveMojang.translatable(tooltip));
 				
 				for(int k = 1; true; k++) {
 					String line = tooltip + "." + k;
 					if(Language.getInstance().has(line)) {
 						//this lets you make the tooltip have fewer lines using a resourcepack (which can't actually remove lang keys, only override them)
 						if(Language.getInstance().getOrDefault(line).contains("ZZZ")) break;
-						toot.add(new TranslatableComponent(line).withStyle(ChatFormatting.DARK_GRAY));
+						toot.add(ILoveMojang.translatable(line).withStyle(ChatFormatting.DARK_GRAY));
 					}
 					else break;
 				}
