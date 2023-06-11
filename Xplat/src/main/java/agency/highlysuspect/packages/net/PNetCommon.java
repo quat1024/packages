@@ -1,9 +1,6 @@
 package agency.highlysuspect.packages.net;
 
-import agency.highlysuspect.packages.platform.PlatformSupport;
+import agency.highlysuspect.packages.Packages;
 
 public class PNetCommon {
-	public static void onInitialize(PlatformSupport plat) {
-		plat.registerActionPacketHandler();
-	}
 }

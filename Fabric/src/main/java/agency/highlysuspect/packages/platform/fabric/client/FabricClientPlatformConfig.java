@@ -4,7 +4,7 @@ import agency.highlysuspect.packages.client.PackageActionBinding;
 import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.client.PackagesClientConfig;
 import agency.highlysuspect.packages.net.PackageAction;
-import agency.highlysuspect.packages.platform.ClientPlatformConfig;
+import agency.highlysuspect.packages.platform.client.ClientPlatformConfig;
 import agency.highlysuspect.packages.platform.fabric.AbstractFabricPlatformConfig;
 import net.minecraft.server.packs.PackType;
 

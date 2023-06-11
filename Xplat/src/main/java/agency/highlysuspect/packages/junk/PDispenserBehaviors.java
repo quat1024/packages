@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.junk;
 
+import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.platform.PlatformSupport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
@@ -14,8 +14,8 @@ import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.level.block.DispenserBlock;
 
 public class PDispenserBehaviors {
-	public static void onInitialize(PlatformSupport plat) {
-		plat.registerDispenserBehavior(PItems.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
+	public static void onInitialize() {
+		Packages.instance.registerDispenserBehavior(PItems.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
 	}
 	
 	//Copy-paste of blockplacementdispenserbehavior, but it doesn't try to be smart about placing "on the ground"

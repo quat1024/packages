@@ -1,14 +1,14 @@
 package agency.highlysuspect.packages.container;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.platform.PlatformSupport;
+import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.Registry;
 import net.minecraft.world.inventory.MenuType;
 
 public class PMenuTypes {
-	public static PlatformSupport.RegistryHandle<MenuType<PackageMakerMenu>> PACKAGE_MAKER;
+	public static RegistryHandle<MenuType<PackageMakerMenu>> PACKAGE_MAKER;
 	
-	public static void onInitialize(PlatformSupport plat) {
-		PACKAGE_MAKER = plat.register(Registry.MENU, Packages.id("package_maker"), () -> plat.makeMenuType(PackageMakerMenu::new));
+	public static void onInitialize() {
+		PACKAGE_MAKER = Packages.instance.register(Registry.MENU, Packages.id("package_maker"), () -> Packages.instance.makeMenuType(PackageMakerMenu::new));
 	}
 }

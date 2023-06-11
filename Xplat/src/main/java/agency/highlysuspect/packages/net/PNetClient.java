@@ -6,6 +6,6 @@ import net.minecraft.world.InteractionHand;
 
 public class PNetClient {
 	public static void performAction(BlockPos pos, InteractionHand hand, PackageAction mode) {
-		PackagesClient.instance.plat.sendActionPacket(new ActionPacket(pos, hand, mode));
+		PackagesClient.instance.sendActionPacket(new ActionPacket(pos, hand, mode));
 	}
 }

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.platform;
+package agency.highlysuspect.packages.platform.client;
 
 import agency.highlysuspect.packages.client.PackageActionBinding;
 

@@ -4,7 +4,6 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.junk.ILoveMojang;
-import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
@@ -121,7 +120,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		this.blit(matrices, i, j, 0, 0, this.imageWidth, this.imageHeight);
 	}
 	
-	public static void initIcons(ClientPlatformSupport plat) {
-		plat.bakeSpritesOnto(InventoryMenu.BLOCK_ATLAS, PackageMakerMenu.FRAME_BG, PackageMakerMenu.INNER_BG, PackageMakerMenu.DYE_BG, PackageMakerMenu.EXTRA_BG);
+	public static void initIcons() {
+		PackagesClient.instance.bakeSpritesOnto(InventoryMenu.BLOCK_ATLAS, PackageMakerMenu.FRAME_BG, PackageMakerMenu.INNER_BG, PackageMakerMenu.DYE_BG, PackageMakerMenu.EXTRA_BG);
 	}
 }

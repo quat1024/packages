@@ -5,7 +5,6 @@ import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.client.PackageActionBinding.MainTrigger;
 import agency.highlysuspect.packages.net.PNetClient;
 import agency.highlysuspect.packages.net.PackageAction;
-import agency.highlysuspect.packages.platform.ClientPlatformSupport;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -48,8 +47,8 @@ public class PClientBlockEventHandlers {
 		return false;
 	}
 	
-	public static void onInitializeClient(ClientPlatformSupport plat) {
-		plat.installEarlyClientsideLeftClickCallback((player, level, pos, direction) -> {
+	public static void onInitializeClient() {
+		PackagesClient.instance.installEarlyClientsideLeftClickCallback((player, level, pos, direction) -> {
 			if(!canAttack(player, level, pos, direction)) return false;
 			return performPunchAction(player, level, pos, direction);
 		});
@@ -57,7 +56,7 @@ public class PClientBlockEventHandlers {
 		//This callback is usually fired when you start left-clicking a block, but also every tick while you continue to left click it.
 		//EarlyClientsideAttackBlockCallback will prevent the start-left-clicking one from being fired. This regular callback will
 		//also help prevent the block from being mined.
-		plat.installClientsideHoldLeftClickCallback((player, level, hand, pos, direction) -> {
+		PackagesClient.instance.installClientsideHoldLeftClickCallback((player, level, hand, pos, direction) -> {
 			if(canAttack(player, level, pos, direction)) {
 				//Legacy stuff! Here's a reimplementation of the old, broken left click antirepeat. Old mod effectively had punchRepeat set to 4 ticks btw.
 				//removed in https://github.com/quat1024/packages/commit/401a19818dac539174081b219ca10c797fa0abf0
@@ -71,7 +70,7 @@ public class PClientBlockEventHandlers {
 			} else return InteractionResult.PASS;
 		});
 		
-		plat.installClientsideUseBlockCallback((player, level, hand, hitResult) -> {
+		PackagesClient.instance.installClientsideUseBlockCallback((player, level, hand, hitResult) -> {
 			if(!level.isClientSide || player.isSpectator()) return InteractionResult.PASS;
 			
 			BlockPos pos = hitResult.getBlockPos();

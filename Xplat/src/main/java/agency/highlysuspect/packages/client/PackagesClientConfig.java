@@ -1,7 +1,7 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.net.PackageAction;
-import agency.highlysuspect.packages.platform.ClientPlatformConfig;
+import agency.highlysuspect.packages.platform.client.ClientPlatformConfig;
 
 import java.util.ArrayList;
 import java.util.Arrays;
