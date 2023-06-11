@@ -72,7 +72,7 @@ minecraft {
 	
 	runs {
 		client {
-			taskName "Forge Client"
+			taskName "Client"
 			workingDirectory project.file("run")
 			ideaModule "${rootProject.name}.${project.name}.main"
 			mods {
@@ -84,7 +84,7 @@ minecraft {
 		}
 		
 		server {
-			taskName "Forge Server"
+			taskName "Server"
 			workingDirectory project.file("run")
 			ideaModule "${rootProject.name}.${project.name}.main"
 			mods {
