@@ -26,10 +26,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.function.Supplier;
 
 public class FabricInit extends Packages implements ModInitializer {
-	public FabricInit() {
-		super();
-	}
-	
 	@Override
 	public void onInitialize() {
 		earlySetup();

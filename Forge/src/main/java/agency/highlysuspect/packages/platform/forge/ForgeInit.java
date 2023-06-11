@@ -54,8 +54,6 @@ public class ForgeInit extends Packages {
 	public static ForgeInit instanceForge;
 	
 	public ForgeInit() {
-		super();
-		
 		if(instanceForge != null) throw new IllegalStateException("Packages forgeInit initialized twice!");
 		instanceForge = this;
 		
