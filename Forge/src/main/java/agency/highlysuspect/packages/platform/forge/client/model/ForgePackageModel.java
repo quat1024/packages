@@ -107,8 +107,7 @@ public class ForgePackageModel implements IUnbakedGeometry<ForgePackageModel> {
 		
 		//Nice Forge API for overriding particle textures from your baked model. This is cool!
 		//This is implemented on Fabric using a couple of mixins (see "particleslol").
-		//Only thing with this API is it's kind of hard to get access to level/pos,
-		//but that's only important if you call into someone else's implementation
+		//Only thing with this API is it's kind of hard to get access to level/pos
 		@Override
 		public TextureAtlasSprite getParticleIcon(@NotNull ModelData data) {
 			PackageStyle style = data.get(STYLE_PROPERTY);

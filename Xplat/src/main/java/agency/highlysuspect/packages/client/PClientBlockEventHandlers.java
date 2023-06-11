@@ -3,7 +3,7 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.client.PackageActionBinding.MainTrigger;
-import agency.highlysuspect.packages.net.PNetClient;
+import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.net.PackageAction;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -40,7 +40,7 @@ public class PClientBlockEventHandlers {
 		if(action == null) return false;
 		
 		if(pkg.performAction(player, InteractionHand.MAIN_HAND, action, true)) {
-			PNetClient.performAction(pos, InteractionHand.MAIN_HAND, action);
+			PackagesClient.instance.sendActionPacket(new ActionPacket(pos, InteractionHand.MAIN_HAND, action));
 			lastPunchTickLegacy = level.getGameTime();
 			return true;
 		}
@@ -89,7 +89,7 @@ public class PClientBlockEventHandlers {
 			if(pkg.performAction(player, hand, action, true)) {
 				//...send a packet to do it for real
 				//SUCCESS sends a block-place packet too because fabric api is weird, so we use CONSUME+swing to mark the action as successful.
-				PNetClient.performAction(pos, hand, action);
+				PackagesClient.instance.sendActionPacket(new ActionPacket(pos, hand, action));
 				player.swing(hand);
 				return InteractionResult.CONSUME;
 			}

@@ -60,6 +60,27 @@ public class ForgeClientInit extends PackagesClient {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetRenderTypes);
 	}
 	
+	private static record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
+		//generics moment
+		private void register() {
+			MenuScreens.register(type.get(), cons::create);
+		}
+	}
+	
+	private static record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
+		//generics moment
+		private void register(EntityRenderersEvent.RegisterRenderers e) {
+			e.registerBlockEntityRenderer(type.get(), renderer);
+		}
+	}
+	
+	private final List<MenuScreenEntry<?, ?>> menuScreensToRegister = new ArrayList<>();
+	private final Map<ResourceLocation, List<ResourceLocation>> spritesToBake = new HashMap<>();
+	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
+	private final Map<RegistryHandle<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
+	public final List<EarlyClientsideLeftClickCallback> earlyLeftClickCallbacks = new ArrayList<>();
+	public final List<ClientsideHoldLeftClickCallback> holdLeftClickCallbacksForCreativeMode = new ArrayList<>();
+	
 	@Override
 	public void setupCustomModelLoaders() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelEvent.RegisterGeometryLoaders e) -> {
@@ -77,11 +98,6 @@ public class ForgeClientInit extends PackagesClient {
 	
 	///
 	
-	private static record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
-		void register() { MenuScreens.register(type.get(), cons::create); }
-	}
-	private final List<MenuScreenEntry<?, ?>> menuScreensToRegister = new ArrayList<>();
-	
 	@Override
 	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		menuScreensToRegister.add(new MenuScreenEntry<>(type, cons));
@@ -92,8 +108,6 @@ public class ForgeClientInit extends PackagesClient {
 	}
 	
 	///
-	
-	private final Map<ResourceLocation, List<ResourceLocation>> spritesToBake = new HashMap<>();
 	
 	@Override
 	public void bakeSpritesOnto(ResourceLocation atlasTexture, ResourceLocation... sprites) {
@@ -107,12 +121,6 @@ public class ForgeClientInit extends PackagesClient {
 	
 	///
 	
-	private static record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
-		//generics moment
-		void register(EntityRenderersEvent.RegisterRenderers e) { e.registerBlockEntityRenderer(type.get(), renderer); }
-	}
-	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
-	
 	@Override
 	public <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
 		blockEntityRenderersToRegister.add(new BlockEntityRendererEntry<>(type, renderer));
@@ -123,8 +131,6 @@ public class ForgeClientInit extends PackagesClient {
 	}
 	
 	///
-	
-	private final Map<RegistryHandle<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
 	
 	@Override
 	public void setRenderType(RegistryHandle<? extends Block> block, RenderType type) {
@@ -137,8 +143,6 @@ public class ForgeClientInit extends PackagesClient {
 	}
 	
 	///
-	
-	public final List<EarlyClientsideLeftClickCallback> earlyLeftClickCallbacks = new ArrayList<>();
 	
 	@Override
 	public void installEarlyClientsideLeftClickCallback(EarlyClientsideLeftClickCallback callback) {
@@ -158,8 +162,6 @@ public class ForgeClientInit extends PackagesClient {
 		//See MixinMinecraft.
 		earlyLeftClickCallbacks.add(callback);
 	}
-	
-	public final List<ClientsideHoldLeftClickCallback> holdLeftClickCallbacksForCreativeMode = new ArrayList<>();
 	
 	@Override
 	public void installClientsideHoldLeftClickCallback(ClientsideHoldLeftClickCallback callback) {
@@ -215,6 +217,8 @@ public class ForgeClientInit extends PackagesClient {
 			if(r.consumesAction()) event.setCanceled(true);
 		});
 	}
+	
+	///
 	
 	@Override
 	public void sendActionPacket(ActionPacket packet) {

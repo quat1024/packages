@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.block;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
-import agency.highlysuspect.packages.junk.ILoveMojang;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
@@ -284,7 +283,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : ILoveMojang.translatable(PBlocks.PACKAGE_MAKER.get().getDescriptionId());
+		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE_MAKER.get().getDescriptionId(), new Object[]{});
 	}
 	
 	@Override

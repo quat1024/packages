@@ -30,18 +30,18 @@ import java.util.function.Function;
  *  (Or it could even be a BakedModel directly, when using it as a general-purpose model caching mechanism.)
  * 
  * The class is also shared across the Package and Package Crafter models, because they use the same retexturing technology.
- * So this is kind of a general-purpose, hard-to-explain nexus of functionatly. The best kind of class.
+ * So this is kind of a general-purpose, hard-to-explain nexus of functionality. The best kind of class.
  */
-public interface PackageModelBakery<T> {
+public interface PackageModelBakery<MODEL> {
 	BakedModel getBaseModel();
-	T bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock);
+	MODEL bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock);
 	
-	default T bake(@Nullable PackageStyle style) {
+	default MODEL bake(@Nullable PackageStyle style) {
 		if(style == null) return bake(null, null, null, null);
 		else return bake(style, style.color(), style.frameBlock(), style.innerBlock());
 	}
 	
-	default T bake(@Nullable PackageMakerStyle style) {
+	default MODEL bake(@Nullable PackageMakerStyle style) {
 		if(style == null) return bake(null, null, null, null);
 		else return bake(style, style.color(), style.frameBlock(), style.innerBlock());
 	}
@@ -49,23 +49,27 @@ public interface PackageModelBakery<T> {
 	/**
 	 * An in-memory cache of package models.
 	 */
-	class Caching<T> implements PackageModelBakery<T> {
-		public Caching(PackageModelBakery<T> uncached) { this.uncached = uncached; }
-		private final PackageModelBakery<T> uncached;
+	class Caching<MODEL> implements PackageModelBakery<MODEL> {
+		public Caching(PackageModelBakery<MODEL> uncached) {
+			this.uncached = uncached;
+		}
+		
+		private final PackageModelBakery<MODEL> uncached;
 		
 		//HashMap does support null keys.
 		//No method of evicting meshes from the cache is required because the entire PackageModelBakery is thrown out on resource reload.
+		//
 		//Also, yeehaw, throwing thread safety to the wind!!!
 		//ConcurrentHashMap turned out to have too much overhead - this is an append-only map, I want reads to be backed by simple code.
-		//Also because model baking is usually pretty fast anyways, I don't care about spurious cache misses caused by e.g. reading while rehashing.
+		//Because model baking is usually pretty fast anyways, I don't care about spurious cache misses caused by e.g. reading while rehashing.
 		//
 		//"Surely this will not come back to bite me in the tail later"-driven-development
-		private final Map<Object, T> cache = new HashMap<>();
+		private final Map<Object, MODEL> cache = new HashMap<>();
 		private final Object UPDATE_LOCK = new Object();
 		
 		@Override
-		public T bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-			T result = cache.get(cacheKey);
+		public MODEL bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
+			MODEL result = cache.get(cacheKey);
 			if(result != null) return result;
 			
 			result = uncached.bake(cacheKey, faceColor, frameBlock, innerBlock);
