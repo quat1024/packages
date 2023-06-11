@@ -71,7 +71,7 @@ public class ForgeInit extends Packages {
 		}
 		
 		//random event
-		MinecraftForge.EVENT_BUS.addListener(this::actuallyRegisterDispenserBehaviors);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterDispenserBehaviors);
 		
 		//forge doesn't automatically wrap iinventories with item handlers anymore :pensive:
 		//not all bad; with the Package i think a custom implementation is beneficial anyway
