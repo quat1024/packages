@@ -1,22 +1,32 @@
 buildscript {
 	repositories {
-		maven { url = 'https://maven.minecraftforge.net' }
+		maven { url "https://maven.minecraftforge.net" }
 		maven {
-			url = 'https://repo.spongepowered.org/repository/maven-public/'
+			url "https://repo.spongepowered.org/repository/maven-public/"
 			content { includeGroup "org.spongepowered" }
 		}
 		mavenCentral()
 	}
 	dependencies {
-		classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-		classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
+		classpath "net.minecraftforge.gradle:ForgeGradle:5.1.71"
+		classpath "org.spongepowered:mixingradle:0.7-SNAPSHOT"
 	}
 }
-apply plugin: 'java'
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
 
-archivesBaseName = "${rootProject.name}-forge-${project.minecraftVersion}"
+evaluationDependsOn(":Xplat") //pls
+
+apply plugin: "java"
+apply plugin: "net.minecraftforge.gradle"
+apply plugin: "org.spongepowered.mixin"
+
+archivesBaseName = "${rootProject.name}-forge-1.19.2"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 17
+}
+java.withSourcesJar()
 
 mixin {
 	//Tell mixingradle what filename the refmap should use
@@ -27,18 +37,30 @@ mixin {
 	config "${project.modName}.forge.mixins.json"
 }
 
+repositories {
+	maven {
+		url "https://repo.spongepowered.org/repository/maven-public/"
+		content { includeGroup "org.spongepowered" }
+	}
+	mavenCentral()
+}
+
 dependencies {
-	minecraft "net.minecraftforge:forge:${project.forgeVersion}"
-	annotationProcessor "org.spongepowered:mixin:0.8.5:processor" //todo does mixin gradle do this? maybe
+	minecraft "net.minecraftforge:forge:1.19.2-43.2.0"
+	annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+	compileOnly "org.jetbrains:annotations:24.0.1"
 	
 	compileOnly project(":Xplat")
 }
 
 //fold in xplat resources and sources
-
 processResources {
-	//include common resources
 	from project(":Xplat").sourceSets.main.resources
+	
+	inputs.property "version", project.version
+	filesMatching("**/mods.toml") {
+		expand "version": project.version
+	}
 }
 
 tasks.withType(JavaCompile) {
@@ -46,12 +68,12 @@ tasks.withType(JavaCompile) {
 }
 
 minecraft {
-	mappings channel: 'official', version: project.minecraftVersion //official mappings epic moments
+	mappings channel: "official", version: "1.19.2"
 	
 	runs {
 		client {
-			taskName 'Client'
-			workingDirectory project.file('run')
+			taskName "Forge Client"
+			workingDirectory project.file("run")
 			ideaModule "${rootProject.name}.${project.name}.main"
 			mods {
 				"${project.modName}" {
@@ -62,8 +84,8 @@ minecraft {
 		}
 		
 		server {
-			taskName 'Server'
-			workingDirectory project.file('run')
+			taskName "Forge Server"
+			workingDirectory project.file("run")
 			ideaModule "${rootProject.name}.${project.name}.main"
 			mods {
 				"${project.modName}" {
@@ -73,4 +95,8 @@ minecraft {
 			}
 		}
 	}
+}
+
+tasks.withType(GenerateModuleMetadata) {
+	enabled = false
 }

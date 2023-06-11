@@ -1,9 +1,32 @@
-plugins {
-	id 'fabric-loom' version '1.0-SNAPSHOT'
-	id 'maven-publish'
+buildscript {
+	repositories {
+		maven {
+			url = "https://maven.fabricmc.net/"
+			content {
+				includeGroup "net.fabricmc"
+				includeGroup "fabric-loom"
+			}
+		}
+		mavenCentral()
+	}
+	dependencies {
+		classpath "fabric-loom:fabric-loom.gradle.plugin:1.1.14"
+	}
 }
 
-archivesBaseName = "${rootProject.name}-fabric-${project.minecraftVersion}"
+evaluationDependsOn(":Xplat") //pls
+
+apply plugin: "java"
+apply plugin: "fabric-loom"
+
+archivesBaseName = "${rootProject.name}-fabric-1.19.2"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+tasks.withType(JavaCompile).configureEach {
+	it.options.encoding = "UTF-8"
+	it.options.release = 17
+}
+java.withSourcesJar()
 
 repositories {
 	maven {
@@ -18,13 +41,15 @@ repositories {
 		url "https://api.modrinth.com/maven"
 		content { includeGroup "maven.modrinth" }
 	}
+	mavenCentral()
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:${project.minecraftVersion}"
+	minecraft "com.mojang:minecraft:1.19.2"
 	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabricApiVersion}"
+	modImplementation "net.fabricmc:fabric-loader:0.14.21"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:0.76.0+1.19.2"
+	compileOnly "org.jetbrains:annotations:24.0.1"
 	
 	implementation project(":Xplat") //funny xplat
 	
@@ -44,9 +69,13 @@ dependencies {
 	}
 }
 
-//funny xplat
 processResources {
 	from project(":Xplat").sourceSets.main.resources
+	
+	inputs.property "version", project.version
+	filesMatching("**/fabric.mod.json") {
+		expand "version": project.version
+	}
 }
 
 tasks.withType(JavaCompile) {
@@ -74,4 +103,8 @@ loom {
 	mixin {
 		defaultRefmapName = "${project.modName}.refmap.json"
 	}
+}
+
+tasks.withType(GenerateModuleMetadata) {
+	enabled = false
 }
