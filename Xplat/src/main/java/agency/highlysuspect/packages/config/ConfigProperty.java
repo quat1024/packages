@@ -43,7 +43,7 @@ public interface ConfigProperty<T> {
 		return new IntOpt(name, defaultValue, Arrays.asList(comment), min, max);
 	}
 	
-	//The code is consise because automatically-generated record getters partially implement the interface.
+	//The code is concise because automatically-generated record getters partially implement the interface.
 	
 	record StringOpt(String name, String defaultValue, List<String> comment) implements ConfigProperty<String> {
 		@Override
