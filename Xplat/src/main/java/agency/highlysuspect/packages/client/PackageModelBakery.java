@@ -115,7 +115,7 @@ public interface PackageModelBakery<MODEL> {
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 			
 			PackageModelBakery<T> bakery = make(baseModel, specialFrameSprite, specialInnerSprite);
-			if(PackagesClient.instance.config.cacheMeshes) bakery = new Caching<>(bakery);
+			if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakery = new Caching<>(bakery);
 			return bakery;
 		}
 		

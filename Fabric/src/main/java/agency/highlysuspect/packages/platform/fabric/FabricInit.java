@@ -1,18 +1,23 @@
 package agency.highlysuspect.packages.platform.fabric;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
-import agency.highlysuspect.packages.platform.CommonPlatformConfig;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -29,6 +34,27 @@ public class FabricInit extends Packages implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		earlySetup();
+		
+		//load config once now
+		refreshConfig();
+		
+		//and again on resource load
+		ResourceManagerHelper.get(PackType.SERVER_DATA).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+			@Override
+			public ResourceLocation getFabricId() {
+				return Packages.id("fabric-config-reload");
+			}
+			
+			@Override
+			public void onResourceManagerReload(ResourceManager resourceManager) {
+				refreshConfig();
+			}
+		});
+	}
+	
+	@Override
+	public boolean isFabric() {
+		return true;
 	}
 	
 	@Override
@@ -79,7 +105,7 @@ public class FabricInit extends Packages implements ModInitializer {
 	}
 	
 	@Override
-	public CommonPlatformConfig makePlatformConfig() {
-		return new FabricCommonPlatformConfig();
+	public ConfigSchema.Bakery commonConfigBakery() {
+		return new CrummyConfig.Bakery(FabricLoader.getInstance().getConfigDir().resolve("packages-common.cfg"));
 	}
 }

@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.PropsCommon;
 import agency.highlysuspect.packages.container.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PSoundEvents;
@@ -52,7 +53,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesFrameSlot(ItemStack stack) {
 		if(!matchesFrameOrInnerSlotLogic(stack)) return false;
-		if(Packages.instance.config.packageMakerAllowlistMode && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_FRAME)) return false;
+		if(Packages.instance.config.get(PropsCommon.PACKAGE_MAKER_ALLOW_LIST_MODE) && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_FRAME)) return false;
 		
 		return true;
 	}
@@ -60,7 +61,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesInnerSlot(ItemStack stack) {
 		if(!matchesFrameOrInnerSlotLogic(stack)) return false;
-		if(Packages.instance.config.packageMakerAllowlistMode && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_INNER)) return false;
+		if(Packages.instance.config.get(PropsCommon.PACKAGE_MAKER_ALLOW_LIST_MODE) && !stack.is(PTags.ALLOWLIST_PACKAGE_MAKER_INNER)) return false;
 		return true;
 	}
 	

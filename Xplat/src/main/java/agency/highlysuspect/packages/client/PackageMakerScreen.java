@@ -13,6 +13,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 
@@ -39,19 +40,17 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	
 	private Button craftButton;
 	
+	/**
+	 * @see PackageMakerMenu#clickMenuButton(Player, int) 
+	 */
 	@Override
 	protected void init() {
 		super.init();
-		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, Component.translatable(Packages.MODID + ".package_maker.craft_button", new Object[]{}), (button) -> {
-			if(hasShiftDown()) sendButtonClick(1);
-			else sendButtonClick(0);
+		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, Component.translatable(Packages.MODID + ".package_maker.craft_button"), (button) -> {
+			assert minecraft != null;
+			assert minecraft.gameMode != null;
+			minecraft.gameMode.handleInventoryButtonClick(menu.containerId, hasShiftDown() ? 1 : 0);
 		}));
-	}
-	
-	private void sendButtonClick(int id) {
-		assert this.minecraft != null;
-		assert this.minecraft.gameMode != null;
-		this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, id);
 	}
 	
 	public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
@@ -70,14 +69,14 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
 			if(tooltip != null) {
 				List<Component> toot = new ArrayList<>();
-				toot.add(Component.translatable(tooltip, new Object[]{}));
+				toot.add(Component.translatable(tooltip));
 				
 				for(int k = 1; true; k++) {
 					String line = tooltip + "." + k;
 					if(!Language.getInstance().has(line)) break;
 					//this lets you make the tooltip have fewer lines using a resourcepack (which can't actually remove lang keys, only override them)
 					if(Language.getInstance().getOrDefault(line).contains("ZZZ")) break;
-					toot.add(Component.translatable(line, new Object[]{}).withStyle(ChatFormatting.DARK_GRAY));
+					toot.add(Component.translatable(line).withStyle(ChatFormatting.DARK_GRAY));
 				}
 				
 				renderComponentTooltip(matrices, toot, mouseX, mouseY);

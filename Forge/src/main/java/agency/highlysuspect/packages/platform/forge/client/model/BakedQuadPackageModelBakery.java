@@ -3,6 +3,7 @@ package agency.highlysuspect.packages.platform.forge.client.model;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.client.PackagesClient;
+import agency.highlysuspect.packages.client.PropsClient;
 import agency.highlysuspect.packages.junk.PUtil;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
@@ -42,6 +43,8 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 	
 	@Override
 	public List<BakedQuad> bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
+		boolean swapRedAndBlue = PackagesClient.instance.config.get(PropsClient.FORGE_SWAP_RED_AND_BLUE);
+		
 		ArrayList<BakedQuad> result = new ArrayList<>();
 		
 		BlockRenderDispatcher mgr = Minecraft.getInstance().getBlockRenderer();
@@ -57,7 +60,7 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 				if(quad.getTintIndex() == 1) {
 					if(faceColor != null) {
 						int tint = 0xFF000000 | faceColor.getMaterialColor().col;
-						if(PackagesClient.instance.config.swapRedAndBlue) tint = swapRedAndBlue(tint);
+						if(swapRedAndBlue) tint = swapRedAndBlue(tint);
 						
 						BakedQuad copy = copyQuad(quad);
 						setTintColor(copy, tint, tint, tint, tint);

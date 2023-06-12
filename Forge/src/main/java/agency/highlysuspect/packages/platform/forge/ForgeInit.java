@@ -3,9 +3,9 @@ package agency.highlysuspect.packages.platform.forge;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
+import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
-import agency.highlysuspect.packages.platform.CommonPlatformConfig;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.Direction;
@@ -23,13 +23,17 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -53,13 +57,30 @@ import java.util.function.Supplier;
 public class ForgeInit extends Packages {
 	public static ForgeInit instanceForge;
 	
+	public final SimpleChannel channel = NetworkRegistry.newSimpleChannel(id("n"), () -> "0", "0"::equals, "0"::equals);
+	
+	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
+	private final Map<RegistryHandle<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
+	
+	private final ForgeConfigSpec.Builder forgeSpec = new ForgeConfigSpec.Builder();
+	
 	public ForgeInit() {
 		if(instanceForge != null) throw new IllegalStateException("Packages forgeInit initialized twice!");
 		instanceForge = this;
 		
+		//general setup
 		earlySetup();
 		
-		//client entrypoint
+		//finish up config (earlySetup populated the forgeSpec)
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, forgeSpec.build(), "packages-commonNEW.toml");
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadConfig);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onReloadConfig);
+		
+		//misc events
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterDispenserBehaviors);
+		MinecraftForge.EVENT_BUS.addGenericListener(BlockEntity.class, this::attachCaps);
+		
+		//If i was forge i would simply have client entrypoints
 		if(FMLEnvironment.dist == Dist.CLIENT) {
 			try {
 				Class.forName("agency.highlysuspect.packages.platform.forge.client.ForgeClientInit").getConstructor().newInstance();
@@ -67,35 +88,12 @@ public class ForgeInit extends Packages {
 				throw new RuntimeException("Packages had a problem initializing ForgeClientInit", e);
 			}
 		}
-		
-		//random event
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterDispenserBehaviors);
-		
-		//forge doesn't automatically wrap iinventories with item handlers anymore :pensive:
-		//not all bad; with the Package i think a custom implementation is beneficial anyway
-		MinecraftForge.EVENT_BUS.addGenericListener(BlockEntity.class, (AttachCapabilitiesEvent<BlockEntity> e) -> {
-			if(e.getObject() instanceof PackageBlockEntity pkg) {
-				e.addCapability(Packages.id("a"), new ICapabilityProvider() {
-					@Override
-					public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-						return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new PackageItemHandler(pkg.getContainer())).cast());
-					}
-				});
-			} else if(e.getObject() instanceof PackageMakerBlockEntity pmbe) {
-				e.addCapability(Packages.id("b"), new ICapabilityProvider() {
-					@Override
-					public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-						return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new SidedInvWrapper(pmbe, side)));
-					}
-				});
-			}
-		});
 	}
 	
-	public final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(id("n"), () -> "0", "0"::equals, "0"::equals);
-	
-	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
-	private final Map<RegistryHandle<? extends ItemLike>, DispenseItemBehavior> dispenseBehaviorsToRegister = new HashMap<>();
+	@Override
+	public boolean isForge() {
+		return true;
+	}
 	
 	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.
 	private <T> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
@@ -149,10 +147,6 @@ public class ForgeInit extends Packages {
 		dispenseBehaviorsToRegister.put(item, behavior);
 	}
 	
-	private void actuallyRegisterDispenserBehaviors(FMLCommonSetupEvent e) {
-		dispenseBehaviorsToRegister.forEach((handle, behavior) -> DispenserBlock.registerBehavior(handle.get(), behavior));
-	}
-	
 	@Override
 	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
 		//Looks the same as on FabricPlatformSupport but it's private in mojang source so i can't use it there without access widening
@@ -161,7 +155,7 @@ public class ForgeInit extends Packages {
 	
 	@Override
 	public void registerActionPacketHandler() {
-		CHANNEL.registerMessage(ActionPacket.SHORT_ID, ActionPacket.class, ActionPacket::write, ActionPacket::read, (action, ctxSupplier) -> {
+		channel.registerMessage(ActionPacket.SHORT_ID, ActionPacket.class, ActionPacket::write, ActionPacket::read, (action, ctxSupplier) -> {
 			NetworkEvent.Context ctx = ctxSupplier.get();
 			//Forge uses the same networkstuff for client -> server and server -> client packets.
 			//This is a client -> server packet, so of course the sender is a nonnull player, but Forge doesn't statically know that
@@ -174,7 +168,39 @@ public class ForgeInit extends Packages {
 	}
 	
 	@Override
-	public CommonPlatformConfig makePlatformConfig() {
-		return new ForgeCommonPlatformConfig();
+	public ConfigSchema.Bakery commonConfigBakery() {
+		return new ForgeBackedConfig.Bakery(forgeSpec);
+	}
+	
+	private void actuallyRegisterDispenserBehaviors(FMLCommonSetupEvent e) {
+		dispenseBehaviorsToRegister.forEach((handle, behavior) -> DispenserBlock.registerBehavior(handle.get(), behavior));
+	}
+	
+	private void onLoadConfig(ModConfigEvent.Loading e) {
+		if(e.getConfig().getModId().equals(MODID)) refreshConfig();
+	}
+	
+	private void onReloadConfig(ModConfigEvent.Reloading e) {
+		if(e.getConfig().getModId().equals(MODID)) refreshConfig();
+	}
+	
+	//forge doesn't automatically wrap iinventories with item handlers anymore :pensive:
+	//not all bad; with the Package i think a custom implementation is beneficial anyway
+	private void attachCaps(AttachCapabilitiesEvent<BlockEntity> e) {
+		if(e.getObject() instanceof PackageBlockEntity pkg) {
+			e.addCapability(Packages.id("a"), new ICapabilityProvider() {
+				@Override
+				public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+					return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new PackageItemHandler(pkg.getContainer())).cast());
+				}
+			});
+		} else if(e.getObject() instanceof PackageMakerBlockEntity pmbe) {
+			e.addCapability(Packages.id("b"), new ICapabilityProvider() {
+				@Override
+				public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+					return ForgeCapabilities.ITEM_HANDLER.orEmpty(cap, LazyOptional.of(() -> new SidedInvWrapper(pmbe, side)));
+				}
+			});
+		}
 	}
 }

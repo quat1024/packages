@@ -2,13 +2,14 @@ package agency.highlysuspect.packages.platform.forge.client;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.PackagesClient;
+import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.RegistryHandle;
-import agency.highlysuspect.packages.platform.client.ClientPlatformConfig;
 import agency.highlysuspect.packages.platform.client.ClientsideHoldLeftClickCallback;
 import agency.highlysuspect.packages.platform.client.ClientsideUseBlockCallback;
 import agency.highlysuspect.packages.platform.client.EarlyClientsideLeftClickCallback;
 import agency.highlysuspect.packages.platform.client.MyScreenConstructor;
+import agency.highlysuspect.packages.platform.forge.ForgeBackedConfig;
 import agency.highlysuspect.packages.platform.forge.ForgeInit;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageMakerModel;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageModel;
@@ -35,10 +36,14 @@ import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.TextureStitchEvent;
+import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -49,37 +54,46 @@ import java.util.List;
 import java.util.Map;
 
 public class ForgeClientInit extends PackagesClient {
-	public ForgeClientInit() {
-		super();
-		
-		earlySetup();
-		
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterMenuScreens);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyBakeSpritesOnto);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetBlockEntityRenderers);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetRenderTypes);
-	}
+	public static ForgeClientInit instanceForge;
 	
-	private static record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
-		//generics moment
-		private void register() {
-			MenuScreens.register(type.get(), cons::create);
-		}
-	}
-	
-	private static record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
-		//generics moment
-		private void register(EntityRenderersEvent.RegisterRenderers e) {
-			e.registerBlockEntityRenderer(type.get(), renderer);
-		}
-	}
+	private final ForgeConfigSpec.Builder forgeSpec = new ForgeConfigSpec.Builder();
 	
 	private final List<MenuScreenEntry<?, ?>> menuScreensToRegister = new ArrayList<>();
 	private final Map<ResourceLocation, List<ResourceLocation>> spritesToBake = new HashMap<>();
 	private final List<BlockEntityRendererEntry<?>> blockEntityRenderersToRegister = new ArrayList<>();
 	private final Map<RegistryHandle<? extends Block>, RenderType> renderTypesToRegister = new HashMap<>();
+	
+	/** @see agency.highlysuspect.packages.platform.forge.mixin.MixinMinecraft */
 	public final List<EarlyClientsideLeftClickCallback> earlyLeftClickCallbacks = new ArrayList<>();
+	
+	/** @see agency.highlysuspect.packages.platform.forge.mixin.MixinMultiPlayerGameMode */
 	public final List<ClientsideHoldLeftClickCallback> holdLeftClickCallbacksForCreativeMode = new ArrayList<>();
+	
+	private static record MenuScreenEntry<T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>>(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
+		private void register() { MenuScreens.register(type.get(), cons::create); } //generics moment
+	}
+	
+	private static record BlockEntityRendererEntry<T extends BlockEntity>(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
+		private void register(EntityRenderersEvent.RegisterRenderers e) { e.registerBlockEntityRenderer(type.get(), renderer); } //generics moment
+	}
+	
+	public ForgeClientInit() {
+		if(instanceForge != null) throw new IllegalStateException("Packages ForgeClientInit instantiated twice!");
+		instanceForge = this;
+		
+		earlySetup();
+		
+		//finish up config (earlySetup populated the forgeSpec)
+		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, forgeSpec.build(), "packages-client.toml");
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadConfig);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onReloadConfig);
+		
+		//misc events (generally, toppling the dominoes that earlySetup stood)
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterMenuScreens);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyBakeSpritesOnto);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetBlockEntityRenderers);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetRenderTypes);
+	}
 	
 	@Override
 	public void setupCustomModelLoaders() {
@@ -103,46 +117,20 @@ public class ForgeClientInit extends PackagesClient {
 		menuScreensToRegister.add(new MenuScreenEntry<>(type, cons));
 	}
 	
-	private void actuallyRegisterMenuScreens(FMLClientSetupEvent e) {
-		menuScreensToRegister.forEach(MenuScreenEntry::register);
-	}
-	
-	///
-	
 	@Override
 	public void bakeSpritesOnto(ResourceLocation atlasTexture, ResourceLocation... sprites) {
 		spritesToBake.computeIfAbsent(atlasTexture, __ -> new ArrayList<>()).addAll(Arrays.asList(sprites));
 	}
-	
-	private void actuallyBakeSpritesOnto(TextureStitchEvent.Pre event) {
-		List<ResourceLocation> sprites = spritesToBake.get(event.getAtlas().location());
-		if(sprites != null) sprites.forEach(event::addSprite);
-	}
-	
-	///
 	
 	@Override
 	public <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer) {
 		blockEntityRenderersToRegister.add(new BlockEntityRendererEntry<>(type, renderer));
 	}
 	
-	private void actuallySetBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
-		blockEntityRenderersToRegister.forEach(entry -> entry.register(event));
-	}
-	
-	///
-	
 	@Override
 	public void setRenderType(RegistryHandle<? extends Block> block, RenderType type) {
 		renderTypesToRegister.put(block, type);
 	}
-	
-	@SuppressWarnings("removal") //ItemBlockRenderTypes is deprecated in favor of some bespoke forge json bullshit. No thanks.
-	private void actuallySetRenderTypes(FMLClientSetupEvent e) {
-		renderTypesToRegister.forEach((handle, layer) -> ItemBlockRenderTypes.setRenderLayer(handle.get(), layer));
-	}
-	
-	///
 	
 	@Override
 	public void installEarlyClientsideLeftClickCallback(EarlyClientsideLeftClickCallback callback) {
@@ -156,8 +144,8 @@ public class ForgeClientInit extends PackagesClient {
 		//That's why I use a lower-level click event anyway, I'm only interested in the first time you try to
 		//mine the block, not all the other spam times.
 		//
-		//But because Forge fucking fires this event in continueAttack as well, completely defeating the purpose
-		//of offering a click event separate from LeftClickBlock in the first place, mixin it is then.
+		//But because Forge fires this event in continueAttack as well, completely defeating the purpose
+		//of offering a click event separate from LeftClickBlock in the first place, mixin it is then. Auuhgh.
 		//
 		//See MixinMinecraft.
 		earlyLeftClickCallbacks.add(callback);
@@ -218,15 +206,39 @@ public class ForgeClientInit extends PackagesClient {
 		});
 	}
 	
-	///
-	
 	@Override
 	public void sendActionPacket(ActionPacket packet) {
-		ForgeInit.instanceForge.CHANNEL.sendToServer(packet);
+		ForgeInit.instanceForge.channel.sendToServer(packet);
+	}
+	
+	private void onLoadConfig(ModConfigEvent.Loading e) {
+		if(e.getConfig().getModId().equals(Packages.MODID)) refreshConfig();
+	}
+	
+	private void onReloadConfig(ModConfigEvent.Reloading e) {
+		if(e.getConfig().getModId().equals(Packages.MODID)) refreshConfig();
+	}
+	
+	private void actuallyRegisterMenuScreens(FMLClientSetupEvent e) {
+		menuScreensToRegister.forEach(MenuScreenEntry::register);
+	}
+	
+	private void actuallyBakeSpritesOnto(TextureStitchEvent.Pre event) {
+		List<ResourceLocation> sprites = spritesToBake.get(event.getAtlas().location());
+		if(sprites != null) sprites.forEach(event::addSprite);
+	}
+	
+	private void actuallySetBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+		blockEntityRenderersToRegister.forEach(entry -> entry.register(event));
+	}
+	
+	@SuppressWarnings("removal") //ItemBlockRenderTypes is deprecated in favor of some bespoke forge json bullshit, no thanks
+	private void actuallySetRenderTypes(FMLClientSetupEvent e) {
+		renderTypesToRegister.forEach((handle, layer) -> ItemBlockRenderTypes.setRenderLayer(handle.get(), layer));
 	}
 	
 	@Override
-	public ClientPlatformConfig makeClientPlatformConfig() {
-		return new ForgeClientPlatformConfig();
+	public ConfigSchema.Bakery clientConfigBakery() {
+		return new ForgeBackedConfig.Bakery(forgeSpec);
 	}
 }

@@ -23,7 +23,7 @@ public class MixinMinecraft {
 	
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
 	private void packages$startAttack$beforeStartDestroyingBlock(CallbackInfoReturnable<Boolean> cir, boolean miscLocal, BlockHitResult hit, BlockPos hitPos) {
-		if(player != null && PackagesClient.instance instanceof FabricClientInit f && f.EARLY_LEFT_CLICK_EVENT.invoker().interact(player, level, hitPos, hit.getDirection())) {
+		if(player != null && FabricClientInit.instanceFabric.EARLY_LEFT_CLICK_EVENT.invoker().interact(player, level, hitPos, hit.getDirection())) {
 			player.swing(InteractionHand.MAIN_HAND);
 			cir.setReturnValue(true);
 		}

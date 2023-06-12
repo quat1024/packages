@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.PropsCommon;
 import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.PackageStyle;
@@ -121,7 +122,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		
 		updateStickyStack0();
 		
-		if(didAnything && level != null && Packages.instance.config.interactionSounds && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
+		if(didAnything && level != null && Packages.instance.config.get(PropsCommon.INTERACTION_SOUNDS) && !player.hasEffect(MobEffects.INVISIBILITY)) { //hehe
 			SoundEvent event = action.getSoundEvent();
 			if(event != null) level.playSound(null, getBlockPos(), event, SoundSource.BLOCKS, action.getSoundVolume(), action.getSoundPitch(level));
 		}

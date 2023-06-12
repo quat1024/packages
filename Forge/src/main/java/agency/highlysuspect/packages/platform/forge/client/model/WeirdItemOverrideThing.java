@@ -2,6 +2,7 @@ package agency.highlysuspect.packages.platform.forge.client.model;
 
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.client.PackagesClient;
+import agency.highlysuspect.packages.client.PropsClient;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -37,7 +38,7 @@ public abstract class WeirdItemOverrideThing extends ItemOverrides {
 			}
 		};
 		
-		if(PackagesClient.instance.config.cacheMeshes) bakeybake = new PackageModelBakery.Caching<>(bakeybake);
+		if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakeybake = new PackageModelBakery.Caching<>(bakeybake);
 		this.itemModelMaker = bakeybake;
 	}
 	

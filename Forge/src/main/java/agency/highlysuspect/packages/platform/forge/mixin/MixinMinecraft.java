@@ -24,8 +24,8 @@ public class MixinMinecraft {
 	
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"), cancellable = true)
 	private void packages$startAttack$beforeStartDestroyingBlock(CallbackInfoReturnable<Boolean> cir) {
-		if(player != null && level != null && hitResult instanceof BlockHitResult bhr && PackagesClient.instance instanceof ForgeClientInit frog) {
-			for(EarlyClientsideLeftClickCallback callback : frog.earlyLeftClickCallbacks) {
+		if(player != null && level != null && hitResult instanceof BlockHitResult bhr) {
+			for(EarlyClientsideLeftClickCallback callback : ForgeClientInit.instanceForge.earlyLeftClickCallbacks) {
 				if(callback.interact(player, level, bhr.getBlockPos(), bhr.getDirection())) {
 					player.swing(InteractionHand.MAIN_HAND);
 					cir.setReturnValue(true);

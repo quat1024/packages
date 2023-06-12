@@ -41,8 +41,8 @@ public class MixinMultiPlayerGameMode {
 	@Unique private void destroyBlockImpl(BlockPos pos, Direction dir, CallbackInfoReturnable<Boolean> cir) {
 		//See comment in ForgeClientPlatformSupport#installClientsideHoldLeftClickCallback.
 		//By this point in the injectors, creative mode was already checked.
-		if(minecraft.player != null && minecraft.level != null && PackagesClient.instance instanceof ForgeClientInit frog) {
-			for(ClientsideHoldLeftClickCallback callback : frog.holdLeftClickCallbacksForCreativeMode) {
+		if(minecraft.player != null && minecraft.level != null) {
+			for(ClientsideHoldLeftClickCallback callback : ForgeClientInit.instanceForge.holdLeftClickCallbacksForCreativeMode) {
 				if(callback.interact(minecraft.player, minecraft.level, InteractionHand.MAIN_HAND, pos, dir).consumesAction()) {
 					//Would it be a good idea to manually fire off the forge event in this case?
 					cir.setReturnValue(true);
