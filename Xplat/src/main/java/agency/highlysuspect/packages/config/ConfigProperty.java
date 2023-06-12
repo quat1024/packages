@@ -1,7 +1,10 @@
 package agency.highlysuspect.packages.config;
 
+import agency.highlysuspect.packages.Packages;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 public interface ConfigProperty<T> {
@@ -9,7 +12,7 @@ public interface ConfigProperty<T> {
 	List<String> comment();
 	T defaultValue();
 	String write(T thing);
-	T parse(String s);
+	Optional<T> parse(String s);
 	
 	default boolean validate(T thing) {
 		return true; //seems good
@@ -52,8 +55,8 @@ public interface ConfigProperty<T> {
 		}
 		
 		@Override
-		public String parse(String s) {
-			return s.trim();
+		public Optional<String> parse(String s) {
+			return Optional.of(s.trim());
 		}
 	}
 	
@@ -64,8 +67,8 @@ public interface ConfigProperty<T> {
 		}
 		
 		@Override
-		public Boolean parse(String s) {
-			return Boolean.parseBoolean(s.trim());
+		public Optional<Boolean> parse(String s) {
+			return Optional.of(Boolean.parseBoolean(s.trim()));
 		}
 	}
 	
@@ -76,12 +79,12 @@ public interface ConfigProperty<T> {
 		}
 		
 		@Override
-		public Integer parse(String s) {
+		public Optional<Integer> parse(String s) {
 			try {
-				return Integer.parseInt(s.trim());
+				return Optional.of(Integer.parseInt(s.trim()));
 			} catch (Exception e) {
-				System.err.println("unable to parse option '" + name + "' as integer!");
-				return min;
+				Packages.LOGGER.error("option '{}' - unable to parse '{}' as an integer", name, s);
+				return Optional.empty();
 			}
 		}
 		
@@ -89,9 +92,9 @@ public interface ConfigProperty<T> {
 		public boolean validate(Integer thing) {
 			if(thing >= min && thing <= max) return true; //seems good
 			
-			System.err.println("option '" + name + "' is not within its bounds; defaulting to " + min);
-			if(min != Integer.MIN_VALUE) System.err.println("\\-> it should be at least " + min);
-			if(max != Integer.MAX_VALUE) System.err.println("\\-> it should be at most " + max);
+			Packages.LOGGER.error("option '{}' - number {} is not within its bounds", name, thing);
+			if(min != Integer.MIN_VALUE) Packages.LOGGER.error("\\-> it should be at least {}", min);
+			if(max != Integer.MAX_VALUE) Packages.LOGGER.error("\\-> it should be at most {}", max);
 			return false;
 		}
 	}
@@ -102,7 +105,7 @@ public interface ConfigProperty<T> {
 		@Override public List<String> comment() {return inner.comment();}
 		@Override public T defaultValue() {return inner.defaultValue();}
 		@Override public String write(T thing) {return inner.write(thing);}
-		@Override public T parse(String s) {return inner.parse(s);}
+		@Override public Optional<T> parse(String s) {return inner.parse(s);}
 		
 		@Override
 		public boolean validate(T thing) {

@@ -15,6 +15,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CrummyConfig implements CookedConfig {
 	public CrummyConfig(ConfigSchema schema, Path path) {
@@ -85,11 +86,19 @@ public class CrummyConfig implements CookedConfig {
 	}
 	
 	private <T> T parse(int lineNo, ConfigProperty<T> prop, String value) {
-		T parsed = prop.parse(value);
-		if(prop.validate(parsed)) return parsed;
+		Optional<T> parsedWrapped = prop.parse(value);
+		if(parsedWrapped.isEmpty()) {
+			log.error("On line {} of {}, option '{}' failed to parse. Defaulting to {}.", lineNo, path, prop.name(), prop.write(prop.defaultValue()));
+			return prop.defaultValue();
+		}
 		
-		log.error("On line {} of {}, option '{}' did not pass validation. Defaulting to {}.", lineNo, path, prop.name(), prop.write(prop.defaultValue()));
-		return prop.defaultValue();
+		T parsed = parsedWrapped.get();
+		if(!prop.validate(parsed)) {
+			log.error("On line {} of {}, option '{}' did not pass validation. Defaulting to {}.", lineNo, path, prop.name(), prop.write(prop.defaultValue()));
+			return prop.defaultValue();
+		}
+		
+		return parsed;
 	}
 	
 	public void write() throws IOException {
