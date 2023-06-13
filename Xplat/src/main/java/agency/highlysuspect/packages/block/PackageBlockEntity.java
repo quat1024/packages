@@ -215,7 +215,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 			case TAKE_ONE -> 1;
 			case TAKE_STACK -> {
 				ItemStack held = player.getItemInHand(hand);
-				if(container.matches(held)) {
+				if(!held.isEmpty() && container.matches(held)) {
 					//First, try to complete the stack in the player's hand without going over.
 					int completionAmount = held.getMaxStackSize() - held.getCount();
 					if(completionAmount > 0) yield completionAmount;
