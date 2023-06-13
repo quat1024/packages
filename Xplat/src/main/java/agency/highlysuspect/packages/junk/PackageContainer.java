@@ -84,7 +84,7 @@ public class PackageContainer implements Container {
 		PackageContainer cont = this;
 		do {
 			containers.add(cont);
-			cont = PackageContainer.fromItemStack(cont.getFilterStack());
+			cont = PackageContainer.fromItemStack(cont.getFilterStack(), true);
 		} while(cont != null);
 		
 		//what's at the middle of the tootsie pop?
@@ -145,7 +145,7 @@ public class PackageContainer implements Container {
 		if(checkCanFitInsideContainerItems && !stack.getItem().canFitInsideContainerItems()) return false;
 		
 		//Otherwise, if it's not a package, it is allowed.
-		PackageContainer cont = PackageContainer.fromItemStack(stack);
+		PackageContainer cont = PackageContainer.fromItemStack(stack, true);
 		if(cont == null) return true;
 		
 		//And packages are only allowed if they aren't nested too deeply.
@@ -156,7 +156,7 @@ public class PackageContainer implements Container {
 	//Packages normally hold eight stacks of items, but to nerf nesting a bit, packages can only hold eight nonempty packages.
 	//TODO: leaky abstraction, see comment in canPlaceItem
 	public int maxStackAmountAllowed(ItemStack stack) {
-		PackageContainer recur = fromItemStack(stack);
+		PackageContainer recur = fromItemStack(stack, true);
 		if(recur != null && recur.getCount() > 0) return 1;
 		else return Math.min(stack.getMaxStackSize(), 64);
 	}
@@ -164,7 +164,7 @@ public class PackageContainer implements Container {
 	//The amount of layers of nested Packages.
 	//TODO: Expensive, and on hot code paths
 	private int calcRecursionLevel() {
-		PackageContainer recur = fromItemStack(getFilterStack());
+		PackageContainer recur = fromItemStack(getFilterStack(), true);
 		if(recur == null) return 0;
 		else return 1 + recur.calcRecursionLevel();
 	}
@@ -333,7 +333,7 @@ public class PackageContainer implements Container {
 		
 		//Hoppers don't seem to check Container#getMaxStackSize? Like, at all? Ok whatever.
 		//Bandaid fix for them eating packages-with-items, then, which have a custom maxStackAmountAllowed
-		PackageContainer hereContainer = fromItemStack(getItem(slot));
+		PackageContainer hereContainer = fromItemStack(getItem(slot), true);
 		if(hereContainer != null && !hereContainer.isEmpty()) return false;
 		
 		return matches(stack);
@@ -372,32 +372,45 @@ public class PackageContainer implements Container {
 		return writeTo;
 	}
 	
-	public void readFromTag(CompoundTag tag) {
+	public PackageContainer readFromTag(CompoundTag tag) {
+		return readFromTag(tag, false);
+	}
+	
+	private PackageContainer readFromTag(CompoundTag tag, boolean computationOnly) {
 		clearContent();
+		
 		int count = tag.getInt("realCount");
-		if(count != 0) {
-			ItemStack stack = ItemStack.of(tag.getCompound("stack"));
+		if(count == 0) return this;
+		
+		ItemStack stack = ItemStack.of(tag.getCompound("stack"));
+		
+		if(computationOnly) {
+			//This package container is for "computation only" and doesn't need to be a well-behaved inventory.
+			//Instead of wasting time spreading the package contents over 8 internal slots, just use a giant overstack.
+			stack.setCount(count);
+			setItem(0, stack);
+		} else {
 			int maxPerSlot = maxStackAmountAllowed(stack);
-			
 			for(int remaining = count, slot = 0; remaining > 0 && slot < SLOT_COUNT; remaining -= maxPerSlot, slot++) {
 				ItemStack toInsert = stack.copy();
 				toInsert.setCount(Math.min(remaining, maxPerSlot));
 				setItem(slot, toInsert);
 			}
 		}
-	}
-	
-	public static PackageContainer fromTag(CompoundTag tag) {
-		PackageContainer r = new PackageContainer();
-		r.readFromTag(tag);
-		return r;
+		
+		return this;
 	}
 	
 	public static @Nullable PackageContainer fromItemStack(ItemStack stack) {
+		return fromItemStack(stack, false);
+	}
+	
+	//"Public" somewhat reluctantly (tooltips, rendering, etc).
+	//Be careful when passing "true" to this method; do not write to the returned PackageContainer.
+	public static @Nullable PackageContainer fromItemStack(ItemStack stack, boolean computationOnly) {
 		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE.get()) return null;
 		CompoundTag tag = stack.getTag();
-		if(tag == null) return null;
-		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
+		return tag == null ? null : new PackageContainer().readFromTag(tag.getCompound("BlockEntityTag").getCompound(KEY), computationOnly);
 	}
 	
 	public ItemStack writeToStackTag(ItemStack stack) {

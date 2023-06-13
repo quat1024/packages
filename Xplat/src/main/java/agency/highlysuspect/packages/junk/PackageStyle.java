@@ -10,6 +10,9 @@ import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 
 public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
+	public static final PackageStyle ERROR_LOL = new PackageStyle(Blocks.PINK_CONCRETE, Blocks.BLACK_CONCRETE, DyeColor.RED);
+	public static final String KEY = "PackageStyle";
+	
 	public static PackageStyle fromTag(CompoundTag tag) {
 		return new PackageStyle(
 			Registry.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
@@ -18,15 +21,11 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 		);
 	}
 	
-	public static final PackageStyle ERROR_LOL = new PackageStyle(Blocks.PINK_CONCRETE, Blocks.BLACK_CONCRETE, DyeColor.RED);
-	
 	public static PackageStyle fromItemStack(ItemStack stack) {
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return ERROR_LOL;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
 	}
-	
-	public static final String KEY = "PackageStyle";
 	
 	public PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock, @NotNull DyeColor color) {
 		this.frameBlock = frameBlock;

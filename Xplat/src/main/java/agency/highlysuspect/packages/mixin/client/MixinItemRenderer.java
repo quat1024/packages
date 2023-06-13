@@ -24,7 +24,7 @@ public class MixinItemRenderer {
 	@Inject(method = "render", at = @At("HEAD"))
 	public void packages$renderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType mode, boolean invert, PoseStack pose, MultiBufferSource bufs, int light, int overlay, BakedModel model, CallbackInfo ci) {
 		if(stack.getItem() == PItems.PACKAGE.get()) {
-			PackageContainer container = PackageContainer.fromItemStack(stack);
+			PackageContainer container = PackageContainer.fromItemStack(stack, true);
 			if(container == null) return;
 			
 			ItemStack inner = container.getFilterStack();

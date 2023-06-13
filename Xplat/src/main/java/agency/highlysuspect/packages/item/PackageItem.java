@@ -35,7 +35,7 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public Component getName(ItemStack stack) {
-		PackageContainer contents = PackageContainer.fromItemStack(stack);
+		PackageContainer contents = PackageContainer.fromItemStack(stack, true);
 		if(contents == null) return super.getName(stack);
 		
 		ItemStack contained = contents.getFilterStack();
@@ -63,7 +63,7 @@ public class PackageItem extends BlockItem {
 	
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag mistake) {
-		PackageContainer contents = PackageContainer.fromItemStack(stack);
+		PackageContainer contents = PackageContainer.fromItemStack(stack, true);
 		if(contents != null) {
 			PackageContainer.TooltipStats stats = contents.computeTooltipStats();
 			//If there's at least one layer of nontrivial nesting going on, advertise how many items there are if the entire package was unrolled.
@@ -109,20 +109,20 @@ public class PackageItem extends BlockItem {
 	public boolean isBarVisible(ItemStack stack) {
 		if(stack.getCount() != 1) return false; //Clips with the number and looks bad, and stacked packages aren't interactable anyway.
 		
-		PackageContainer container = PackageContainer.fromItemStack(stack);
+		PackageContainer container = PackageContainer.fromItemStack(stack, true);
 		return container != null && !container.isEmpty();
 	}
 	
 	@Override
 	public int getBarWidth(ItemStack stack) {
-		PackageContainer container = PackageContainer.fromItemStack(stack);
+		PackageContainer container = PackageContainer.fromItemStack(stack, true);
 		if(container == null) return 0;
 		return Math.min((int) (1 + 12 * container.fillPercentage()), 13);
 	}
 	
 	@Override
 	public int getBarColor(ItemStack stack) {
-		PackageContainer container = PackageContainer.fromItemStack(stack);
+		PackageContainer container = PackageContainer.fromItemStack(stack, true);
 		if(container == null) return 0xFF00FF; //Shouldn't be viewable lol
 		else if(container.isFull()) return 0xD5636A; //Nice tomato-ey red color
 		else return 0x6666FF; //Same color as the bundle's bar
