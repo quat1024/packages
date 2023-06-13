@@ -201,6 +201,8 @@ public class PackageBlock extends Block implements EntityBlock {
 		stacks.add(p.createCustomizedStack(Blocks.STRIPPED_CRIMSON_HYPHAE, Blocks.CRIMSON_PLANKS, DyeColor.RED));
 		stacks.add(p.createCustomizedStack(Blocks.WARPED_HYPHAE, Blocks.WARPED_PLANKS, DyeColor.CYAN));
 		stacks.add(p.createCustomizedStack(Blocks.STRIPPED_WARPED_HYPHAE, Blocks.WARPED_PLANKS, DyeColor.CYAN));
+		stacks.add(p.createCustomizedStack(Blocks.MANGROVE_LOG, Blocks.MANGROVE_PLANKS, DyeColor.RED));
+		stacks.add(p.createCustomizedStack(Blocks.STRIPPED_MANGROVE_LOG, Blocks.MANGROVE_PLANKS, DyeColor.RED));
 		
 		//stone variants
 		stacks.add(p.createCustomizedStack(Blocks.STONE, Blocks.COBBLESTONE, DyeColor.LIGHT_GRAY));
