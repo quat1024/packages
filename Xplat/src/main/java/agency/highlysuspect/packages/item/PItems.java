@@ -5,7 +5,6 @@ import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 

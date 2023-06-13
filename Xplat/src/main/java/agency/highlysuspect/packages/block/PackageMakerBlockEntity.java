@@ -2,11 +2,11 @@ package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.PropsCommon;
-import agency.highlysuspect.packages.menu.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PTags;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
+import agency.highlysuspect.packages.menu.PackageMakerMenu;
 import agency.highlysuspect.packages.platform.SoftImplement;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
