@@ -1,5 +1,7 @@
 package agency.highlysuspect.packages.block;
 
+import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.PropsCommon;
 import agency.highlysuspect.packages.item.PackageItem;
 import agency.highlysuspect.packages.junk.PUtil;
 import agency.highlysuspect.packages.junk.PackageContainer;
@@ -82,7 +84,7 @@ public class PackageBlock extends Block implements EntityBlock {
 		
 		if(world.isClientSide) {
 			//Load the tag clientside. Fixes some flickering (wrong style/count) when placing the item.
-			//Kinda surprised the game doesn't do this itself; it explicitly only does this server-side.
+			//Kinda surprised the game doesn't do this itself; BlockEntityTag magic is explicitly only done server-side.
 			CompoundTag blockEntityTag = BlockItem.getBlockEntityData(stack);
 			if(blockEntityTag != null) pkg.load(blockEntityTag);
 		}
@@ -137,6 +139,11 @@ public class PackageBlock extends Block implements EntityBlock {
 		if(!world.isClientSide && player.isCreative()) {
 			//Spawn a drop, even in creative mode. This echoes what shulker boxes do.
 			getDrops(state, (ServerLevel) world, pos, world.getBlockEntity(pos)).forEach(s -> {
+				if(!Packages.instance.config.get(PropsCommon.DROP_EMPTY_PACKAGES_IN_CREATIVE)) {
+					PackageContainer cont = PackageContainer.fromItemStack(s, true);
+					if(cont == null || cont.isEmpty()) return;
+				}
+				
 				ItemEntity ent = new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, s);
 				ent.setDefaultPickUpDelay();
 				ent.setDeltaMovement(0, 0, 0);
@@ -147,13 +154,13 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	@Override
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
-		//Don't ask me why the cast is there but Mojang does it too
+		//Don't ask me why the instanceof is there but Mojang does it too
 		if(world.getBlockEntity(pos) instanceof PackageBlockEntity) world.updateNeighbourForOutputSignal(pos, this);
 		
 		super.onRemove(state, world, pos, newState, moved);
 	}
 	
-	//middle-click pick block, without holding Ctrl in creative
+	//middle-click pick block, without holding Ctrl, in creative
 	@Override
 	public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
 		ItemStack stack = super.getCloneItemStack(world, pos, state);

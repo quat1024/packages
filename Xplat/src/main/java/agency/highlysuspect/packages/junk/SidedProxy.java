@@ -15,4 +15,8 @@ public class SidedProxy {
 		//Anything sniffing tooltips server-side (I forget if this is safe or not, lol) should get all info
 		return true;
 	}
+	
+	public boolean useRedBarWhenFull() {
+		return false;
+	}
 }

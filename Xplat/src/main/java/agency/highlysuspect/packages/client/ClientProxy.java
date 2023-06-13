@@ -23,4 +23,9 @@ public class ClientProxy extends SidedProxy {
 	public boolean hasShiftDownForTooltip() {
 		return Screen.hasShiftDown();
 	}
+	
+	@Override
+	public boolean useRedBarWhenFull() {
+		return PackagesClient.instance.config.get(PropsClient.RED_BAR_WHEN_FULL);
+	}
 }

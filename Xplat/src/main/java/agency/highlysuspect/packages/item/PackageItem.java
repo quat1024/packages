@@ -124,7 +124,7 @@ public class PackageItem extends BlockItem {
 	public int getBarColor(ItemStack stack) {
 		PackageContainer container = PackageContainer.fromItemStack(stack, true);
 		if(container == null) return 0xFF00FF; //Shouldn't be viewable lol
-		else if(container.isFull()) return 0xD5636A; //Nice tomato-ey red color
+		else if(Packages.instance.proxy.useRedBarWhenFull() && container.isFull()) return 0xD5636A; //Nice tomato-ey red color
 		else return 0x6666FF; //Same color as the bundle's bar
 	}
 	

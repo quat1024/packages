@@ -28,31 +28,39 @@ public class PropsClient {
 		"If you did and want it back, set this to 4."
 	);
 	
+	public static final ConfigProperty<Boolean> RED_BAR_WHEN_FULL = ConfigProperty.boolOpt(
+		"redBarWhenFull", true,
+		"Packages display a \"durability\" bar corresponding to their fill level. If 'false', the bar is always blue,",
+		"and if 'true', the bar will turn red when the package is 100% filled. I think the red color looks nice,",
+		"but if you don't care for the discrepancy with the vanilla Bundle item (which is always blue), feel free to turn it off."
+	);
+	
 	public static final ConfigProperty<Boolean> CACHE_MESHES = ConfigProperty.boolOpt(
 		"cacheMeshes", true,
 		"If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
-		"The model bakery is quite fast; this probably helps chunk-bake performance less than it sounds like it would, and consumes memory.",
-		"However I'm pretty sure it slightly improves the efficiency of item rendering. All's tradeoffs.",
-		"F3+T will dump the cache."
+		"The model bakery is quite fast, and this probably helps chunk-bake performance less than it sounds like it would.",
+		"It also consumes more memory. An F3+T will discard all caches.",
+		"However, I'm pretty sure it slightly improves the efficiency of item rendering. All's tradeoffs in love and perf."
 	);
 	
 	public static final ConfigProperty<Boolean> FORGE_SWAP_RED_AND_BLUE = ConfigProperty.boolOpt(
 		"swapRedAndBlue", true,
-		"For some reason I need this on Forge only, to make the front face of Packages render with the correct color.",
-		"If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
+		"Hi Forge players! For some reason, I need this to make the front face of Packages render with the right color",
+		"on your modloader. If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
 	);
 	
 	public static final ConfigProperty<Boolean> FABRIC_FREX_SUPPORT = ConfigProperty.boolOpt(
 		"frexSupport", true,
 		"If 'true' and FREX is loaded, FREX materials will be forwarded through into Packages's custom block models.",
-		"Use this if you have funky Canvas shaders.",
-		"Requires a game restart to activate and deactivate."
+		"Use this if you have funky Canvas shaders. Requires a game restart to activate and deactivate."
 	);
 	
 	public static ConfigSchema visit(ConfigSchema in) {
 		in.section("Keys", INSERT_ONE_BINDING_UNPARSED, INSERT_STACK_BINDING_UNPARSED, INSERT_ALL_BINDING_UNPARSED,
 			TAKE_ONE_BINDING_UNPARSED, TAKE_STACK_BINDING_UNPARSED, TAKE_ALL_BINDING_UNPARSED,
 			PUNCH_REPEAT);
+		
+		in.section("Pedantry", RED_BAR_WHEN_FULL);
 		
 		in.section("Model", CACHE_MESHES);
 		if(Packages.instance.isForge()) in.option(FORGE_SWAP_RED_AND_BLUE);
