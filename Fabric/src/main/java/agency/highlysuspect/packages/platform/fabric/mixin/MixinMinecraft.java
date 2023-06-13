@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.platform.fabric.mixin;
 
-import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.platform.fabric.client.FabricClientInit;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;

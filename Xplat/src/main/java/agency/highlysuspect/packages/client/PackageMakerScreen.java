@@ -2,7 +2,7 @@ package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
-import agency.highlysuspect.packages.container.PackageMakerMenu;
+import agency.highlysuspect.packages.menu.PackageMakerMenu;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;

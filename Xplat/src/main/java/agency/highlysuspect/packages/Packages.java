@@ -4,7 +4,7 @@ import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.config.CookedConfig;
-import agency.highlysuspect.packages.container.PMenuTypes;
+import agency.highlysuspect.packages.menu.PMenuTypes;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PDispenserBehaviors;
 import agency.highlysuspect.packages.junk.PTags;

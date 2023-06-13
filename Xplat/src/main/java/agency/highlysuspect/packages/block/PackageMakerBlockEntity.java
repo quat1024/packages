@@ -2,7 +2,7 @@ package agency.highlysuspect.packages.block;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.PropsCommon;
-import agency.highlysuspect.packages.container.PackageMakerMenu;
+import agency.highlysuspect.packages.menu.PackageMakerMenu;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.junk.PSoundEvents;
 import agency.highlysuspect.packages.junk.PTags;

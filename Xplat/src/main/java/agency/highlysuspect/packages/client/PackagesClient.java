@@ -5,7 +5,7 @@ import agency.highlysuspect.packages.block.PBlockEntityTypes;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.config.CookedConfig;
-import agency.highlysuspect.packages.container.PMenuTypes;
+import agency.highlysuspect.packages.menu.PMenuTypes;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.net.PackageAction;
 import agency.highlysuspect.packages.platform.RegistryHandle;

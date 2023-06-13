@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ConfigSchema {
-	Map<String, List<ConfigProperty<?>>> propertiesByCategory = new LinkedHashMap<>();
+	private final Map<String, List<ConfigProperty<?>>> propertiesByCategory = new LinkedHashMap<>();
 	
 	//builder style api
 	

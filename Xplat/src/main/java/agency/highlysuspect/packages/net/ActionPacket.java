@@ -22,9 +22,9 @@ public final class ActionPacket {
 		this.action = action;
 	}
 	
-	public BlockPos pos;
-	public InteractionHand hand;
-	public PackageAction action;
+	public final BlockPos pos;
+	public final InteractionHand hand;
+	public final PackageAction action;
 	
 	public void write(FriendlyByteBuf buf) {
 		buf.writeBlockPos(pos);

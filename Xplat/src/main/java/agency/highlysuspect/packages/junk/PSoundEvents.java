@@ -14,8 +14,7 @@ public class PSoundEvents {
 	public static final SoundEvent TAKE_ALL = new SoundEvent(Packages.id("take_all"));
 	
 	public static void onInitialize() {
-		//Here I am ignoring the returned RegistryHandle because SoundEvent is just a wrapper around ResourceLocation.
-		//It's okay to initialize them once at startup and register them later. Even on Forge.
+		//Ignoring the returned RegistryHandle. It works.
 		
 		Packages.instance.register(Registry.SOUND_EVENT, PACKAGE_MAKER_CRAFT.getLocation(), () -> PACKAGE_MAKER_CRAFT);
 		Packages.instance.register(Registry.SOUND_EVENT, INSERT_ONE.getLocation(), () -> INSERT_ONE);

@@ -1,4 +1,4 @@
-package agency.highlysuspect.packages.container;
+package agency.highlysuspect.packages.menu;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;

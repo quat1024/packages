@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.platform.forge.mixin;
 
-import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.platform.client.EarlyClientsideLeftClickCallback;
 import agency.highlysuspect.packages.platform.forge.client.ForgeClientInit;
 import net.minecraft.client.Minecraft;

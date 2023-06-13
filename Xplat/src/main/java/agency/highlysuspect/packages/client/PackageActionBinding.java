@@ -48,17 +48,18 @@ public record PackageActionBinding(PackageAction action, boolean ctrl, boolean s
 		
 		for(String option : s.split("-")) {
 			switch(option.toLowerCase(Locale.ROOT)) {
-				case "ctrl" -> b.ctrl = true;
-				case "sneak", "shift" -> b.sneak = true;
-				case "alt" -> b.alt = true;
-				case "punch", "attack", "left" -> b.mainTrigger = MainTrigger.PUNCH;
-				case "use", "right", "activate" -> b.mainTrigger = MainTrigger.USE;
+				case "ctrl" -> b.ctrl();
+				case "sneak", "shift" -> b.sneak();
+				case "alt" -> b.alt();
+				case "punch", "attack", "left" -> b.punch();
+				case "use", "right", "activate" -> b.use();
 				default -> Packages.LOGGER.warn("Unknown PackageActionBinding component '" + option + "', skipping");
 			}
 		}
 		return b.build();
 	}
 	
+	@SuppressWarnings("UnusedReturnValue")
 	public static class Builder {
 		public Builder(PackageAction action) {
 			this.action = action;

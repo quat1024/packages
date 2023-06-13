@@ -118,11 +118,6 @@ public class PClientBlockEventHandlers {
 		if(leastWrongBinding != null) return leastWrongBinding.action();
 		else return null;
 	}
-
-//	private static boolean matchesExactly(Player player, PackageActionBinding binding, MainTrigger main) {
-//		if(binding.mainTrigger() == MainTrigger.UNDEFINED || binding.mainTrigger() != main) return false;
-//		return binding.ctrl() == Screen.hasControlDown() && binding.alt() == Screen.hasAltDown() && binding.sneak() == player.isShiftKeyDown();
-//	}
 	
 	/**
 	 * - The binding requires a modifier, and the player is not holding the modifier. No match.

@@ -138,13 +138,7 @@ public class CrummyConfig implements CookedConfig {
 		Files.write(path, out, StandardCharsets.UTF_8);
 	}
 	
-	public static class Bakery implements ConfigSchema.Bakery {
-		public Bakery(Path path) {
-			this.path = path;
-		}
-		
-		private final Path path;
-		
+	public record Bakery(Path path) implements ConfigSchema.Bakery {
 		@Override
 		public CookedConfig cook(ConfigSchema schema) {
 			return new CrummyConfig(schema, path);

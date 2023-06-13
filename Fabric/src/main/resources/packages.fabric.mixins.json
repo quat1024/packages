@@ -1,7 +1,7 @@
 {
 	"required": true,
 	"package": "agency.highlysuspect.packages.platform.fabric.mixin",
-	"compatibilityLevel": "JAVA_16",
+	"compatibilityLevel": "JAVA_17",
 	"mixins": [
 		"particleslol.MixinEntity",
 		"particleslol.MixinLivingEntity"

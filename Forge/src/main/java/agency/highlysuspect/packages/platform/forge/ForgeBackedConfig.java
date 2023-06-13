@@ -1,6 +1,5 @@
 package agency.highlysuspect.packages.platform.forge;
 
-import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.config.ConfigProperty;
 import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.config.CookedConfig;
@@ -46,13 +45,7 @@ public class ForgeBackedConfig implements CookedConfig {
 		return true;
 	}
 	
-	public static class Bakery implements ConfigSchema.Bakery {
-		public Bakery(ForgeConfigSpec.Builder spec) {
-			this.spec = spec;
-		}
-		
-		public final ForgeConfigSpec.Builder spec;
-		
+	public record Bakery(ForgeConfigSpec.Builder spec) implements ConfigSchema.Bakery {
 		@Override
 		public CookedConfig cook(ConfigSchema schema) {
 			Map<ConfigProperty<?>, ForgeConfigSpec.ConfigValue<?>> liveValues = new HashMap<>();
