@@ -77,29 +77,39 @@ public class PackageContainer implements Container {
 		return count;
 	}
 	
-	//The item all the way at the bottom of the package chain.
-	public ItemStack computeRootContents() {
-		PackageContainer subcontents = PackageContainer.fromItemStack(getFilterStack());
-		return subcontents == null ? getFilterStack() : subcontents.computeRootContents();
-	}
-	
-	//If you unpackaged all nested packages, this is how many items it really contains.
-	public int computeFullyMultipliedCount() {
-		PackageContainer subcontents = PackageContainer.fromItemStack(getFilterStack());
-		return (subcontents == null ? 1 : subcontents.computeFullyMultipliedCount()) * getCount();
-	}
-	
-	//"amplification" -> "there is at least one package in the chain with more than one copy of itself"
-	//this will false positive when computeRootContents.isEmpty but yeah. i dont like this big garbage-factory recursive algorithm anyway
-	//TODO make the item tooltip not recurse into these expensive methods like three separate times
-	public boolean computeAmplificationStatus() {
-		PackageContainer subcontents = PackageContainer.fromItemStack(getFilterStack());
-		if(subcontents != null) return getCount() > 1 || subcontents.computeAmplificationStatus(); //short circuiting
-		else return false;
+	public record TooltipStats(ItemStack rootContents, int fullyMultipliedCount, boolean amplified) {}
+	public TooltipStats computeTooltipStats() {
+		//line up all the containers in a row, outermost to innermost
+		List<PackageContainer> containers = new ArrayList<>();
+		PackageContainer cont = this;
+		do {
+			containers.add(cont);
+			cont = PackageContainer.fromItemStack(cont.getFilterStack());
+		} while(cont != null);
+		
+		//what's at the middle of the tootsie pop?
+		PackageContainer lastContainer = containers.get(containers.size() - 1);
+		ItemStack rootContents = lastContainer.getFilterStack();
+		
+		if(rootContents.isEmpty()) return new TooltipStats(rootContents, 0, false);
+		
+		//and how many items are there, for real?
+		int fullyMultipliedCount = lastContainer.getCount();
+		boolean amplified = false;
+		for(int i = 0; i < containers.size() - 1; i++) {
+			int count = containers.get(i).getCount();
+			
+			fullyMultipliedCount *= count;
+			amplified |= count > 1; 
+		}
+		
+		return new TooltipStats(rootContents, fullyMultipliedCount, amplified);
 	}
 	
 	public boolean isFull() {
-		return Mth.equal(fillPercentage(), 1); //Mth.equal uses a suitable epsilon
+		int maxCount = maxStackAmountAllowed(getFilterStack()) * SLOT_COUNT;
+		if(maxCount == 0) return true; //if the package isn't supposed to contain this item
+		return getCount() == maxCount;
 	}
 	
 	public float fillPercentage() {
@@ -113,26 +123,33 @@ public class PackageContainer implements Container {
 	public boolean allowedInPackageAtAll(ItemStack stack) {
 		if(stack.is(PTags.BANNED_FROM_PACKAGE)) return false;
 		
+		//Item#canFitInsideContainerItems is a vanilla API for "is this item allowed to go inside containers".
+		//In vanilla it only returns `false` on shulker boxes. It also doesn't pass the whole ItemStack.
+		//I think it'd be good to call this API if I can, but I need to carve out some exceptions.
 		boolean checkCanFitInsideContainerItems = true;
+		
+		//Shulker boxes are allowed, but only if they're empty.
 		if(stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof ShulkerBoxBlock) {
 			checkCanFitInsideContainerItems = false;
 			CompoundTag blockEntityTag = stack.getTagElement("BlockEntityTag");
 			if(blockEntityTag != null && !blockEntityTag.getList("Items", 10).isEmpty()) return false;
 		}
 		
+		//Bundles are allowed, but only if they're empty.
 		if(stack.getItem() instanceof BundleItem) {
 			checkCanFitInsideContainerItems = false;
 			if(stack.isBarVisible()) return false;
 		}
 		
-		//canFitInsideContainerItems is a little overbearing; e.g. it doesn't make accomodations for *empty*
-		//shulker boxes, which are totally safe to put into containers. So the hardcoded exceptions will bypass this check.
-		//canFitInsideContainerItems doesn'tpass the ItemStack btw.
+		//Otherwise, if it can't fit inside container items, it's not allowed.
 		if(checkCanFitInsideContainerItems && !stack.getItem().canFitInsideContainerItems()) return false;
 		
+		//Otherwise, if it's not a package, it is allowed.
 		PackageContainer cont = PackageContainer.fromItemStack(stack);
 		if(cont == null) return true;
-		return cont.calcRecursionLevel() < RECURSION_LIMIT;
+		
+		//And packages are only allowed if they aren't nested too deeply.
+		else return cont.calcRecursionLevel() < RECURSION_LIMIT;
 	}
 	
 	//The amount of items per-internal-slot that a Package is allowed to hold, if it contained `stack`.
@@ -145,14 +162,14 @@ public class PackageContainer implements Container {
 	}
 	
 	//The amount of layers of nested Packages.
-	//TODO: This looks expensive, cache it maybe. Invalidation...
+	//TODO: Expensive, and on hot code paths
 	private int calcRecursionLevel() {
 		PackageContainer recur = fromItemStack(getFilterStack());
 		if(recur == null) return 0;
 		else return 1 + recur.calcRecursionLevel();
 	}
 	
-	//"true" if the itemstack is suitable for insertion into the Package.
+	//"true" if the itemstack is suitable for insertion into this Package.
 	//Doesn't check things like "is the Package full". So this method is kind of useless.
 	//Based kinda off HopperBlockEntity#canMergeItems but it's different
 	public boolean matches(ItemStack stack) {
@@ -381,19 +398,6 @@ public class PackageContainer implements Container {
 		CompoundTag tag = stack.getTag();
 		if(tag == null) return null;
 		else return fromTag(tag.getCompound("BlockEntityTag").getCompound(KEY));
-	}
-	
-	//Use this instead of fromItemStack() != null if you don't actually need the PackageContainer afterwards, it's cheaper.
-	public static boolean existsOnItemStack(ItemStack stack) {
-		if(stack.isEmpty() || stack.getItem() != PItems.PACKAGE.get()) return false;
-		CompoundTag tag = stack.getTag();
-		if(tag == null) return false;
-		
-		CompoundTag blockEntityTag = tag.getCompound("BlockEntityTag");
-		if(blockEntityTag == null || blockEntityTag.isEmpty()) return false;
-		
-		CompoundTag key = blockEntityTag.getCompound(KEY);
-		return key != null && !key.isEmpty();
 	}
 	
 	public ItemStack writeToStackTag(ItemStack stack) {

@@ -28,9 +28,7 @@ public class PackageItem extends BlockItem {
 	}
 	
 	public ItemStack createCustomizedStack(Block frame, Block inner, DyeColor color) {
-		return new PackageContainer().writeToStackTag(
-			new PackageStyle(frame, inner, color).writeToStackTag(
-				new ItemStack(this)));
+		return new PackageContainer().writeToStackTag(new PackageStyle(frame, inner, color).writeToStackTag(new ItemStack(this)));
 	}
 	
 	private int nameReentrancy = 0;
@@ -38,51 +36,46 @@ public class PackageItem extends BlockItem {
 	@Override
 	public Component getName(ItemStack stack) {
 		PackageContainer contents = PackageContainer.fromItemStack(stack);
-		if(contents != null) {
-			ItemStack contained = contents.getFilterStack();
-			if(!contained.isEmpty()) {
-				MutableComponent contentsComponent;
-				try {
-					nameReentrancy++;
-					contentsComponent = Component.translatable("block.packages.package.nonempty.contents", contents.getCount(), contained.getHoverName());
-					contentsComponent = switch(nameReentrancy) {
-						case 1  -> contentsComponent.withStyle(s -> s.withColor(0xD0D0D0));
-						case 2  -> contentsComponent.withStyle(s -> s.withColor(0xA0A0A0));
-						case 3  -> contentsComponent.withStyle(s -> s.withColor(0x858585));
-						default -> contentsComponent.withStyle(s -> s.withColor(0x666666));
-					};
-					
-					if(nameReentrancy == 1) {
-						return Component.translatable("block.packages.package.nonempty", super.getName(stack), contentsComponent);
-					} else {
-						return Component.translatable("block.packages.package.nonempty.reentrant", contentsComponent);
-					}
-				} finally {
-					nameReentrancy--;
-				}
-			}
-		}
+		if(contents == null) return super.getName(stack);
 		
-		return super.getName(stack);
+		ItemStack contained = contents.getFilterStack();
+		if(contained.isEmpty()) return super.getName(stack);
+		
+		try {
+			nameReentrancy++;
+			MutableComponent contentsComponent = Component.translatable("block.packages.package.nonempty.contents", contents.getCount(), contained.getHoverName())
+				.withStyle(s -> s.withColor(switch(nameReentrancy) {
+					case 1 -> 0xD0D0D0;
+					case 2 -> 0xA0A0A0;
+					case 3 -> 0x858585;
+					default -> 0x666666;
+				}));
+			
+			if(nameReentrancy == 1) {
+				return Component.translatable("block.packages.package.nonempty", super.getName(stack), contentsComponent);
+			} else {
+				return Component.translatable("block.packages.package.nonempty.reentrant", contentsComponent);
+			}
+		} finally {
+			nameReentrancy--;
+		}
 	}
 	
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag mistake) {
 		PackageContainer contents = PackageContainer.fromItemStack(stack);
 		if(contents != null) {
-			//Find the item all the way at the bottom of the chain
-			ItemStack root = contents.computeRootContents();
-			if(!root.isEmpty()) {
-				//Find how many of that item you would get if you unrolled all layers of package
-				int fullyMultipliedCount = contents.computeFullyMultipliedCount();
-				//If there's at least one layer of nesting going on: advertise how many items there ultimately are in the package
-				if(contents.computeAmplificationStatus()) {
-					tooltip.add(
-						Component.translatable("packages.contents_tooltip.utimately",
-							Component.translatable("block.packages.package.nonempty.contents", fullyMultipliedCount, root.getHoverName()).withStyle(ChatFormatting.DARK_RED)
-						).withStyle(ChatFormatting.DARK_GRAY)
-					);
-				}
+			PackageContainer.TooltipStats stats = contents.computeTooltipStats();
+			//If there's at least one layer of nontrivial nesting going on, advertise how many items there are if the entire package was unrolled.
+			if(stats.amplified() && !stats.rootContents().isEmpty()) {
+				tooltip.add(
+					Component.translatable("packages.contents_tooltip.utimately",
+						Component.translatable("block.packages.package.nonempty.contents",
+							stats.fullyMultipliedCount(),
+							stats.rootContents().getHoverName()
+						).withStyle(ChatFormatting.DARK_RED)
+					).withStyle(ChatFormatting.DARK_GRAY)
+				);
 			}
 		}
 		
@@ -105,7 +98,7 @@ public class PackageItem extends BlockItem {
 		} else {
 			//Lifting this stylization from Create, not out of trying to steal their thunder, more so a modpack has fewer unique kinds of "hold shift for xx" tooltips lol
 			tooltip.add(Component.translatable("packages.style_tooltip.hold_for_composition",
-				Component.translatable("packages.style_tooltip.shift", new Object[]{}).withStyle(ChatFormatting.GRAY)
+				Component.translatable("packages.style_tooltip.shift").withStyle(ChatFormatting.GRAY)
 			).withStyle(ChatFormatting.DARK_GRAY));
 		}
 		
