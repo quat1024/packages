@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.platform.fabric;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.net.ActionPacket;
@@ -30,6 +31,7 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class FabricInit extends Packages implements ModInitializer {
@@ -87,10 +89,10 @@ public class FabricInit extends Packages implements ModInitializer {
 	}
 	
 	@Override
-	public CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon) {
-		return FabricItemGroup.builder(id)
+	public void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents) {
+		FabricItemGroup.builder(id)
 			.icon(icon)
-			.displayItems((params, out) -> PItems.addItemStacks(out::accept))
+			.displayItems((params, out) -> contents.accept(out::accept))
 			.build();
 	}
 	

@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -33,27 +34,22 @@ public class FrapiMeshPackageModel implements UnbakedModel {
 	public static final ResourceLocation BLOCK_SPECIAL = Packages.id("special/package");
 	public static final ResourceLocation ITEM_SPECIAL = Packages.id("item/package");
 	
-	private final PackageModelBakery.Factory<Mesh> bakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package")) {
-		@Override
-		public PackageModelBakery<Mesh> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
-			return new FrapiMeshModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
-		}
-	};
+	private final PackageModelBakery.Factory<Mesh> factory = new PackageModelBakery.Factory<>(Packages.id("block/package"), FrapiMeshModelBakery::new);
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return bakeryFactory.getDependencies();
+		return List.of(factory.blockModelId());
 	}
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
-		//System.out.println(function);
+		// hmmm
 	}
 	
 	@Nullable
 	@Override
 	public BakedModel bake(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
-		return new Baked(bakeryFactory.make(loader, textureGetter, rotationContainer, modelId));
+		return new Baked(factory.make(loader, textureGetter, rotationContainer, modelId));
 	}
 	
 	private static class Baked extends ForwardingBakedModel {

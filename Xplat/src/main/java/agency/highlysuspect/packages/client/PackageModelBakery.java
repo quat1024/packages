@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.client;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.junk.PackageStyle;
-import com.google.common.collect.ImmutableList;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -16,7 +15,6 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -85,34 +83,28 @@ public interface PackageModelBakery<MODEL> {
 	 * The idea here is that you can keep an instance of this class in the UnbakedModel, and the methods prove useful
 	 * towards supplying the necessary model dependencies to the model baking process?
 	 */
-	abstract class Factory<T> {
-		@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("special/frame"));
-		@SuppressWarnings("deprecation") private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("special/inner"));
-		
-		private final ResourceLocation blockModelId;
-		
-		public Factory(ResourceLocation blockModelId) {
-			this.blockModelId = blockModelId;
-		}
-		
-		public Collection<ResourceLocation> getDependencies() {
-			return ImmutableList.of(blockModelId);
-		}
+	record Factory<T>(ResourceLocation blockModelId, Maker<T> maker) {
+		@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/frame"));
+		@SuppressWarnings("deprecation") private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/inner"));
 		
 		public PackageModelBakery<T> make(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
 			UnbakedModel unbaked = loader.getModel(blockModelId);
-			//TODO: why is the parent field not already set? Has resolveParent not been called on it?
+			
+			//TODO: why is the parent field not already set on Fabric? Has resolveParent not been called on it?
+			// If you remove this line, packages's models don't have their parent set (null instead of block/block)
 			unbaked.resolveParents(loader::getModel);
 			
 			BakedModel baseModel = unbaked.bake(loader, textureGetter, rotationContainer, modelId);
 			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 			
-			PackageModelBakery<T> bakery = make(baseModel, specialFrameSprite, specialInnerSprite);
+			PackageModelBakery<T> bakery = maker.make(baseModel, specialFrameSprite, specialInnerSprite);
 			if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakery = new Caching<>(bakery);
 			return bakery;
 		}
 		
-		public abstract PackageModelBakery<T> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite);
+		public interface Maker<T> {
+			PackageModelBakery<T> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite);
+		}
 	}
 }

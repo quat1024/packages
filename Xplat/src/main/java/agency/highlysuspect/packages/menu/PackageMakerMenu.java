@@ -85,10 +85,10 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 	}
 	
 	//These are destined for the block/item texture atlas (see atlases/blocks.json)
-	public static final ResourceLocation FRAME_BG = Packages.id("gui/slot_frame");
-	public static final ResourceLocation INNER_BG = Packages.id("gui/slot_inner");
-	public static final ResourceLocation DYE_BG = Packages.id("gui/slot_dye");
-	public static final ResourceLocation EXTRA_BG = Packages.id("gui/slot_extra");
+	public static final ResourceLocation FRAME_BG = Packages.id("package_gui_slot_icons/slot_frame");
+	public static final ResourceLocation INNER_BG = Packages.id("package_gui_slot_icons/slot_inner");
+	public static final ResourceLocation DYE_BG = Packages.id("package_gui_slot_icons/slot_dye");
+	public static final ResourceLocation EXTRA_BG = Packages.id("package_gui_slot_icons/slot_extra");
 	
 	public static class FunkySlot extends Slot {
 		public FunkySlot(Container inventory, int slot, int x, int y, @Nullable ResourceLocation background, Predicate<ItemStack> mayPlace) {

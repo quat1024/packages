@@ -27,6 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class Packages {
@@ -75,7 +76,7 @@ public abstract class Packages {
 	}
 	
 	public abstract <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker);
-	public abstract CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon);
+	public abstract void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents);
 	public abstract void registerDispenserBehavior(RegistryHandle<? extends ItemLike> item, DispenseItemBehavior behavior);
 	public abstract <T extends BlockEntity> BlockEntityType<T> makeBlockEntityType(BlockEntityFactory<T> factory, Block... blocks);
 	public abstract <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier);

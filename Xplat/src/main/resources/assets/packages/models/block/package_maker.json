@@ -6,8 +6,8 @@
 		"2": "block/acacia_log_top",
 		"3": "packages:block/package_maker/grate",
 		"4": "block/stripped_acacia_log",
-		"frame": "packages:special/frame",
-		"inner": "packages:special/inner",
+		"frame": "packages:package_special/frame",
+		"inner": "packages:package_special/inner",
 		"face": "packages:block/package/face",
 		"particle": "#3"
 	},

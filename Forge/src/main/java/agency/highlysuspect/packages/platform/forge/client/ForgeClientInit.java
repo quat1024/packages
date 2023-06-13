@@ -11,6 +11,7 @@ import agency.highlysuspect.packages.platform.client.EarlyClientsideLeftClickCal
 import agency.highlysuspect.packages.platform.client.MyScreenConstructor;
 import agency.highlysuspect.packages.platform.forge.ForgeBackedConfig;
 import agency.highlysuspect.packages.platform.forge.ForgeInit;
+import agency.highlysuspect.packages.platform.forge.client.model.NoConfigGeometryLoader;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageMakerModel;
 import agency.highlysuspect.packages.platform.forge.client.model.ForgePackageModel;
 import net.minecraft.client.Minecraft;
@@ -97,15 +98,8 @@ public class ForgeClientInit extends PackagesClient {
 	@Override
 	public void setupCustomModelLoaders() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelEvent.RegisterGeometryLoaders e) -> {
-			e.register(ForgePackageModel.Loader.ID.getPath(), new ForgePackageModel.Loader());
-			e.register(ForgePackageMakerModel.Loader.ID.getPath(), new ForgePackageMakerModel.Loader());
-		});
-		
-		//Forge's model system (IUnbakedGeometry) cannot specify dependencies between models.
-		//Its documentation states that it's a superset of UnbakedModel; this is a lie and we need to help it along here
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((ModelEvent.RegisterAdditional e) -> {
-			e.register(Packages.id("block/package"));
-			e.register(Packages.id("block/package_maker"));
+			e.register("forge_package_model_loader"      , new NoConfigGeometryLoader<>(ForgePackageModel::new));
+			e.register("forge_package_maker_model_loader", new NoConfigGeometryLoader<>(ForgePackageMakerModel::new));
 		});
 	}
 	

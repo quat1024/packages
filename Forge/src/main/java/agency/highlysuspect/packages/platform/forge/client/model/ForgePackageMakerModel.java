@@ -16,6 +16,7 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
+import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -39,19 +40,16 @@ import java.util.function.Function;
 public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMakerModel> {
 	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
 	
-	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker")) {
-		@Override
-		public PackageModelBakery<List<BakedQuad>> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
-			return new BakedQuadPackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
-		}
-	};
+	protected final PackageModelBakery.Factory<List<BakedQuad>> factory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker"), BakedQuadPackageModelBakery::new);
 	
-	//Model dependencies are notably missing from this class - this is because Forge forgot to add them to IModelGeometry.
-	//see ForgeClientPlatformSupport#setupCustomModelLoaders.
+	@Override
+	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
+		modelGetter.apply(factory.blockModelId()); //and discard the result. I think this forces the model to load?
+	}
 	
 	@Override
 	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
-		return new Baked(modelBakeryFactory.make(bakery, spriteGetter, modelState, modelLocation));
+		return new Baked(factory.make(bakery, spriteGetter, modelState, modelLocation));
 	}
 	
 	private static class Baked extends BakedModelWrapper<BakedModel> {

@@ -20,6 +20,7 @@ public class MixinMinecraft {
 	@Shadow @Nullable public LocalPlayer player;
 	@Shadow @Nullable public ClientLevel level;
 	
+	@SuppressWarnings("InvalidInjectorMethodSignature") //simply an MCDev false positive I think
 	@Inject(method = "startAttack", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/MultiPlayerGameMode;startDestroyBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/core/Direction;)Z"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
 	private void packages$startAttack$beforeStartDestroyingBlock(CallbackInfoReturnable<Boolean> cir, boolean miscLocal, BlockHitResult hit, BlockPos hitPos) {
 		if(player != null && FabricClientInit.instanceFabric.EARLY_LEFT_CLICK_EVENT.invoker().interact(player, level, hitPos, hit.getDirection())) {

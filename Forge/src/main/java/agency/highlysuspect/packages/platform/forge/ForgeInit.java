@@ -1,6 +1,7 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.config.ConfigSchema;
@@ -55,6 +56,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Mod("packages")
@@ -137,16 +139,12 @@ public class ForgeInit extends Packages {
 	}
 	
 	@Override
-	public CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon) {
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((CreativeModeTabEvent.Register e) -> {
-			e.registerCreativeModeTab(id, builder -> {
-				builder.title(Component.translatable("asd"))
-					.displayItems((params, out) -> PItems.addItemStacks(out::accept))
-					.icon(icon);
-			});
-		});
-		
-		return null; //TODO
+	public void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents) {
+		FMLJavaModLoadingContext.get().getModEventBus().addListener((CreativeModeTabEvent.Register e) ->
+			e.registerCreativeModeTab(id, builder ->
+				builder.title(Component.translatable("itemGroup.packages.group")) //blame fabric
+					.displayItems((params, out) -> contents.accept(out::accept))
+					.icon(icon)));
 	}
 	
 	@Override

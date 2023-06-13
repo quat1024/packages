@@ -25,16 +25,16 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public abstract class WeirdItemOverrideThing extends ItemOverrides {
-	public WeirdItemOverrideThing(PackageModelBakery<List<BakedQuad>> factory) {
+	public WeirdItemOverrideThing(PackageModelBakery<List<BakedQuad>> bakery) {
 		PackageModelBakery<BakedModel> bakeybake = new PackageModelBakery<>() {
 			@Override
 			public BakedModel getBaseModel() {
-				return factory.getBaseModel();
+				return bakery.getBaseModel();
 			}
 			
 			@Override
 			public BakedModel bake(@Nullable Object cacheKey, @Nullable DyeColor faceColor, @Nullable Block frameBlock, @Nullable Block innerBlock) {
-				return new EpicModel(getBaseModel(), factory.bake(cacheKey, faceColor, frameBlock, innerBlock));
+				return new EpicModel(getBaseModel(), bakery.bake(cacheKey, faceColor, frameBlock, innerBlock));
 			}
 		};
 		

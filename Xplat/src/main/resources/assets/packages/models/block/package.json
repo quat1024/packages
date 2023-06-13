@@ -1,7 +1,7 @@
 {
 	"textures": {
-		"frame": "packages:special/frame",
-		"inner": "packages:special/inner",
+		"frame": "packages:package_special/frame",
+		"inner": "packages:package_special/inner",
 		"face": "packages:block/package/face",
 		"particle": "#face"
 	},

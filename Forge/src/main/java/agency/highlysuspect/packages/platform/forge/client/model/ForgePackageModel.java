@@ -46,21 +46,16 @@ public class ForgePackageModel implements IUnbakedGeometry<ForgePackageModel> {
 	protected static final ModelProperty<BlockAndTintGetter> BATG_PROPERTY = new ModelProperty<>(); //To support getParticleIcon.
 	protected static final ModelProperty<BlockPos> BLOCKPOS_PROPERTY = new ModelProperty<>();//To support getParticleIcon.
 	
-	protected final PackageModelBakery.Factory<List<BakedQuad>> modelBakeryFactory = new PackageModelBakery.Factory<>(Packages.id("block/package")) {
-		@Override
-		public PackageModelBakery<List<BakedQuad>> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite) {
-			return new BakedQuadPackageModelBakery(baseModel, specialFrameSprite, specialInnerSprite);
-		}
-	};
+	protected final PackageModelBakery.Factory<List<BakedQuad>> factory = new PackageModelBakery.Factory<>(Packages.id("block/package"), BakedQuadPackageModelBakery::new);
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-		IUnbakedGeometry.super.resolveParents(modelGetter, context);
+		modelGetter.apply(factory.blockModelId()); //and discard the result. I think this forces the model to load?
 	}
 	
 	@Override
 	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
-		return new Baked(modelBakeryFactory.make(bakery, spriteGetter, modelState, modelLocation));
+		return new Baked(factory.make(bakery, spriteGetter, modelState, modelLocation));
 	}
 	
 	private static class Baked extends BakedModelWrapper<BakedModel> {
