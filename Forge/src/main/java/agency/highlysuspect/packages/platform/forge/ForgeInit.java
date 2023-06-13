@@ -72,7 +72,7 @@ public class ForgeInit extends Packages {
 		earlySetup();
 		
 		//finish up config (earlySetup populated the forgeSpec)
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, forgeSpec.build(), "packages-commonNEW.toml");
+		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, forgeSpec.build(), "packages-common.toml");
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onLoadConfig);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::onReloadConfig);
 		
