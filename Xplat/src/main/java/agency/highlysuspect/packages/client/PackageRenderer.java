@@ -5,8 +5,7 @@ import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -17,12 +16,15 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> {
 	public PackageRenderer(BlockEntityRendererProvider.Context context) {
@@ -77,10 +79,10 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		//Only moves the pose matrix, not the normal matrix, so item lighting comes from the correct direction
 		Matrix4f pose = ps.last().pose();
 		if(dir.primaryDirection.get2DDataValue() == -1) { //up/down
-			pose.multiply(Vector3f.YP.rotationDegrees(-dir.secondaryDirection.toYRot() + 90));
-			pose.multiply(Vector3f.ZP.rotationDegrees(dir.primaryDirection == Direction.UP ? 90 : -90));
+			pose.rotate(Axis.YP.rotationDegrees(-dir.secondaryDirection.toYRot() + 90));
+			pose.rotate(Axis.ZP.rotationDegrees(dir.primaryDirection == Direction.UP ? 90 : -90));
 		} else {
-			pose.multiply(Vector3f.YP.rotationDegrees(-dir.primaryDirection.toYRot() - 90));
+			pose.rotate(Axis.YP.rotationDegrees(-dir.primaryDirection.toYRot() - 90));
 		}
 	}
 	
@@ -91,21 +93,21 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		//Only moves the pose matrix, not the normal matrix, so items appear flat but are shaded as if they're not flat.
 		Matrix4f pose = ps.last().pose();
 		if(depth == 0) {
-			pose.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.006f, 0, 0));
-			pose.multiply(Vector3f.YP.rotationDegrees(90));
-			pose.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, 0.005f)); //it's flat fuck friday!!!!!
+			pose.translate(6 / 16f + 0.006f, 0, 0);
+			pose.rotate(Axis.YP.rotationDegrees(90));
+			pose.scale(0.75f, 0.75f, 0.005f); //it's flat fuck friday!!!!!
 		} else {
 			//Don't think about this too hard, just a workaround to slightly space out deeply-nested items.
 			//If I don't do this, situations like packages-inside-packages-inside-packages start zfighting pretty hard.
-			pose.multiply(Matrix4f.createTranslateMatrix(6 / 16f + 0.07f, 0, 0)); //Lift it out more
-			pose.multiply(Vector3f.YP.rotationDegrees(90));
-			pose.multiply(Matrix4f.createScaleMatrix(0.75f, 0.75f, depth * 0.06f)); //Scale it down less (and even less, for further depths)
+			pose.translate(6 / 16f + 0.07f, 0, 0); //Lift it out more
+			pose.rotate(Axis.YP.rotationDegrees(90));
+			pose.scale(0.75f, 0.75f, depth * 0.06f); //Scale it down less (and even less, for further depths)
 		}
 		
 		try {
 			depth++;
 			if(depth < 5) {
-				Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemTransforms.TransformType.GUI, light, OverlayTexture.NO_OVERLAY, ps, bufs, 0);
+				Minecraft.getInstance().getItemRenderer().renderStatic(stack, ItemDisplayContext.GUI, light, OverlayTexture.NO_OVERLAY, ps, bufs, null, 0);
 			}
 		} finally {
 			depth--;
@@ -144,12 +146,12 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		matrices.translate(6 / 16d + 0.05, 0, 0);
 		matrices.scale(-1, -scale, scale);
 		matrices.translate(0, -4, 0);
-		matrices.mulPose(Vector3f.YP.rotationDegrees(90));
+		matrices.mulPose(Axis.YP.rotationDegrees(90));
 		
 		int minusHalfWidth = -textRenderer.width(text) / 2;
-		textRenderer.drawInBatch(text, minusHalfWidth + 1, 1, shadowColor, false, matrices.last().pose(), vertexConsumers, false, 0, light); //Background
+		textRenderer.drawInBatch(text, minusHalfWidth + 1, 1, shadowColor, false, matrices.last().pose(), vertexConsumers, Font.DisplayMode.NORMAL, 0, light); //Background
 		matrices.translate(0, 0, -0.001);
-		textRenderer.drawInBatch(text, minusHalfWidth,     0, color      , false, matrices.last().pose(), vertexConsumers, false, 0, light); //Foreground
+		textRenderer.drawInBatch(text, minusHalfWidth,     0, color      , false, matrices.last().pose(), vertexConsumers, Font.DisplayMode.NORMAL, 0, light); //Foreground
 		
 		matrices.popPose();
 	}

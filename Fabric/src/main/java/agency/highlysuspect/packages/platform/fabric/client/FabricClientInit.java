@@ -20,7 +20,6 @@ import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -92,13 +91,6 @@ public class FabricClientInit extends PackagesClient implements ClientModInitial
 	@Override
 	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		MenuScreens.register(type.get(), cons::create);
-	}
-	
-	@Override
-	public void bakeSpritesOnto(ResourceLocation atlasTexture, ResourceLocation... sprites) {
-		ClientSpriteRegistryCallback.event(atlasTexture).register((tex, reg) -> {
-			for(ResourceLocation sprite : sprites) reg.register(sprite);
-		});
 	}
 	
 	@Override

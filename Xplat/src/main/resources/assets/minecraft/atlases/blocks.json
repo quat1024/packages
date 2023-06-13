@@ -1,0 +1,14 @@
+{
+	"sources": [
+		{
+			"type": "directory",
+			"source": "special",
+			"prefix": "special/"
+		},
+		{
+			"type": "directory",
+			"source": "gui",
+			"prefix": "gui/"
+		}
+	]
+}

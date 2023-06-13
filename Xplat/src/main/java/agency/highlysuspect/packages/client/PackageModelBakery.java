@@ -1,16 +1,14 @@
 package agency.highlysuspect.packages.client;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.junk.PUtil;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import agency.highlysuspect.packages.junk.PackageStyle;
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.resources.ResourceLocation;
@@ -21,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -86,7 +83,7 @@ public interface PackageModelBakery<MODEL> {
 	/**
 	 * Layering on let another layer of annoying abstraction: an instance of this class produces PackageModelBakeries.
 	 * The idea here is that you can keep an instance of this class in the UnbakedModel, and the methods prove useful
-	 * towards supplying the necessary texture and model dependencies to the model baking process.
+	 * towards supplying the necessary model dependencies to the model baking process?
 	 */
 	abstract class Factory<T> {
 		@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("special/frame"));
@@ -102,15 +99,12 @@ public interface PackageModelBakery<MODEL> {
 			return ImmutableList.of(blockModelId);
 		}
 		
-		public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
-			return PUtil.concat(
-				unbakedModelGetter.apply(blockModelId).getMaterials(unbakedModelGetter, unresolvedTextureReferences),
-				ImmutableList.of(SPECIAL_FRAME, SPECIAL_INNER)
-			);
-		}
-		
-		public PackageModelBakery<T> make(ModelBakery loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
-			BakedModel baseModel = loader.getModel(blockModelId).bake(loader, textureGetter, rotationContainer, modelId);
+		public PackageModelBakery<T> make(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
+			UnbakedModel unbaked = loader.getModel(blockModelId);
+			//TODO: why is the parent field not already set? Has resolveParent not been called on it?
+			unbaked.resolveParents(loader::getModel);
+			
+			BakedModel baseModel = unbaked.bake(loader, textureGetter, rotationContainer, modelId);
 			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 			

@@ -7,7 +7,6 @@ import agency.highlysuspect.packages.junk.PackageMakerStyle;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -15,9 +14,8 @@ import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -35,9 +33,7 @@ import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Function;
 
 public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMakerModel> {
@@ -50,16 +46,11 @@ public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMake
 		}
 	};
 	
-	@Override
-	public Collection<Material> getMaterials(IGeometryBakingContext context, Function<ResourceLocation, UnbakedModel> modelGetter, Set<Pair<String, String>> missingTextureErrors) {
-		return modelBakeryFactory.getMaterials(modelGetter, missingTextureErrors);
-	}
-	
 	//Model dependencies are notably missing from this class - this is because Forge forgot to add them to IModelGeometry.
 	//see ForgeClientPlatformSupport#setupCustomModelLoaders.
 	
 	@Override
-	public BakedModel bake(IGeometryBakingContext context, ModelBakery bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
+	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
 		return new Baked(modelBakeryFactory.make(bakery, spriteGetter, modelState, modelLocation));
 	}
 	

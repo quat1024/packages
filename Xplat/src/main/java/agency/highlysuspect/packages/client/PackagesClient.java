@@ -52,7 +52,6 @@ public abstract class PackagesClient {
 		setupCustomModelLoaders();
 		
 		registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
-		PackageMakerScreen.initIcons();
 		
 		PClientBlockEventHandlers.onInitializeClient();
 		
@@ -75,7 +74,6 @@ public abstract class PackagesClient {
 	}
 	
 	public abstract <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons);
-	public abstract void bakeSpritesOnto(ResourceLocation atlasTexture, ResourceLocation... sprites);
 	public abstract <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
 	public abstract void setRenderType(RegistryHandle<? extends Block> block, RenderType type);
 	public abstract void setupCustomModelLoaders();

@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -36,6 +37,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.PushReaction;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class PackageBlock extends Block implements EntityBlock {
 	public PackageBlock(Properties settings) {
@@ -174,10 +179,10 @@ public class PackageBlock extends Block implements EntityBlock {
 		return stack;
 	}
 	
-	@Override
-	public void fillItemCategory(CreativeModeTab tab, NonNullList<ItemStack> stacks) {
-		//Worth noting that BlockItem already checks CreativeModeTab#allowd?edIn.
-		if(!(asItem() instanceof PackageItem p)) return;
+	public List<ItemStack> lotsOfPackages() {
+		if(!(asItem() instanceof PackageItem p)) return Collections.emptyList();
+		
+		List<ItemStack> stacks = new ArrayList<>();
 		
 		//wood types
 		stacks.add(p.createCustomizedStack(Blocks.OAK_LOG, Blocks.OAK_PLANKS, DyeColor.WHITE));
@@ -218,13 +223,13 @@ public class PackageBlock extends Block implements EntityBlock {
 		};
 		
 		for(DyeColor color : COLORS_ORGANIZED) {
-			Block concrete = Registry.BLOCK.get(new ResourceLocation("minecraft", color.getSerializedName() + "_concrete"));
-			Block powder = Registry.BLOCK.get(new ResourceLocation("minecraft", color.getSerializedName() + "_concrete_powder"));
+			Block concrete = BuiltInRegistries.BLOCK.get(new ResourceLocation("minecraft", color.getSerializedName() + "_concrete"));
+			Block powder = BuiltInRegistries.BLOCK.get(new ResourceLocation("minecraft", color.getSerializedName() + "_concrete_powder"));
 			if(concrete != Blocks.AIR && powder != Blocks.AIR) stacks.add(p.createCustomizedStack(concrete, powder, color));
 		}
 		
 		for(DyeColor color : COLORS_ORGANIZED) {
-			Block terracotta = Registry.BLOCK.get(new ResourceLocation("minecraft", color.getSerializedName() + "_terracotta"));
+			Block terracotta = BuiltInRegistries.BLOCK.get(new ResourceLocation("minecraft", color.getSerializedName() + "_terracotta"));
 			if(terracotta != Blocks.AIR) stacks.add(p.createCustomizedStack(terracotta, terracotta, color));
 		}
 		
@@ -235,5 +240,7 @@ public class PackageBlock extends Block implements EntityBlock {
 			copper = WeatheringCopper.getNext(copper).orElse(null);
 			copperCut = WeatheringCopper.getNext(copperCut).orElse(null);
 		} while(copper != null && copperCut != null);
+		
+		return stacks;
 	}
 }

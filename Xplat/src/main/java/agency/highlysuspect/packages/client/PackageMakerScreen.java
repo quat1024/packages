@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -46,11 +45,14 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	@Override
 	protected void init() {
 		super.init();
-		craftButton = addRenderableWidget(new Button((width / 2) - 25, topPos + 33, 50, 20, Component.translatable(Packages.MODID + ".package_maker.craft_button"), (button) -> {
+		
+		craftButton = Button.builder(Component.translatable(Packages.MODID + ".package_maker.craft_button"), (__) -> {
 			assert minecraft != null;
 			assert minecraft.gameMode != null;
 			minecraft.gameMode.handleInventoryButtonClick(menu.containerId, hasShiftDown() ? 1 : 0);
-		}));
+		}).bounds((width / 2) - 25, topPos + 33, 50, 20).build();
+		
+		addRenderableWidget(craftButton);
 	}
 	
 	public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
@@ -96,11 +98,11 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 			if (!dryRun.isEmpty()) {
 				int x = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).x;
 				int y = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).y;
-				itemRenderer.renderAndDecorateFakeItem(dryRun, x, y);
+				itemRenderer.renderAndDecorateFakeItem(matrices, dryRun, x, y);
 				
 				RenderSystem.disableDepthTest();
 				RenderSystem.colorMask(true, true, true, false);
-				this.fillGradient(matrices, x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
+				fillGradient(matrices, x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
 				RenderSystem.colorMask(true, true, true, true);
 				RenderSystem.enableDepthTest();
 			}
@@ -115,10 +117,6 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		RenderSystem.setShaderTexture(0, TEXTURE);
 		int i = (this.width - this.imageWidth) / 2;
 		int j = (this.height - this.imageHeight) / 2;
-		this.blit(matrices, i, j, 0, 0, this.imageWidth, this.imageHeight);
-	}
-	
-	public static void initIcons() {
-		PackagesClient.instance.bakeSpritesOnto(InventoryMenu.BLOCK_ATLAS, PackageMakerMenu.FRAME_BG, PackageMakerMenu.INNER_BG, PackageMakerMenu.DYE_BG, PackageMakerMenu.EXTRA_BG);
+		blit(matrices, i, j, 0, 0, this.imageWidth, this.imageHeight);
 	}
 }

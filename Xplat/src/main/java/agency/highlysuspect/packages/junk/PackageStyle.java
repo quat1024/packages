@@ -1,6 +1,6 @@
 package agency.highlysuspect.packages.junk;
 
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
@@ -15,8 +15,8 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 	
 	public static PackageStyle fromTag(CompoundTag tag) {
 		return new PackageStyle(
-			Registry.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
-			Registry.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("inner"))).orElse(Blocks.AIR),
+			BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("frame"))).orElse(Blocks.AIR),
+			BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(tag.getString("inner"))).orElse(Blocks.AIR),
 			tag.contains("color") ? DyeColor.byId(tag.getInt("color")) : DyeColor.WHITE
 		);
 	}
@@ -38,8 +38,8 @@ public record PackageStyle(@NotNull Block frameBlock, @NotNull Block innerBlock,
 	}
 	
 	public CompoundTag toTag(CompoundTag writeTo) {
-		writeTo.putString("frame", Registry.BLOCK.getKey(frameBlock).toString());
-		writeTo.putString("inner", Registry.BLOCK.getKey(innerBlock).toString());
+		writeTo.putString("frame", BuiltInRegistries.BLOCK.getKey(frameBlock).toString());
+		writeTo.putString("inner", BuiltInRegistries.BLOCK.getKey(innerBlock).toString());
 		writeTo.putInt("color", color.getId());
 		return writeTo;
 	}

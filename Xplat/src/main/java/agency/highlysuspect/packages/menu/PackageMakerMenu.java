@@ -84,7 +84,7 @@ public class PackageMakerMenu extends AbstractContainerMenu {
 		return what;
 	}
 	
-	//These are destined for the block/item texture atlas (see PackageMakerScreen#initIcons)
+	//These are destined for the block/item texture atlas (see atlases/blocks.json)
 	public static final ResourceLocation FRAME_BG = Packages.id("gui/slot_frame");
 	public static final ResourceLocation INNER_BG = Packages.id("gui/slot_inner");
 	public static final ResourceLocation DYE_BG = Packages.id("gui/slot_dye");

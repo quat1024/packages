@@ -6,9 +6,9 @@ import agency.highlysuspect.packages.junk.PackageContainer;
 import agency.highlysuspect.packages.junk.TwelveDirection;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = ItemRenderer.class, priority = 990) //Earlier than Indigo's MixinItemRenderer, which uses the default of 1000
 public class MixinItemRenderer {
 	@Inject(method = "render", at = @At("HEAD"))
-	public void packages$renderItemVeryEarly(ItemStack stack, ItemTransforms.TransformType mode, boolean invert, PoseStack pose, MultiBufferSource bufs, int light, int overlay, BakedModel model, CallbackInfo ci) {
+	public void packages$renderItemVeryEarly(ItemStack stack, ItemDisplayContext ctx, boolean invert, PoseStack pose, MultiBufferSource bufs, int light, int overlay, BakedModel model, CallbackInfo ci) {
 		if(stack.getItem() == PItems.PACKAGE.get()) {
 			PackageContainer container = PackageContainer.fromItemStack(stack, true);
 			if(container == null) return;
@@ -31,7 +31,7 @@ public class MixinItemRenderer {
 			if(inner.isEmpty()) return;
 			
 			pose.pushPose();
-			model.getTransforms().getTransform(mode).apply(invert, pose);
+			model.getTransforms().getTransform(ctx).apply(invert, pose);
 			PackageRenderer.applyRotation(pose, TwelveDirection.NORTH);
 			PackageRenderer.drawItem(pose, bufs, inner, light);
 			pose.popPose();

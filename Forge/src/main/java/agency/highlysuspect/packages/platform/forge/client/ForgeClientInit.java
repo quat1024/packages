@@ -48,7 +48,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,11 +114,6 @@ public class ForgeClientInit extends PackagesClient {
 	@Override
 	public <T extends AbstractContainerMenu, U extends Screen & MenuAccess<T>> void registerMenuScreen(RegistryHandle<MenuType<T>> type, MyScreenConstructor<T, U> cons) {
 		menuScreensToRegister.add(new MenuScreenEntry<>(type, cons));
-	}
-	
-	@Override
-	public void bakeSpritesOnto(ResourceLocation atlasTexture, ResourceLocation... sprites) {
-		spritesToBake.computeIfAbsent(atlasTexture, __ -> new ArrayList<>()).addAll(Arrays.asList(sprites));
 	}
 	
 	@Override
@@ -223,9 +217,11 @@ public class ForgeClientInit extends PackagesClient {
 		menuScreensToRegister.forEach(MenuScreenEntry::register);
 	}
 	
-	private void actuallyBakeSpritesOnto(TextureStitchEvent.Pre event) {
-		List<ResourceLocation> sprites = spritesToBake.get(event.getAtlas().location());
-		if(sprites != null) sprites.forEach(event::addSprite);
+	private void actuallyBakeSpritesOnto(TextureStitchEvent/*.Pre*/ event) {
+		//List<ResourceLocation> sprites = spritesToBake.get(event.getAtlas().location());
+		//if(sprites != null) sprites.forEach(event::addSprite);
+		
+		// "Use atlas info JSON files instead"
 	}
 	
 	private void actuallySetBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {

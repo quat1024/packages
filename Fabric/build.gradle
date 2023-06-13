@@ -19,7 +19,7 @@ evaluationDependsOn(":Xplat") //pls
 apply plugin: "java"
 apply plugin: "fabric-loom"
 
-archivesBaseName = "${rootProject.name}-fabric-1.19.2"
+archivesBaseName = "${rootProject.name}-fabric-1.19.4"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 tasks.withType(JavaCompile).configureEach {
@@ -45,10 +45,10 @@ repositories {
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:1.19.2"
+	minecraft "com.mojang:minecraft:1.19.4"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:0.14.21"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:0.76.0+1.19.2"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:0.83.0+1.19.4"
 	compileOnly "org.jetbrains:annotations:24.0.1"
 	
 	implementation project(":Xplat") //funny xplat
@@ -57,10 +57,10 @@ dependencies {
 	def runWithSodium = false
 	
 	if(runWithCanvas) {
-		modImplementation "io.vram:frex-fabric-mc119:6.1.301"
-		modLocalRuntime "io.vram:canvas-fabric-mc119:1.0.2487"
+		modImplementation "io.vram:frex-fabric-mc119:8.0.327"
+		modLocalRuntime "io.vram:canvas-fabric-mc119:3.0.2547"
 	} else {
-		modCompileOnly "io.vram:frex-fabric-mc119:6.1.301"
+		modCompileOnly "io.vram:frex-fabric-mc119:8.0.327"
 	}
 	
 	if(runWithSodium) {

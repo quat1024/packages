@@ -14,6 +14,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -74,7 +75,7 @@ public abstract class WeirdItemOverrideThing extends ItemOverrides {
 		}
 		
 		@Override
-		public BakedModel applyTransform(ItemTransforms.TransformType cameraTransformType, PoseStack poseStack, boolean applyLeftHandTransform) {
+		public BakedModel applyTransform(ItemDisplayContext cameraTransformType, PoseStack poseStack, boolean applyLeftHandTransform) {
 			//Have to override this or Forge throws away all your work making a nontrivial BakedModelWrapper.
 			super.applyTransform(cameraTransformType, poseStack, applyLeftHandTransform);
 			return this;

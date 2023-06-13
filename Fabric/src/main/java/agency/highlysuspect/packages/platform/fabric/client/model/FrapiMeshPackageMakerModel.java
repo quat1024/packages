@@ -3,7 +3,6 @@ package agency.highlysuspect.packages.platform.fabric.client.model;
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
-import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.renderer.v1.mesh.Mesh;
 import net.fabricmc.fabric.api.renderer.v1.model.ForwardingBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
@@ -11,7 +10,7 @@ import net.fabricmc.fabric.api.rendering.data.v1.RenderAttachedBlockView;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.ModelBakery;
+import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
@@ -22,7 +21,6 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -47,12 +45,12 @@ public class FrapiMeshPackageMakerModel implements UnbakedModel {
 	}
 	
 	@Override
-	public Collection<Material> getMaterials(Function<ResourceLocation, UnbakedModel> unbakedModelGetter, Set<Pair<String, String>> unresolvedTextureReferences) {
-		return bakeryFactory.getMaterials(unbakedModelGetter, unresolvedTextureReferences);
+	public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
+		
 	}
 	
 	@Override
-	public BakedModel bake(ModelBakery loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
+	public BakedModel bake(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
 		return new Baked(bakeryFactory.make(loader, textureGetter, rotationContainer, modelId));
 	}
 	

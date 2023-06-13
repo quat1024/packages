@@ -2,12 +2,13 @@ package agency.highlysuspect.packages.platform.fabric;
 
 import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.config.ConfigSchema;
+import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
 import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
+import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -18,6 +19,7 @@ import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -86,7 +88,10 @@ public class FabricInit extends Packages implements ModInitializer {
 	
 	@Override
 	public CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon) {
-		return FabricItemGroupBuilder.build(id, icon);
+		return FabricItemGroup.builder(id)
+			.icon(icon)
+			.displayItems((params, out) -> PItems.addItemStacks(out::accept))
+			.build();
 	}
 	
 	@Override
@@ -96,7 +101,7 @@ public class FabricInit extends Packages implements ModInitializer {
 	
 	@Override
 	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
-		return new MenuType<>(supplier::create);
+		return new MenuType<>(supplier::create, FeatureFlagSet.of());
 	}
 	
 	@Override

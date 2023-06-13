@@ -19,7 +19,7 @@ apply plugin: "java"
 apply plugin: "net.minecraftforge.gradle"
 apply plugin: "org.spongepowered.mixin"
 
-archivesBaseName = "${rootProject.name}-forge-1.19.2"
+archivesBaseName = "${rootProject.name}-forge-1.19.4"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 tasks.withType(JavaCompile).configureEach {
@@ -46,7 +46,7 @@ repositories {
 }
 
 dependencies {
-	minecraft "net.minecraftforge:forge:1.19.2-43.2.0"
+	minecraft "net.minecraftforge:forge:1.19.4-45.1.0"
 	annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 	compileOnly "org.jetbrains:annotations:24.0.1"
 	
@@ -68,7 +68,7 @@ tasks.withType(JavaCompile) {
 }
 
 minecraft {
-	mappings channel: "official", version: "1.19.2"
+	mappings channel: "official", version: "1.19.4"
 	
 	runs {
 		client {

@@ -64,7 +64,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 				if(emitter.colorIndex() == 1) {
 					if(faceColor != null) {
 						int tint = 0xFF000000 | faceColor.getMaterialColor().col;
-						emitter.spriteColor(0, tint, tint, tint, tint);
+						emitter.color(tint, tint, tint, tint);
 						emitter.emit();
 					}
 					continue;
@@ -75,7 +75,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 				if(bounds.displaysSprite(specialFrameSprite)) {
 					if(frameSprite != null) {
 						bounds.normalizeEmitter(emitter, specialFrameSprite);
-						emitter.spriteBake(0, frameSprite, MutableQuadView.BAKE_NORMALIZED);
+						emitter.spriteBake(frameSprite, MutableQuadView.BAKE_NORMALIZED);
 						FrexCompat.PROXY.fancifyPackageQuad(emitter, frameState, frameSprite);
 						emitter.emit();
 					}
@@ -85,7 +85,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 				if(bounds.displaysSprite(specialInnerSprite)) {
 					if(innerSprite != null) {
 						bounds.normalizeEmitter(emitter, specialInnerSprite);
-						emitter.spriteBake(0, innerSprite, MutableQuadView.BAKE_NORMALIZED);
+						emitter.spriteBake(innerSprite, MutableQuadView.BAKE_NORMALIZED);
 						FrexCompat.PROXY.fancifyPackageQuad(emitter, innerState, innerSprite);
 						emitter.emit();
 					}
@@ -108,11 +108,11 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 			float maxV = Float.NEGATIVE_INFINITY;
 			
 			for(int i = 0; i < 4; i++) {
-				float u = emitter.spriteU(i, 0);
+				float u = emitter.u(i);
 				if(minU > u) minU = u;
 				if(maxU < u) maxU = u;
 				
-				float v = emitter.spriteV(i, 0);
+				float v = emitter.v(i);
 				if(minV > v) minV = v;
 				if(maxV < v) maxV = v;
 			}
@@ -131,9 +131,9 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 			float remappedMaxV = PUtil.rangeRemap(maxV, sprite.getV0(), sprite.getV1(), 0, 1);
 			
 			for(int i = 0; i < 4; i++) {
-				float writeU = Mth.equal(emitter.spriteU(i, 0), minU) ? remappedMinU : remappedMaxU;
-				float writeV = Mth.equal(emitter.spriteV(i, 0), minV) ? remappedMinV : remappedMaxV;
-				emitter.sprite(i, 0, writeU, writeV);
+				float writeU = Mth.equal(emitter.u(i), minU) ? remappedMinU : remappedMaxU;
+				float writeV = Mth.equal(emitter.v(i), minV) ? remappedMinV : remappedMaxV;
+				emitter.uv(i, writeU, writeV);
 			}
 		}
 	}

@@ -18,7 +18,7 @@ public class PDispenserBehaviors {
 		Packages.instance.registerDispenserBehavior(PItems.PACKAGE, new SimpleBlockPlacementDispenserBehavior());
 	}
 	
-	//Copy-paste of blockplacementdispenserbehavior, but it doesn't try to be smart about placing "on the ground"
+	//Copy-paste of ShulkerBoxDispenseBehavior, but it doesn't try to be smart about placing "on the ground"
 	public static class SimpleBlockPlacementDispenserBehavior extends OptionalDispenseItemBehavior {
 		@Override
 		protected ItemStack execute(BlockSource pointer, ItemStack stack) {

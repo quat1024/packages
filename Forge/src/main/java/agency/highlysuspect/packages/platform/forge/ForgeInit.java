@@ -4,6 +4,7 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.config.ConfigSchema;
+import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
@@ -11,8 +12,10 @@ import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
@@ -30,6 +33,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -134,12 +138,15 @@ public class ForgeInit extends Packages {
 	
 	@Override
 	public CreativeModeTab makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon) {
-		return new CreativeModeTab(id.getNamespace() + "." + id.getPath()) {
-			@Override
-			public ItemStack makeIcon() {
-				return icon.get();
-			}
-		};
+		FMLJavaModLoadingContext.get().getModEventBus().addListener((CreativeModeTabEvent.Register e) -> {
+			e.registerCreativeModeTab(id, builder -> {
+				builder.title(Component.translatable("asd"))
+					.displayItems((params, out) -> PItems.addItemStacks(out::accept))
+					.icon(icon);
+			});
+		});
+		
+		return null; //TODO
 	}
 	
 	@Override
@@ -150,7 +157,7 @@ public class ForgeInit extends Packages {
 	@Override
 	public <T extends AbstractContainerMenu> MenuType<T> makeMenuType(MyMenuSupplier<T> supplier) {
 		//Looks the same as on FabricPlatformSupport but it's private in mojang source so i can't use it there without access widening
-		return new MenuType<>(supplier::create);
+		return new MenuType<>(supplier::create, FeatureFlagSet.of());
 	}
 	
 	@Override
