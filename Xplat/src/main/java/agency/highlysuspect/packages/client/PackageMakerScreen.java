@@ -71,7 +71,6 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		int j = (this.height - this.imageHeight) / 2;
 		guiGraphics.blit(TEXTURE, i, j, 0, 0, this.imageWidth, this.imageHeight);
 		
-		super.render(guiGraphics, mouseX, mouseY, delta);
 		this.renderTooltip(guiGraphics, mouseX, mouseY);
 		
 		if(hoveredSlot != null && !hoveredSlot.hasItem()) {

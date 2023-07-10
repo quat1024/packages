@@ -11,15 +11,12 @@ import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -54,7 +51,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Mod("packages")
@@ -137,12 +133,8 @@ public class ForgeInit extends Packages {
 	}
 	
 	@Override
-	public void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents) {
-		register(BuiltInRegistries.CREATIVE_MODE_TAB, id, () -> CreativeModeTab.builder()
-			.title(Component.translatable("itemGroup.packages.group"))
-			.icon(icon)
-			.displayItems((params, out) -> contents.accept(out::accept))
-			.build());
+	public CreativeModeTab.Builder creativeModeTabBuilder() {
+		return CreativeModeTab.builder(); //Forge-added zero arg constructor
 	}
 	
 	@Override

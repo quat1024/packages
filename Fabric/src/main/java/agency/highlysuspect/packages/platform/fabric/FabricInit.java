@@ -1,9 +1,7 @@
 package agency.highlysuspect.packages.platform.fabric;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.config.ConfigSchema;
-import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
@@ -17,7 +15,6 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -25,14 +22,12 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class FabricInit extends Packages implements ModInitializer {
@@ -90,12 +85,8 @@ public class FabricInit extends Packages implements ModInitializer {
 	}
 	
 	@Override
-	public void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents) {
-		FabricItemGroup.builder()
-			.title(Component.translatable("itemGroup.packages.group"))
-			.icon(icon)
-			.displayItems((params, out) -> contents.accept(out::accept))
-			.build();
+	public CreativeModeTab.Builder creativeModeTabBuilder() {
+		return FabricItemGroup.builder();
 	}
 	
 	@Override
