@@ -4,12 +4,11 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.menu.PackageMakerMenu;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -58,20 +57,30 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 	}
 	
 	@Override
-	public void renderBg(GuiGraphics guiGraphics, float delta, int mouseX, int mouseY) {
+	public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
 		ItemStack currentOutput = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).getItem();
 		boolean full = currentOutput.getCount() == currentOutput.getMaxStackSize();
 		boolean cantCraft = PackageMakerBlockEntity.whatWouldBeCrafted(menu.container).isEmpty();
 		craftButton.active = !(full || cantCraft);
 		
-		//I dont know what im doing \:D/
-		this.renderBackground(guiGraphics);
-		
+		renderBackground(graphics);
+		super.render(graphics, mouseX, mouseY, delta);
+		renderTooltip(graphics, mouseX, mouseY);
+	}
+	
+	@Override
+	public void renderBg(GuiGraphics guiGraphics, float delta, int mouseX, int mouseY) {
 		int i = (this.width - this.imageWidth) / 2;
 		int j = (this.height - this.imageHeight) / 2;
 		guiGraphics.blit(TEXTURE, i, j, 0, 0, this.imageWidth, this.imageHeight);
 		
+		//I dont know what im doing \:D/
 		this.renderTooltip(guiGraphics, mouseX, mouseY);
+	}
+	
+	@Override
+	protected void renderTooltip(GuiGraphics graphics, int mouseX, int mouseY) {
+		super.renderTooltip(graphics, mouseX, mouseY);
 		
 		if(hoveredSlot != null && !hoveredSlot.hasItem()) {
 			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
@@ -87,7 +96,7 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 					toot.add(Component.translatable(line).withStyle(ChatFormatting.DARK_GRAY));
 				}
 				
-				guiGraphics.renderTooltip(font, toot, Optional.empty(), mouseX, mouseY);
+				graphics.renderTooltip(font, toot, Optional.empty(), mouseX, mouseY);
 			}
 		}
 	}
@@ -110,7 +119,8 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 				
 				RenderSystem.disableDepthTest();
 				RenderSystem.colorMask(true, true, true, false);
-				graphics.fillGradient(x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
+				//Similar to AbstractContainerScreen.renderSlotHighlight
+				graphics.fillGradient(RenderType.guiOverlay(), x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b, 100);
 				RenderSystem.colorMask(true, true, true, true);
 				RenderSystem.enableDepthTest();
 			}
