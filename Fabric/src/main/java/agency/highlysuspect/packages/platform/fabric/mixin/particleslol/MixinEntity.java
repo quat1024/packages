@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 @Mixin(Entity.class)
 public class MixinEntity {
 	@Unique private BlockPos lastSprintParticlePos;
-	@Shadow public Level level;
+	@Shadow private Level level;
 	
 	@Inject(
 		method = "spawnSprintParticle",
@@ -26,7 +26,7 @@ public class MixinEntity {
 		locals = LocalCapture.CAPTURE_FAILSOFT, //Very unimportant feature.
 		require = 0
 	)
-	private void packages$spawnSprintParticle$stashBlockPos(CallbackInfo ci, int i, int j, int k, BlockPos pos) {
+	private void packages$spawnSprintParticle$stashBlockPos(CallbackInfo ci, BlockPos pos) {
 		lastSprintParticlePos = pos;
 	}
 	
