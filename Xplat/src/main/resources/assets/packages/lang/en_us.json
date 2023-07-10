@@ -58,5 +58,7 @@
 	"packages.subtitle.insert_stack": "Items inserted",
 	"packages.subtitle.take_stack": "Items taken",
 	"packages.subtitle.insert_all": "Many items inserted",
-	"packages.subtitle.take_all": "Many items taken"
+	"packages.subtitle.take_all": "Many items taken",
+	
+	"tag.item.packages.things_you_need_for_package_crafting": "Package Crafting Ingredients"
 }
