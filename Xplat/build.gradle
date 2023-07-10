@@ -12,7 +12,7 @@ buildscript {
 apply plugin: "java"
 apply plugin: "agency.highlysuspect.minivan"
 
-archivesBaseName = "${project.modName}-xplat-1.19.4"
+archivesBaseName = "${project.modName}-xplat-1.20.1"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 tasks.withType(JavaCompile).configureEach {
@@ -22,7 +22,7 @@ tasks.withType(JavaCompile).configureEach {
 java.withSourcesJar()
 
 minivan {
-	version("1.19.4")
+	version("1.20.1")
 }
 
 repositories {

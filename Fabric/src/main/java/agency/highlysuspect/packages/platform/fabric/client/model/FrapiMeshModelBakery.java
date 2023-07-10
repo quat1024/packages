@@ -63,7 +63,7 @@ public class FrapiMeshModelBakery implements PackageModelBakery<Mesh> {
 				
 				if(emitter.colorIndex() == 1) {
 					if(faceColor != null) {
-						int tint = 0xFF000000 | faceColor.getMaterialColor().col;
+						int tint = 0xFF000000 | faceColor.getMapColor().col;
 						emitter.color(tint, tint, tint, tint);
 						emitter.emit();
 					}

@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -104,9 +105,9 @@ public class PackageMakerBlock extends Block implements EntityBlock {
 	}
 	
 	@Override
-	public List<ItemStack> getDrops(BlockState state, LootContext.Builder builder) {
+	public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
 		if(builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof PackageMakerBlockEntity maker) {
-			builder.withDynamicDrop(new ResourceLocation("minecraft", "contents"), (ctx, cons) -> {
+			builder.withDynamicDrop(new ResourceLocation("minecraft", "contents"), cons -> {
 				for(int i = 0; i < maker.getContainerSize(); i++) {
 					cons.accept(maker.getItem(i));
 				}

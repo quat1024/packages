@@ -6,6 +6,7 @@ import agency.highlysuspect.packages.menu.PackageMakerMenu;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu> {
 	private static final ResourceLocation TEXTURE = Packages.id("textures/gui/package_maker.png");
@@ -55,17 +57,22 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 		addRenderableWidget(craftButton);
 	}
 	
-	public void render(PoseStack matrices, int mouseX, int mouseY, float delta) {
+	@Override
+	public void renderBg(GuiGraphics guiGraphics, float delta, int mouseX, int mouseY) {
 		ItemStack currentOutput = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).getItem();
 		boolean full = currentOutput.getCount() == currentOutput.getMaxStackSize();
 		boolean cantCraft = PackageMakerBlockEntity.whatWouldBeCrafted(menu.container).isEmpty();
 		craftButton.active = !(full || cantCraft);
 		
-		//Begin copy paste
-		this.renderBackground(matrices);
-		super.render(matrices, mouseX, mouseY, delta);
-		this.renderTooltip(matrices, mouseX, mouseY);
-		//End copy paste
+		//I dont know what im doing \:D/
+		this.renderBackground(guiGraphics);
+		
+		int i = (this.width - this.imageWidth) / 2;
+		int j = (this.height - this.imageHeight) / 2;
+		guiGraphics.blit(TEXTURE, i, j, 0, 0, this.imageWidth, this.imageHeight);
+		
+		super.render(guiGraphics, mouseX, mouseY, delta);
+		this.renderTooltip(guiGraphics, mouseX, mouseY);
 		
 		if(hoveredSlot != null && !hoveredSlot.hasItem()) {
 			String tooltip = SLOTS_TO_TOOLTIPS.get(hoveredSlot.index);
@@ -81,13 +88,14 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 					toot.add(Component.translatable(line).withStyle(ChatFormatting.DARK_GRAY));
 				}
 				
-				renderComponentTooltip(matrices, toot, mouseX, mouseY);
+				guiGraphics.renderTooltip(font, toot, Optional.empty(), mouseX, mouseY);
 			}
 		}
 	}
 	
-	protected void renderLabels(PoseStack matrices, int mouseX, int mouseY) {
-		super.renderLabels(matrices, mouseX, mouseY);
+	@Override
+	protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+		super.renderLabels(graphics, mouseX, mouseY);
 		
 		PackageMakerMenu menu = getMenu();
 		
@@ -98,25 +106,15 @@ public class PackageMakerScreen extends AbstractContainerScreen<PackageMakerMenu
 			if (!dryRun.isEmpty()) {
 				int x = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).x;
 				int y = menu.slots.get(PackageMakerBlockEntity.OUTPUT_SLOT).y;
-				itemRenderer.renderAndDecorateFakeItem(matrices, dryRun, x, y);
+				
+				graphics.renderFakeItem(dryRun, x, y);
 				
 				RenderSystem.disableDepthTest();
 				RenderSystem.colorMask(true, true, true, false);
-				fillGradient(matrices, x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
+				graphics.fillGradient(x - 6, y - 6, x + 22, y + 22, 0x66b44b4b, 0x66b44b4b);
 				RenderSystem.colorMask(true, true, true, true);
 				RenderSystem.enableDepthTest();
 			}
 		}
-	}
-	
-	//Copy paste from Generic3x3ContainerScreen
-	@Override
-	protected void renderBg(PoseStack matrices, float delta, int mouseX, int mouseY) {
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		RenderSystem.setShaderTexture(0, TEXTURE);
-		int i = (this.width - this.imageWidth) / 2;
-		int j = (this.height - this.imageHeight) / 2;
-		blit(matrices, i, j, 0, 0, this.imageWidth, this.imageHeight);
 	}
 }

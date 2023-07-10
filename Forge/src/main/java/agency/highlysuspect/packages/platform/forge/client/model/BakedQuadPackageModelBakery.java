@@ -59,7 +59,7 @@ public class BakedQuadPackageModelBakery implements PackageModelBakery<List<Bake
 			for(BakedQuad quad : baseModel.getQuads(PBlocks.PACKAGE.get().defaultBlockState(), cullFace, random, ModelData.EMPTY, null)) {
 				if(quad.getTintIndex() == 1) {
 					if(faceColor != null) {
-						int tint = 0xFF000000 | faceColor.getMaterialColor().col;
+						int tint = 0xFF000000 | faceColor.getMapColor().col;
 						if(swapRedAndBlue) tint = swapRedAndBlue(tint);
 						
 						BakedQuad copy = copyQuad(quad);

@@ -1,11 +1,9 @@
 package agency.highlysuspect.packages.platform.forge;
 
 import agency.highlysuspect.packages.Packages;
-import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.config.ConfigSchema;
-import agency.highlysuspect.packages.item.PItems;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.BlockEntityFactory;
 import agency.highlysuspect.packages.platform.MyMenuSupplier;
@@ -13,6 +11,7 @@ import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,7 +33,6 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -140,11 +138,11 @@ public class ForgeInit extends Packages {
 	
 	@Override
 	public void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents) {
-		FMLJavaModLoadingContext.get().getModEventBus().addListener((CreativeModeTabEvent.Register e) ->
-			e.registerCreativeModeTab(id, builder ->
-				builder.title(Component.translatable("itemGroup.packages.group")) //blame fabric
-					.displayItems((params, out) -> contents.accept(out::accept))
-					.icon(icon)));
+		register(BuiltInRegistries.CREATIVE_MODE_TAB, id, () -> CreativeModeTab.builder()
+			.title(Component.translatable("itemGroup.packages.group"))
+			.icon(icon)
+			.displayItems((params, out) -> contents.accept(out::accept))
+			.build());
 	}
 	
 	@Override

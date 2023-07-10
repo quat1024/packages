@@ -183,7 +183,7 @@ public class PackageItem extends BlockItem {
 					//We can't directly set the ItemStack on the player's cursor, but we can leverage how `insertionLeftover` and
 					//`other` both have the same item and nbt tags.
 					other.setCount(insertionLeftover.getCount());
-					player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
+					player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
 					return true;
 				}
 			}
@@ -215,7 +215,7 @@ public class PackageItem extends BlockItem {
 			Packages.LOGGER.warn("Non-empty stack (" + insertionLeftover + ") appeared in absorbFromSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this?");
 		}
 		
-		player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
+		player.playSound(SoundEvents.BUNDLE_INSERT, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
 		return true;
 	}
 	
@@ -243,7 +243,7 @@ public class PackageItem extends BlockItem {
 				Packages.LOGGER.warn("Non-empty stack (" + slotInsertionLeftover + ") appeared in dropIntoSlot action from player " + player.getScoreboardName() + ". Can you file an issue about what caused this? Thanks.");
 			}
 			
-			player.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + player.getLevel().getRandom().nextFloat() * 0.4f);
+			player.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8f, 0.8f + player.level().getRandom().nextFloat() * 0.4f);
 			return true;
 		}
 		return false;

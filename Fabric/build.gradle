@@ -19,7 +19,7 @@ evaluationDependsOn(":Xplat") //pls
 apply plugin: "java"
 apply plugin: "fabric-loom"
 
-archivesBaseName = "${rootProject.name}-fabric-1.19.4"
+archivesBaseName = "${rootProject.name}-fabric-1.20.1"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 tasks.withType(JavaCompile).configureEach {
@@ -29,26 +29,26 @@ tasks.withType(JavaCompile).configureEach {
 java.withSourcesJar()
 
 repositories {
-	maven {
-		url "https://maven.vram.io/"
-		content { includeGroup("io.vram") }
-	}
-	maven {
-		url "https://maven.terraformersmc.com/"
-		content { includeGroup("com.terraformersmc") } //Grondaaaaag, canvas transitively deps on modmenu
-	}
-	maven {
-		url "https://api.modrinth.com/maven"
-		content { includeGroup "maven.modrinth" }
-	}
+//	maven {
+//		url "https://maven.vram.io/"
+//		content { includeGroup("io.vram") }
+//	}
+//	maven {
+//		url "https://maven.terraformersmc.com/"
+//		content { includeGroup("com.terraformersmc") } //Grondaaaaag, canvas transitively deps on modmenu
+//	}
+//	maven {
+//		url "https://api.modrinth.com/maven"
+//		content { includeGroup "maven.modrinth" }
+//	}
 	mavenCentral()
 }
 
 dependencies {
-	minecraft "com.mojang:minecraft:1.19.4"
+	minecraft "com.mojang:minecraft:1.20.1"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:0.14.21"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:0.83.0+1.19.4"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:0.85.0+1.20.1"
 	compileOnly "org.jetbrains:annotations:24.0.1"
 	
 	implementation project(":Xplat") //funny xplat
@@ -57,10 +57,10 @@ dependencies {
 	def runWithSodium = false
 	
 	if(runWithCanvas) {
-		modImplementation "io.vram:frex-fabric-mc119:8.0.327"
-		modLocalRuntime "io.vram:canvas-fabric-mc119:3.0.2547"
+		//modImplementation "io.vram:frex-fabric-mc119:8.0.327"
+		//modLocalRuntime "io.vram:canvas-fabric-mc119:3.0.2547"
 	} else {
-		modCompileOnly "io.vram:frex-fabric-mc119:8.0.327"
+		//modCompileOnly "io.vram:frex-fabric-mc119:8.0.327" //TODO, canvas not updated to 1.20
 	}
 	
 	if(runWithSodium) {

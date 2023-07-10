@@ -71,11 +71,6 @@ public class PackageBlock extends Block implements EntityBlock {
 	
 	//Behaviors.
 	@Override
-	public PushReaction getPistonPushReaction(BlockState state) {
-		return PushReaction.DESTROY;
-	}
-	
-	@Override
 	public void setPlacedBy(Level world, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		BlockEntity blockEntity = world.getBlockEntity(pos);
 		if(!(blockEntity instanceof PackageBlockEntity pkg)) return;

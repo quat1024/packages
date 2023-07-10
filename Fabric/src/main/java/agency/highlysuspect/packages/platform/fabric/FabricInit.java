@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -90,7 +91,8 @@ public class FabricInit extends Packages implements ModInitializer {
 	
 	@Override
 	public void makeCreativeModeTab(ResourceLocation id, Supplier<ItemStack> icon, Consumer<Consumer<ItemStack>> contents) {
-		FabricItemGroup.builder(id)
+		FabricItemGroup.builder()
+			.title(Component.translatable("itemGroup.packages.group"))
 			.icon(icon)
 			.displayItems((params, out) -> contents.accept(out::accept))
 			.build();
