@@ -64,19 +64,7 @@ public class FabricInit extends Packages implements ModInitializer {
 		Registry.register(registry, id, thing);
 		
 		//Return a handle to it.
-		return new ImmediateRegistryHandle<>(thing, id);
-	}
-	
-	private record ImmediateRegistryHandle<T>(T thing, ResourceLocation id) implements RegistryHandle<T> {
-		@Override
-		public T get() {
-			return thing;
-		}
-		
-		@Override
-		public ResourceLocation getId() {
-			return id;
-		}
+		return new RegistryHandle.Immediate<>(thing, id);
 	}
 	
 	@Override

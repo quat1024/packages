@@ -11,6 +11,7 @@ import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -43,6 +44,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.RegisterEvent;
 import net.minecraftforge.registries.RegistryManager;
 import net.minecraftforge.registries.RegistryObject;
 import org.jetbrains.annotations.NotNull;
@@ -97,10 +99,8 @@ public class ForgeInit extends Packages {
 	
 	@SuppressWarnings("unchecked") //Go directly to generics hell. Do not pass Go or collect $200.
 	private <T> DeferredRegister<T> getDeferredRegister(Registry<?> reg) {
-		IForgeRegistry<T> registrySpicy = RegistryManager.ACTIVE.getRegistry(((Registry<T>) reg).key());
-		
 		return (DeferredRegister<T>) deferredRegistries.computeIfAbsent(reg, __ -> {
-			DeferredRegister<T> deferred = DeferredRegister.create(registrySpicy, Packages.MODID);
+			DeferredRegister<T> deferred = (DeferredRegister<T>) DeferredRegister.create(reg.key(), Packages.MODID);
 			deferred.register(FMLJavaModLoadingContext.get().getModEventBus());
 			return deferred;
 		});
@@ -110,7 +110,7 @@ public class ForgeInit extends Packages {
 	public <T> RegistryHandle<T> register(Registry<? super T> registry, ResourceLocation id, Supplier<T> thingMaker) {
 		if(!id.getNamespace().equals(Packages.MODID)) throw new IllegalArgumentException("Forge enforces one modid per DeferredRegister");
 		
-		RegistryObject<T> obj = (getDeferredRegister(registry)).register(id.getPath(), thingMaker);
+		RegistryObject<T> obj = getDeferredRegister(registry).register(id.getPath(), thingMaker);
 		return new RegistryObjectRegistryHandle<>(obj);
 	}
 	
