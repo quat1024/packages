@@ -44,7 +44,7 @@ public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMake
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-		modelGetter.apply(factory.blockModelId()); //and discard the result. I think this forces the model to load?
+		modelGetter.apply(factory.blockModelId()).resolveParents(modelGetter);
 	}
 	
 	@Override

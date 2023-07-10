@@ -90,10 +90,6 @@ public interface PackageModelBakery<MODEL> {
 		public PackageModelBakery<T> make(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
 			UnbakedModel unbaked = loader.getModel(blockModelId);
 			
-			//TODO: why is the parent field not already set on Fabric? Has resolveParent not been called on it?
-			// If you remove this line, packages's models don't have their parent set (null instead of block/block)
-			unbaked.resolveParents(loader::getModel);
-			
 			BakedModel baseModel = unbaked.bake(loader, textureGetter, rotationContainer, modelId);
 			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
 			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);

@@ -17,10 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-/**
- * TODO: There's a lot of instances where we're just reading off of an itemstack and don't care to do much more
- *  In that case, preparing the itemstacks for inventory actions (flattening them across the 8 slots) is wasteful
- */
 public class PackageContainer implements Container {
 	/**
 	 * The number of internal slots in the Package. Packages hold eight stacks of items.

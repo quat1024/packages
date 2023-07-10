@@ -43,7 +43,7 @@ public class FrapiMeshPackageModel implements UnbakedModel {
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
-		// hmmm
+		function.apply(factory.blockModelId()).resolveParents(function);
 	}
 	
 	@Nullable
