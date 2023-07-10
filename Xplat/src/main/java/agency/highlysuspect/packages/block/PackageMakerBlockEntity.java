@@ -144,7 +144,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			
 			//doubt it's null, lol
 			if(level != null && !playedSound)	{
-				level.playSound(null, worldPosition, PSoundEvents.PACKAGE_MAKER_CRAFT, SoundSource.BLOCKS, 1f, 1f);
+				level.playSound(null, worldPosition, PSoundEvents.PACKAGE_MAKER_CRAFT.get(), SoundSource.BLOCKS, 1f, 1f);
 				playedSound = true;
 			}
 		}

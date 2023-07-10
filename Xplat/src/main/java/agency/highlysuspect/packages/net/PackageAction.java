@@ -43,14 +43,14 @@ public enum PackageAction {
 	}
 	
 	public SoundEvent getSoundEvent() {
-		return switch(this) {
+		return (switch(this) {
 			case INSERT_ONE -> PSoundEvents.INSERT_ONE;
 			case TAKE_ONE -> PSoundEvents.TAKE_ONE;
 			case INSERT_STACK -> PSoundEvents.INSERT_STACK;
 			case TAKE_STACK -> PSoundEvents.TAKE_STACK;
 			case INSERT_ALL -> PSoundEvents.INSERT_ALL;
 			case TAKE_ALL -> PSoundEvents.TAKE_ALL;
-		};
+		}).get();
 	}
 	
 	public float getSoundVolume() {

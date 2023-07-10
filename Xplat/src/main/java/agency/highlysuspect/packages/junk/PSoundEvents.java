@@ -1,26 +1,31 @@
 package agency.highlysuspect.packages.junk;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.platform.RegistryHandle;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 
-//TODO 1.19.4: restrucutre?
 public class PSoundEvents {
-	public static final SoundEvent PACKAGE_MAKER_CRAFT = SoundEvent.createVariableRangeEvent(Packages.id("package_maker_craft"));
-	public static final SoundEvent INSERT_ONE = SoundEvent.createVariableRangeEvent(Packages.id("insert_one"));
-	public static final SoundEvent TAKE_ONE = SoundEvent.createVariableRangeEvent(Packages.id("take_one"));
-	public static final SoundEvent INSERT_STACK = SoundEvent.createVariableRangeEvent(Packages.id("insert_stack"));
-	public static final SoundEvent TAKE_STACK = SoundEvent.createVariableRangeEvent(Packages.id("take_stack"));
-	public static final SoundEvent INSERT_ALL = SoundEvent.createVariableRangeEvent(Packages.id("insert_all"));
-	public static final SoundEvent TAKE_ALL = SoundEvent.createVariableRangeEvent(Packages.id("take_all"));
+	public static RegistryHandle<SoundEvent> PACKAGE_MAKER_CRAFT;
+	public static RegistryHandle<SoundEvent> INSERT_ONE;
+	public static RegistryHandle<SoundEvent> TAKE_ONE;
+	public static RegistryHandle<SoundEvent> INSERT_STACK;
+	public static RegistryHandle<SoundEvent> TAKE_STACK;
+	public static RegistryHandle<SoundEvent> INSERT_ALL;
+	public static RegistryHandle<SoundEvent> TAKE_ALL;
+	
+	private static RegistryHandle<SoundEvent> reg(ResourceLocation id) {
+		return Packages.instance.register(BuiltInRegistries.SOUND_EVENT, id, () -> SoundEvent.createVariableRangeEvent(id));
+	}
 	
 	public static void onInitialize() {
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, PACKAGE_MAKER_CRAFT.getLocation(), () -> PACKAGE_MAKER_CRAFT);
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, INSERT_ONE.getLocation(), () -> INSERT_ONE);
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, TAKE_ONE.getLocation(), () -> TAKE_ONE);
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, INSERT_STACK.getLocation(), () -> INSERT_STACK);
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, TAKE_STACK.getLocation(), () -> TAKE_STACK);
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, INSERT_ALL.getLocation(), () -> INSERT_ALL);
-		Packages.instance.register(BuiltInRegistries.SOUND_EVENT, TAKE_ALL.getLocation(), () -> TAKE_ALL);
+		PACKAGE_MAKER_CRAFT = reg(Packages.id("package_maker_craft"));
+		INSERT_ONE = reg(Packages.id("insert_one"));
+		TAKE_ONE = reg(Packages.id("take_one"));
+		INSERT_STACK = reg(Packages.id("insert_stack"));
+		TAKE_STACK = reg(Packages.id("take_stack"));
+		INSERT_ALL = reg(Packages.id("insert_all"));
+		TAKE_ALL = reg(Packages.id("take_all"));
 	}
 }
