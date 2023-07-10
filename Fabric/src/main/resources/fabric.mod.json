@@ -20,6 +20,9 @@
     ],
     "client": [
 			"agency.highlysuspect.packages.platform.fabric.client.FabricClientInit"
+    ],
+    "emi": [
+            "agency.highlysuspect.packages.compat.emi.PackagesEmiPlugin"
     ]
   },
   "mixins": [
