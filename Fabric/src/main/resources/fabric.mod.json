@@ -1,43 +1,43 @@
 {
-  "schemaVersion": 1,
-  "id": "packages",
-  "version": "${version}",
-  "name": "Packages",
-  "description": "The opinionated storage mod. Worse Barrels descendant.",
-  "authors": [
-    "quaternary"
-  ],
-  "contact": {
-    "homepage": "https://highlysuspect.agency",
-    "sources": "https://github.com/quat1024/packages"
-  },
-  "license": "LGPL-3.0-or-later",
-  "icon": "packages-icon.png",
-  "environment": "*",
-  "entrypoints": {
-    "main": [
+	"schemaVersion": 1,
+	"id": "packages",
+	"version": "${version}",
+	"name": "Packages",
+	"description": "The opinionated storage mod. Worse Barrels descendant.",
+	"authors": [
+		"quaternary"
+	],
+	"contact": {
+		"homepage": "https://highlysuspect.agency",
+		"sources": "https://github.com/quat1024/packages"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "packages-icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
 			"agency.highlysuspect.packages.platform.fabric.FabricInit"
-    ],
-    "client": [
+		],
+		"client": [
 			"agency.highlysuspect.packages.platform.fabric.client.FabricClientInit"
-    ],
-    "emi": [
-            "agency.highlysuspect.packages.compat.emi.PackagesEmiPlugin"
-    ]
-  },
-  "mixins": [
-    "packages.xplat.mixins.json",
+		],
+		"emi": [
+			"agency.highlysuspect.packages.compat.emi.PackagesEmiPlugin"
+		]
+	},
+	"mixins": [
+		"packages.xplat.mixins.json",
 		"packages.fabric.mixins.json"
 	],
-  "custom": {
-    "todo-reenable-this---dashloader:customobject": [
-      "agency.highlysuspect.packages.client.compat.dashloader.DashPackageModel",
-      "agency.highlysuspect.packages.client.compat.dashloader.DashPackageMakerModel"
-    ]
-  },
-  "depends": {
-    "fabricloader": "*",
-    "fabric": "*",
-    "minecraft": "1.20.1"
-  }
+	"custom": {
+		"todo-reenable-this---dashloader:customobject": [
+			"agency.highlysuspect.packages.client.compat.dashloader.DashPackageModel",
+			"agency.highlysuspect.packages.client.compat.dashloader.DashPackageMakerModel"
+		]
+	},
+	"depends": {
+		"fabricloader": "*",
+		"fabric": "*",
+		"minecraft": "1.20.1"
+	}
 }
