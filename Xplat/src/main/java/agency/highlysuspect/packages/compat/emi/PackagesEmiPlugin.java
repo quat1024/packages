@@ -48,11 +48,12 @@ public class PackagesEmiPlugin implements EmiPlugin {
 	
 	static class PackageRecipe implements EmiRecipe {
 		private static final int uniq = new Random().nextInt();
-		private static final List<DyeColor> validDyes = new ArrayList<>();
-		private static final List<Block> validFrames = new ArrayList<>();
-		private static final List<Block> validInners = new ArrayList<>();
 		
-		static {
+		private final List<Block> validFrames = new ArrayList<>();
+		private final List<Block> validInners = new ArrayList<>();
+		private final List<DyeColor> validDyes = new ArrayList<>();
+		
+		{
 			for(DyeColor dyeColor : DyeColor.values()) {
 				if(PackageMakerBlockEntity.matchesDyeSlot(new ItemStack(DyeItem.byColor(dyeColor)))) {
 					validDyes.add(dyeColor);
@@ -125,13 +126,14 @@ public class PackagesEmiPlugin implements EmiPlugin {
 			Block frame = validFrames.get(r.nextInt(validFrames.size()));
 			Block inner = validInners.get(r.nextInt(validInners.size()));
 			DyeColor dye = validDyes.get(r.nextInt(validDyes.size()));
-			EmiStack output = EmiStack.of(PItems.PACKAGE.get().createCustomizedStack(frame, inner, dye));
-			return new EmiStack[]{
-				EmiStack.of(frame),
-				EmiStack.of(inner),
-				EmiStack.of(DyeItem.byColor(dye)),
-				output
-			}[i];
+			
+			return switch(i) {
+				case 0 -> EmiStack.of(frame);
+				case 1 -> EmiStack.of(inner);
+				case 2 -> EmiStack.of(DyeItem.byColor(dye));
+				case 3 -> EmiStack.of(PItems.PACKAGE.get().createCustomizedStack(frame, inner, dye));
+				default -> throw new IllegalArgumentException();
+			};
 		}
 	}
 }

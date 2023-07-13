@@ -57,7 +57,7 @@ dependencies {
 	compileOnly project(":Xplat")
 
 	compileOnly fg.deobf("dev.emi:emi-forge:1.0.8+1.20.1:api")
-	testCompileOnly fg.deobf("dev.emi:emi-forge:1.0.8+1.20.1:api")
+	runtimeOnly fg.deobf("dev.emi:emi-forge:1.0.8+1.20.1")
 }
 
 //fold in xplat resources and sources
@@ -82,6 +82,8 @@ minecraft {
 			taskName "Client"
 			workingDirectory project.file("run")
 			ideaModule "${rootProject.name}.${project.name}.main"
+			property "mixin.env.remapRefMap", "true" //emi haxx
+			property "mixin.env.refMapRemappingFile", "${projectDir}/build/createSrgToMcp/output.srg" //emi haxx
 			mods {
 				"${project.modName}" {
 					source sourceSets.main
