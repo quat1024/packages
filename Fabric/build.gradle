@@ -33,10 +33,13 @@ repositories {
 //		url "https://maven.vram.io/"
 //		content { includeGroup("io.vram") }
 //	}
-//	maven {
-//		url "https://maven.terraformersmc.com/"
-//		content { includeGroup("com.terraformersmc") } //Grondaaaaag, canvas transitively deps on modmenu
-//	}
+	maven {
+		url "https://maven.terraformersmc.com/"
+		content {
+//			includeGroup("com.terraformersmc") //Grondaaaaag, canvas transitively deps on modmenu
+			includeGroup "dev.emi"
+		}
+	}
 //	maven {
 //		url "https://api.modrinth.com/maven"
 //		content { includeGroup "maven.modrinth" }
@@ -55,6 +58,7 @@ dependencies {
 	
 	def runWithCanvas = false
 	def runWithSodium = false
+	def runWithEmi = true
 	
 	if(runWithCanvas) {
 		//modImplementation "io.vram:frex-fabric-mc119:8.0.327"
@@ -66,6 +70,11 @@ dependencies {
 	if(runWithSodium) {
 		//TODO: it's broken for some reason and doesn't load the joml jar in jar
 		//modLocalRuntime "maven.modrinth:sodium:mc1.18.2-0.4.1"
+	}
+
+	modCompileOnly "dev.emi:emi-fabric:1.0.8+1.20.1:api"
+	if(runWithEmi) {
+		modLocalRuntime "dev.emi:emi-fabric:1.0.8+1.20.1"
 	}
 }
 

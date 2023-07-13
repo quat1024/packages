@@ -30,12 +30,18 @@ repositories {
 		url "https://repo.spongepowered.org/repository/maven-public/"
 		content { includeGroup "org.spongepowered" }
 	}
+	maven {
+		url "https://maven.terraformersmc.com/"
+		content { includeGroup "dev.emi" }
+	}
 	mavenCentral()
 }
 
 dependencies {
 	compileOnly "org.spongepowered:mixin:0.8.5"
 	compileOnly "org.jetbrains:annotations:24.0.1"
+
+	compileOnly "dev.emi:emi-xplat-mojmap:1.0.8+1.20.1:api"
 }
 
 tasks.withType(GenerateModuleMetadata) {
