@@ -109,7 +109,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 			widgets.addGeneratedSlot(r -> getStack(r, 0), uniq, 0, 0);
 			widgets.addGeneratedSlot(r -> getStack(r, 1), uniq, 20, 0);
 			widgets.addGeneratedSlot(r -> getStack(r, 2), uniq, 0, 20);
-			widgets.addGeneratedSlot(r -> EmiIngredient.of(PTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING), uniq, 20, 20);
+			widgets.addSlot(EmiIngredient.of(PTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING), 20, 20);
 			
 			widgets.addTexture(EmiTexture.EMPTY_ARROW, 48, 10);
 			
