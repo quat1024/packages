@@ -4,6 +4,7 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PBlocks;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.item.PItems;
+import agency.highlysuspect.packages.junk.PTags;
 import dev.emi.emi.api.EmiEntrypoint;
 import dev.emi.emi.api.EmiPlugin;
 import dev.emi.emi.api.EmiRegistry;
@@ -19,7 +20,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,7 +85,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 				EmiIngredient.of(validFrames.stream().map(EmiStack::of).toList()),
 				EmiIngredient.of(validInners.stream().map(EmiStack::of).toList()),
 				EmiIngredient.of(validDyes.stream().map(DyeItem::byColor).map(EmiStack::of).toList()),
-				EmiStack.of(Items.COPPER_INGOT)
+				EmiIngredient.of(PTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING)
 			);
 		}
 		
@@ -109,7 +109,7 @@ public class PackagesEmiPlugin implements EmiPlugin {
 			widgets.addGeneratedSlot(r -> getStack(r, 0), uniq, 0, 0);
 			widgets.addGeneratedSlot(r -> getStack(r, 1), uniq, 20, 0);
 			widgets.addGeneratedSlot(r -> getStack(r, 2), uniq, 0, 20);
-			widgets.addSlot(EmiStack.of(Items.COPPER_INGOT), 20, 20);
+			widgets.addGeneratedSlot(r -> EmiIngredient.of(PTags.THINGS_YOU_NEED_FOR_PACKAGE_CRAFTING), uniq, 20, 20);
 			
 			widgets.addTexture(EmiTexture.EMPTY_ARROW, 48, 10);
 			
