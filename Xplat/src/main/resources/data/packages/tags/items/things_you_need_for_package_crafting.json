@@ -1,11 +1,6 @@
 {
 	"replace": false,
 	"values": [
-		"minecraft:copper_ingot",
-		{
-			"required": false,
-			"id": "working_around_emi_issue_242:remove_this_later"
-		},
-		"minecraft:structure_void"
+		"minecraft:copper_ingot"
 	]
 }
