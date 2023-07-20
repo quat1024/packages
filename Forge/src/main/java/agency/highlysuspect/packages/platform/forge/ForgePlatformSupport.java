@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 
 public class ForgePlatformSupport implements PlatformSupport {
 	public ForgePlatformSupport() {
-		MinecraftForge.EVENT_BUS.addListener(this::actuallyRegisterDispenserBehaviors);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterDispenserBehaviors);
 	}
 	
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
