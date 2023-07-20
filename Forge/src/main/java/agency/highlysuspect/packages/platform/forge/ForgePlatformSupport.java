@@ -17,15 +17,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-import net.minecraftforge.registries.RegistryManager;
-import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +29,7 @@ import java.util.function.Supplier;
 
 public class ForgePlatformSupport implements PlatformSupport {
 	public ForgePlatformSupport() {
-		MinecraftForge.EVENT_BUS.addListener(this::actuallyRegisterDispenserBehaviors);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterDispenserBehaviors);
 	}
 	
 	private final Map<Registry<?>, DeferredRegister<?>> deferredRegistries = new HashMap<>();
