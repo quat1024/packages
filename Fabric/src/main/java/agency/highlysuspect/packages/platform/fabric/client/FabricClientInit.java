@@ -1,13 +1,11 @@
 package agency.highlysuspect.packages.platform.fabric.client;
 
 import agency.highlysuspect.packages.Packages;
+import agency.highlysuspect.packages.client.PClientBlockEventHandlers;
 import agency.highlysuspect.packages.client.PackagesClient;
 import agency.highlysuspect.packages.config.ConfigSchema;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.platform.RegistryHandle;
-import agency.highlysuspect.packages.platform.client.ClientsideHoldLeftClickCallback;
-import agency.highlysuspect.packages.platform.client.ClientsideUseBlockCallback;
-import agency.highlysuspect.packages.platform.client.EarlyClientsideLeftClickCallback;
 import agency.highlysuspect.packages.platform.client.MyScreenConstructor;
 import agency.highlysuspect.packages.platform.fabric.CrummyConfig;
 import agency.highlysuspect.packages.platform.fabric.client.model.FrapiMeshPackageMakerModel;
@@ -18,8 +16,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.event.Event;
-import net.fabricmc.fabric.api.event.EventFactory;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -44,18 +40,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class FabricClientInit extends PackagesClient implements ClientModInitializer {
 	public static FabricClientInit instanceFabric;
-	
-	/**
-	 * @see agency.highlysuspect.packages.platform.fabric.mixin.MixinMinecraft for where this event is serviced
-	 */
-	public final Event<EarlyClientsideLeftClickCallback> EARLY_LEFT_CLICK_EVENT = EventFactory.createArrayBacked(EarlyClientsideLeftClickCallback.class,
-		listeners -> (player, world, pos, direction) -> {
-			for (EarlyClientsideLeftClickCallback event : listeners) {
-				if(event.interact(player, world, pos, direction)) return true;
-			}
-			return false;
-		}
-	);
 	
 	public UnbakedModel packageModel;
 	public UnbakedModel packageMakerModel;
@@ -86,6 +70,10 @@ public class FabricClientInit extends PackagesClient implements ClientModInitial
 		});
 		
 		FrexCompat.onInitializeClient();
+		
+		//How convenient wow, the apis just magically line up, Thats crazy
+		AttackBlockCallback.EVENT.register(PClientBlockEventHandlers::onHoldLeftClick);
+		UseBlockCallback.EVENT.register(PClientBlockEventHandlers::onRightClick);
 	}
 	
 	@Override
@@ -102,21 +90,6 @@ public class FabricClientInit extends PackagesClient implements ClientModInitial
 	@Override
 	public void setRenderType(RegistryHandle<? extends Block> block, RenderType type) {
 		BlockRenderLayerMap.INSTANCE.putBlock(block.get(), type);
-	}
-	
-	@Override
-	public void installEarlyClientsideLeftClickCallback(EarlyClientsideLeftClickCallback callback) {
-		EARLY_LEFT_CLICK_EVENT.register(callback);
-	}
-	
-	@Override
-	public void installClientsideHoldLeftClickCallback(ClientsideHoldLeftClickCallback callback) {
-		AttackBlockCallback.EVENT.register(callback::interact);
-	}
-	
-	@Override
-	public void installClientsideUseBlockCallback(ClientsideUseBlockCallback callback) {
-		UseBlockCallback.EVENT.register(callback::interact);
 	}
 	
 	//models

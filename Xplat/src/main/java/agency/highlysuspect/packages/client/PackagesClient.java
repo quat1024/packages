@@ -9,9 +9,6 @@ import agency.highlysuspect.packages.menu.PMenuTypes;
 import agency.highlysuspect.packages.net.ActionPacket;
 import agency.highlysuspect.packages.net.PackageAction;
 import agency.highlysuspect.packages.platform.RegistryHandle;
-import agency.highlysuspect.packages.platform.client.ClientsideHoldLeftClickCallback;
-import agency.highlysuspect.packages.platform.client.ClientsideUseBlockCallback;
-import agency.highlysuspect.packages.platform.client.EarlyClientsideLeftClickCallback;
 import agency.highlysuspect.packages.platform.client.MyScreenConstructor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
@@ -52,8 +49,6 @@ public abstract class PackagesClient {
 		
 		registerMenuScreen(PMenuTypes.PACKAGE_MAKER, PackageMakerScreen::new);
 		
-		PClientBlockEventHandlers.onInitializeClient();
-		
 		setBlockEntityRenderer(PBlockEntityTypes.PACKAGE, PackageRenderer::new);
 		setRenderType(PBlocks.PACKAGE_MAKER, RenderType.cutoutMipped());
 	}
@@ -76,9 +71,6 @@ public abstract class PackagesClient {
 	public abstract <T extends BlockEntity> void setBlockEntityRenderer(RegistryHandle<? extends BlockEntityType<T>> type, BlockEntityRendererProvider<? super T> renderer);
 	public abstract void setRenderType(RegistryHandle<? extends Block> block, RenderType type);
 	public abstract void setupCustomModelLoaders();
-	public abstract void installEarlyClientsideLeftClickCallback(EarlyClientsideLeftClickCallback callback);
-	public abstract void installClientsideHoldLeftClickCallback(ClientsideHoldLeftClickCallback callback);
-	public abstract void installClientsideUseBlockCallback(ClientsideUseBlockCallback callback);
 	public abstract void sendActionPacket(ActionPacket packet);
 	
 	public abstract ConfigSchema.Bakery clientConfigBakery();

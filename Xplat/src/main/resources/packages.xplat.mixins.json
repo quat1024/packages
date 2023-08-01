@@ -6,7 +6,8 @@
 		
   ],
   "client": [
-		"client.MixinItemRenderer"
+		"client.MixinItemRenderer",
+		"client.MixinMinecraft"
   ],
   "injectors": {
     "defaultRequire": 1

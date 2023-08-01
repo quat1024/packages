@@ -1,7 +1,6 @@
 package agency.highlysuspect.packages.platform.forge.mixin;
 
-import agency.highlysuspect.packages.platform.client.ClientsideHoldLeftClickCallback;
-import agency.highlysuspect.packages.platform.forge.client.ForgeClientInit;
+import agency.highlysuspect.packages.client.PClientBlockEventHandlers;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.core.BlockPos;
@@ -41,11 +40,9 @@ public class MixinMultiPlayerGameMode {
 		//See comment in ForgeClientPlatformSupport#installClientsideHoldLeftClickCallback.
 		//By this point in the injectors, creative mode was already checked.
 		if(minecraft.player != null && minecraft.level != null) {
-			for(ClientsideHoldLeftClickCallback callback : ForgeClientInit.instanceForge.holdLeftClickCallbacksForCreativeMode) {
-				if(callback.interact(minecraft.player, minecraft.level, InteractionHand.MAIN_HAND, pos, dir).consumesAction()) {
-					//Would it be a good idea to manually fire off the forge event in this case?
-					cir.setReturnValue(true);
-				}
+			if(PClientBlockEventHandlers.onHoldLeftClick(minecraft.player, minecraft.level, InteractionHand.MAIN_HAND, pos, dir).consumesAction()) {
+				//Would it be a good idea to manually fire off the forge event in this case?
+				cir.setReturnValue(true);
 			}
 		}
 	}

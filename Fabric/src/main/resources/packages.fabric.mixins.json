@@ -7,7 +7,6 @@
 		"particleslol.MixinLivingEntity"
 	],
 	"client": [
-		"MixinMinecraft",
 		"particleslol.AccessorTextureSheetParticle",
 		"particleslol.MixinTerrainParticle"
 	],

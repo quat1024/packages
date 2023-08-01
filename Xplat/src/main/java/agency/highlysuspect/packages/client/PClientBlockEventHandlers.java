@@ -14,14 +14,65 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 
 public class PClientBlockEventHandlers {
+	public static boolean onEarlyLeftClick(Player player, Level level, BlockPos pos, Direction direction) {
+		if(!canAttack(player, level, pos, direction)) return false;
+		return performPunchAction(player, level, pos, direction);
+	}
+	
 	private static BlockPos lastPunchPosLegacy;
 	private static long lastPunchTickLegacy;
+	public static InteractionResult onHoldLeftClick(Player player, Level level, InteractionHand hand, BlockPos pos, Direction direction) {
+		if(canAttack(player, level, pos, direction)) {
+			//Legacy stuff! Here's a reimplementation of the old, broken left click antirepeat. Old mod effectively had punchRepeat set to 4 ticks btw.
+			//removed in https://github.com/quat1024/packages/commit/401a19818dac539174081b219ca10c797fa0abf0
+			int punchRepeat = PackagesClient.instance.config.get(PropsClient.PUNCH_REPEAT);
+			if(!level.isClientSide || punchRepeat < 0) return InteractionResult.CONSUME;
+			
+			if(pos.equals(lastPunchPosLegacy) && (level.getGameTime() - lastPunchTickLegacy <= punchRepeat)) return InteractionResult.CONSUME;
+			lastPunchPosLegacy = pos;
+			lastPunchTickLegacy = level.getGameTime();
+			performPunchAction(player, level, pos, direction);
+			return InteractionResult.CONSUME;
+		} else return InteractionResult.PASS;
+	}
+	
+	public static InteractionResult onRightClick(Player player, Level level, InteractionHand hand, BlockHitResult hitResult) {
+		if(!level.isClientSide || player.isSpectator()) return InteractionResult.PASS;
+		
+		BlockPos pos = hitResult.getBlockPos();
+		BlockState state = level.getBlockState(pos);
+		BlockEntity be = level.getBlockEntity(pos);
+		if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return InteractionResult.PASS;
+		Direction direction = hitResult.getDirection();
+		
+		Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
+		if(direction != frontDir) return InteractionResult.PASS;
+		
+		PackageAction action = getApplicableAction(player, MainTrigger.USE);
+		if(action == null) return InteractionResult.PASS;
+		
+		//Simulate performing the action. If anything happened...
+		if(pkg.performAction(player, hand, action, true)) {
+			//...send a packet to do it for real
+			//SUCCESS sends a block-place packet too because fabric api is weird, so we use CONSUME+swing to mark the action as successful.
+			PackagesClient.instance.sendActionPacket(new ActionPacket(pos, hand, action));
+			player.swing(hand);
+			return InteractionResult.CONSUME;
+		}
+		
+		//Also send CONSUME on failures that get this far in, because in practice it's annoying to be holding a block and have it go "oh, you
+		//pressed right click but the package contained a different item? aha, better place the block against the face of the package, covering it".
+		//But it *also* also feels weird for the action to still be consumed when Sneak is pressed, even though sneak-clicks are overridden
+		//to mean something else in this mod, in my experience. So we have this confusing nonsense line. Hopefully it makes things intuitive.
+		return player.isShiftKeyDown() ? InteractionResult.PASS : InteractionResult.CONSUME;
+	}
 	
 	@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "RedundantIfStatement"})
-	public static boolean canAttack(Player player, Level level, BlockPos pos, Direction direction) {
+	private static boolean canAttack(Player player, Level level, BlockPos pos, Direction direction) {
 		if(player.isSpectator()) return false;
 		BlockState state = level.getBlockState(pos);
 		if(!(state.getBlock() instanceof PackageBlock)) return false;
@@ -31,7 +82,7 @@ public class PClientBlockEventHandlers {
 		return true;
 	}
 	
-	public static boolean performPunchAction(Player player, Level level, BlockPos pos, Direction direction) {
+	private static boolean performPunchAction(Player player, Level level, BlockPos pos, Direction direction) {
 		BlockState state = level.getBlockState(pos);
 		BlockEntity be = level.getBlockEntity(pos);
 		if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return false;
@@ -47,63 +98,7 @@ public class PClientBlockEventHandlers {
 		return false;
 	}
 	
-	public static void onInitializeClient() {
-		PackagesClient.instance.installEarlyClientsideLeftClickCallback((player, level, pos, direction) -> {
-			if(!canAttack(player, level, pos, direction)) return false;
-			return performPunchAction(player, level, pos, direction);
-		});
-		
-		//This callback is usually fired when you start left-clicking a block, but also every tick while you continue to left click it.
-		//EarlyClientsideAttackBlockCallback will prevent the start-left-clicking one from being fired. This regular callback will
-		//also help prevent the block from being mined.
-		PackagesClient.instance.installClientsideHoldLeftClickCallback((player, level, hand, pos, direction) -> {
-			if(canAttack(player, level, pos, direction)) {
-				//Legacy stuff! Here's a reimplementation of the old, broken left click antirepeat. Old mod effectively had punchRepeat set to 4 ticks btw.
-				//removed in https://github.com/quat1024/packages/commit/401a19818dac539174081b219ca10c797fa0abf0
-				int punchRepeat = PackagesClient.instance.config.get(PropsClient.PUNCH_REPEAT);
-				if(!level.isClientSide || punchRepeat < 0) return InteractionResult.CONSUME;
-				
-				if(pos.equals(lastPunchPosLegacy) && (level.getGameTime() - lastPunchTickLegacy <= punchRepeat)) return InteractionResult.CONSUME;
-				lastPunchPosLegacy = pos;
-				lastPunchTickLegacy = level.getGameTime();
-				performPunchAction(player, level, pos, direction);
-				return InteractionResult.CONSUME;
-			} else return InteractionResult.PASS;
-		});
-		
-		PackagesClient.instance.installClientsideUseBlockCallback((player, level, hand, hitResult) -> {
-			if(!level.isClientSide || player.isSpectator()) return InteractionResult.PASS;
-			
-			BlockPos pos = hitResult.getBlockPos();
-			BlockState state = level.getBlockState(pos);
-			BlockEntity be = level.getBlockEntity(pos);
-			if(!(state.getBlock() instanceof PackageBlock) || !(be instanceof PackageBlockEntity pkg)) return InteractionResult.PASS;
-			Direction direction = hitResult.getDirection();
-			
-			Direction frontDir = state.getValue(PackageBlock.FACING).primaryDirection;
-			if(direction != frontDir) return InteractionResult.PASS;
-			
-			PackageAction action = getApplicableAction(player, MainTrigger.USE);
-			if(action == null) return InteractionResult.PASS;
-			
-			//Simulate performing the action. If anything happened...
-			if(pkg.performAction(player, hand, action, true)) {
-				//...send a packet to do it for real
-				//SUCCESS sends a block-place packet too because fabric api is weird, so we use CONSUME+swing to mark the action as successful.
-				PackagesClient.instance.sendActionPacket(new ActionPacket(pos, hand, action));
-				player.swing(hand);
-				return InteractionResult.CONSUME;
-			}
-			
-			//Also send CONSUME on failures that get this far in, because in practice it's annoying to be holding a block and have it go "oh, you
-			//pressed right click but the package contained a different item? aha, better place the block against the face of the package, covering it".
-			//But it *also* also feels weird for the action to still be consumed when Sneak is pressed, even though sneak-clicks are overridden
-			//to mean something else in this mod, in my experience. So we have this confusing nonsense line. Hopefully it makes things intuitive.
-			return player.isShiftKeyDown() ? InteractionResult.PASS : InteractionResult.CONSUME;
-		});
-	}
-	
-	public static @Nullable PackageAction getApplicableAction(Player player, MainTrigger main) {
+	private static @Nullable PackageAction getApplicableAction(Player player, MainTrigger main) {
 		//Find the closest one by edit distance
 		PackageActionBinding leastWrongBinding = null;
 		int leastWrongness = NOPE;
