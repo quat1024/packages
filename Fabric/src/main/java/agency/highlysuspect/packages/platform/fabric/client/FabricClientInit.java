@@ -41,8 +41,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 public class FabricClientInit extends PackagesClient implements ClientModInitializer {
 	public static FabricClientInit instanceFabric;
 	
-	public UnbakedModel packageModel;
-	public UnbakedModel packageMakerModel;
+	public final UnbakedModel packageModel = new FrapiMeshPackageModel();
+	public final UnbakedModel packageMakerModel = new FrapiMeshPackageMakerModel();
 	
 	public FabricClientInit() {
 		if(instanceFabric != null) throw new IllegalStateException("Packages FabricClientInit instantiated twice!");
@@ -97,31 +97,12 @@ public class FabricClientInit extends PackagesClient implements ClientModInitial
 	@Override
 	public void setupCustomModelLoaders() {
 		ModelLoadingRegistry.INSTANCE.registerResourceProvider(res -> (id, ctx) -> {
-			if(FrapiMeshPackageModel.BLOCK_SPECIAL.equals(id) || FrapiMeshPackageModel.ITEM_SPECIAL.equals(id)) {
-				if(packageModel == null) packageModel = new FrapiMeshPackageModel();
-				return packageModel;
-			}
+			if(id.getNamespace().isEmpty() || id.getNamespace().charAt(0) != 'p') return null; //Is This Actually Faster... who knows...
 			
-			if(FrapiMeshPackageMakerModel.BLOCK_SPECIAL.equals(id) || FrapiMeshPackageMakerModel.ITEM_SPECIAL.equals(id)) {
-				if(packageMakerModel == null) packageMakerModel = new FrapiMeshPackageMakerModel();
-				return packageMakerModel;
-			}
+			if(FrapiMeshPackageModel.BLOCK_SPECIAL.equals(id) || FrapiMeshPackageModel.ITEM_SPECIAL.equals(id)) return packageModel;
+			if(FrapiMeshPackageMakerModel.BLOCK_SPECIAL.equals(id) || FrapiMeshPackageMakerModel.ITEM_SPECIAL.equals(id)) return packageMakerModel;
 			
 			return null;
-		});
-		
-		//im pretty sure this is safe?
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-			@Override
-			public ResourceLocation getFabricId() {
-				return Packages.id("dump-models");
-			}
-			
-			@Override
-			public void onResourceManagerReload(ResourceManager resourceManager) {
-				packageModel = null;
-				packageMakerModel = null;
-			}
 		});
 	}
 	
