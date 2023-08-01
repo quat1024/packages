@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.ModelState;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
@@ -31,9 +32,6 @@ import java.util.function.Supplier;
  * It uses PackageStyle instead of PackageMakerStyle, and uses a different style of choosing the model from the item stack.
  */
 public class FrapiMeshPackageModel implements UnbakedModel {
-	public static final ResourceLocation BLOCK_SPECIAL = Packages.id("special/package");
-	public static final ResourceLocation ITEM_SPECIAL = Packages.id("item/package");
-	
 	private final PackageModelBakery.Factory<Mesh> factory = new PackageModelBakery.Factory<>(Packages.id("block/package"), FrapiMeshModelBakery::new);
 	
 	@Override

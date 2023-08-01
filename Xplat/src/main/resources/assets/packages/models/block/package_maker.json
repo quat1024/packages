@@ -1,11 +1,11 @@
 {
 	"credit": "Made by Kat with Blockbench. thanks kat ! i modified it a bit",
-	"parent": "block/block",
+	"parent": "minecraft:block/block",
 	"textures": {
-		"1": "block/acacia_log",
-		"2": "block/acacia_log_top",
+		"1": "minecraft:block/acacia_log",
+		"2": "minecraft:block/acacia_log_top",
 		"3": "packages:block/package_maker/grate",
-		"4": "block/stripped_acacia_log",
+		"4": "minecraft:block/stripped_acacia_log",
 		"frame": "packages:package_special/frame",
 		"inner": "packages:package_special/inner",
 		"face": "packages:block/package/face",

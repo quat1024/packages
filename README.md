@@ -5,11 +5,13 @@ Worse Barrels successor for ~~Fabric~~ Fabric and also Forge ~~1.15.2~~ ~~1.16.4
 
 Package Crafter model by [Kat](https://kat.blue).
 
-On Fabric, there's a soft dependency on FREX (transfers FREX texture materials onto the package model). Try it with your favorite Canvas shader with selfillum blocks or PBR. ~~Also has a soft dependency on Dashloader~~ Disabled for now, sorry about that.
+# Quick note about model handling
 
-# Tag usage note:
+The xplat set contains `packages:block/package` and `packages:block/package_maker`. These models use the "special" textures `packages:package_special/frame` and `packages:package_special/inner` to mark which quads should be retextured, and as such these models are not expected to be displayed as-is to players. The xplat set also points the Package and Package Crafter's blockstates at the models `packages:special/package` and `packages:special/package_maker` (with `special` instead of `block`) respectively. Implemetations of the `special` model load the corresponding `block` model and perform the retexturing at runtime.
 
-On Fabric if you have wooden chest items, tag them with `c:wooden_chests`. I am not up to date with `c:` tag conventions in the ecosystem. It should also read out of the `forge:chests/wooden` item tag on Forge (actually on both)
+On Fabric, there is a `ModelLoadingRegistry` API. Resource providers hook requests for specific files, and variant providers hook requests for specific `ModelResourceLocation`s. Requests for `special/package` and `item/package#inventory` are diverted to the appropriate dynamic model.
+
+On Forge, there is a `RegisterGeometryLoaders` API. I register a geometry loader for the package/packagemaker models and ship model JSONs with the `loader` field set, which causes Forge to load the appropriate dynamic model.
 
 # License
 

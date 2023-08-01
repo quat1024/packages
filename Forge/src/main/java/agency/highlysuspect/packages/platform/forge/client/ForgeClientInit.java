@@ -80,7 +80,6 @@ public class ForgeClientInit extends PackagesClient {
 		
 		//misc events (generally, toppling the dominoes that earlySetup stood)
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyRegisterMenuScreens);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallyBakeSpritesOnto);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetBlockEntityRenderers);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::actuallySetRenderTypes);
 		
@@ -173,13 +172,6 @@ public class ForgeClientInit extends PackagesClient {
 	
 	private void actuallyRegisterMenuScreens(FMLClientSetupEvent e) {
 		menuScreensToRegister.forEach(MenuScreenEntry::register);
-	}
-	
-	private void actuallyBakeSpritesOnto(TextureStitchEvent/*.Pre*/ event) {
-		//List<ResourceLocation> sprites = spritesToBake.get(event.getAtlas().location());
-		//if(sprites != null) sprites.forEach(event::addSprite);
-		
-		// "Use atlas info JSON files instead"
 	}
 	
 	private void actuallySetBlockEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {

@@ -1,11 +1,11 @@
 {
+	"parent": "minecraft:block/block",
 	"textures": {
 		"frame": "packages:package_special/frame",
 		"inner": "packages:package_special/inner",
 		"face": "packages:block/package/face",
 		"particle": "#face"
 	},
-	"parent": "block/block",
 	"elements": [
 		{
 			"name": "frame",

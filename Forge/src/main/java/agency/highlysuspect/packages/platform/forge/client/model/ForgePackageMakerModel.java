@@ -4,9 +4,6 @@ import agency.highlysuspect.packages.Packages;
 import agency.highlysuspect.packages.block.PackageMakerBlockEntity;
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PackageMakerStyle;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -29,7 +26,6 @@ import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
 import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -87,15 +83,6 @@ public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMake
 		@Override
 		public ItemOverrides getOverrides() {
 			return itemOverrideThing;
-		}
-	}
-	
-	public static class Loader implements IGeometryLoader<ForgePackageMakerModel> {
-		public static final ResourceLocation ID = Packages.id("forge_package_maker_model_loader");
-		
-		@Override
-		public ForgePackageMakerModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) throws JsonParseException {
-			return new ForgePackageMakerModel();
 		}
 	}
 }

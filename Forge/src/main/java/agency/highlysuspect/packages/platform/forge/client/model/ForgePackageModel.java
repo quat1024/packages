@@ -5,9 +5,6 @@ import agency.highlysuspect.packages.block.PackageBlock;
 import agency.highlysuspect.packages.block.PackageBlockEntity;
 import agency.highlysuspect.packages.client.PackageModelBakery;
 import agency.highlysuspect.packages.junk.PackageStyle;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderType;
@@ -32,7 +29,6 @@ import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
 import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -111,15 +107,6 @@ public class ForgePackageModel implements IUnbakedGeometry<ForgePackageModel> {
 		@Override
 		public ItemOverrides getOverrides() {
 			return itemOverrideThing;
-		}
-	}
-	
-	public static class Loader implements IGeometryLoader<ForgePackageModel> {
-		public static final ResourceLocation ID = Packages.id("forge_package_model_loader");
-		
-		@Override
-		public ForgePackageModel read(JsonObject modelContents, JsonDeserializationContext deserializationContext) throws JsonParseException {
-			return new ForgePackageModel();
 		}
 	}
 }
