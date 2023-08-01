@@ -35,17 +35,16 @@ import java.util.function.Function;
 
 public class ForgePackageMakerModel implements IUnbakedGeometry<ForgePackageMakerModel> {
 	protected static final ModelProperty<PackageMakerStyle> STYLE_PROPERTY = new ModelProperty<>();
-	
-	protected final PackageModelBakery.Factory<List<BakedQuad>> factory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker"), BakedQuadPackageModelBakery::new);
+	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.id("block/package_maker");
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-		modelGetter.apply(factory.blockModelId()).resolveParents(modelGetter);
+		modelGetter.apply(BLOCK_MODEL_ID).resolveParents(modelGetter);
 	}
 	
 	@Override
 	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
-		return new Baked(factory.make(bakery, spriteGetter, modelState, modelLocation));
+		return new Baked(PackageModelBakery.finishBaking(bakery, spriteGetter, modelState, modelLocation, BLOCK_MODEL_ID, BakedQuadPackageModelBakery::new));
 	}
 	
 	private static class Baked extends BakedModelWrapper<BakedModel> {

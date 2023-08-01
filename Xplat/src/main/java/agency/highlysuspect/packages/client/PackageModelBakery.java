@@ -41,6 +41,10 @@ public interface PackageModelBakery<MODEL> {
 		else return bake(style, style.color(), style.frameBlock(), style.innerBlock());
 	}
 	
+	public interface Maker<T> {
+		PackageModelBakery<T> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite);
+	}
+	
 	/**
 	 * An in-memory cache of package models.
 	 */
@@ -78,29 +82,18 @@ public interface PackageModelBakery<MODEL> {
 		}
 	}
 	
-	/**
-	 * Layering on let another layer of annoying abstraction: an instance of this class produces PackageModelBakeries.
-	 * The idea here is that you can keep an instance of this class in the UnbakedModel, and the methods prove useful
-	 * towards supplying the necessary model dependencies to the model baking process?
-	 */
-	record Factory<T>(ResourceLocation blockModelId, Maker<T> maker) {
-		@SuppressWarnings("deprecation") private static final Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/frame"));
-		@SuppressWarnings("deprecation") private static final Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/inner"));
+	@SuppressWarnings("deprecation") Material SPECIAL_FRAME = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/frame"));
+	@SuppressWarnings("deprecation") Material SPECIAL_INNER = new Material(TextureAtlas.LOCATION_BLOCKS, Packages.id("package_special/inner"));
+	
+	static <X> PackageModelBakery<X> finishBaking(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId, ResourceLocation blockModelId, Maker<X> maker) {
+		UnbakedModel unbaked = loader.getModel(blockModelId);
 		
-		public PackageModelBakery<T> make(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
-			UnbakedModel unbaked = loader.getModel(blockModelId);
-			
-			BakedModel baseModel = unbaked.bake(loader, textureGetter, rotationContainer, modelId);
-			TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
-			TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
-			
-			PackageModelBakery<T> bakery = maker.make(baseModel, specialFrameSprite, specialInnerSprite);
-			if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakery = new Caching<>(bakery);
-			return bakery;
-		}
+		BakedModel baseModel = unbaked.bake(loader, textureGetter, rotationContainer, modelId);
+		TextureAtlasSprite specialFrameSprite = textureGetter.apply(SPECIAL_FRAME);
+		TextureAtlasSprite specialInnerSprite = textureGetter.apply(SPECIAL_INNER);
 		
-		public interface Maker<T> {
-			PackageModelBakery<T> make(BakedModel baseModel, TextureAtlasSprite specialFrameSprite, TextureAtlasSprite specialInnerSprite);
-		}
+		PackageModelBakery<X> bakery = maker.make(baseModel, specialFrameSprite, specialInnerSprite);
+		if(PackagesClient.instance.config.get(PropsClient.CACHE_MESHES)) bakery = new Caching<>(bakery);
+		return bakery;
 	}
 }

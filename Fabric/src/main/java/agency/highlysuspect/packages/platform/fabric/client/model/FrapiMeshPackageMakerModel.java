@@ -20,6 +20,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,21 +32,22 @@ import java.util.function.Supplier;
  * It uses PackageMakerStyle instead of PackageStyle, and uses a different style of choosing the model from the item stack.
  */
 public class FrapiMeshPackageMakerModel implements UnbakedModel {
-	private final PackageModelBakery.Factory<Mesh> factory = new PackageModelBakery.Factory<>(Packages.id("block/package_maker"), FrapiMeshModelBakery::new);
+	private static final ResourceLocation BLOCK_MODEL_ID = Packages.id("block/package_maker");
 	
 	@Override
 	public Collection<ResourceLocation> getDependencies() {
-		return List.of(factory.blockModelId());
+		return List.of(BLOCK_MODEL_ID);
 	}
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> function) {
-		function.apply(factory.blockModelId()).resolveParents(function);
+		function.apply(BLOCK_MODEL_ID).resolveParents(function);
 	}
 	
+	@Nullable
 	@Override
 	public BakedModel bake(ModelBaker loader, Function<Material, TextureAtlasSprite> textureGetter, ModelState rotationContainer, ResourceLocation modelId) {
-		return new Baked(factory.make(loader, textureGetter, rotationContainer, modelId));
+		return new Baked(PackageModelBakery.finishBaking(loader, textureGetter, rotationContainer, modelId, BLOCK_MODEL_ID, FrapiMeshModelBakery::new));
 	}
 	
 	private static class Baked extends ForwardingBakedModel {

@@ -42,16 +42,16 @@ public class ForgePackageModel implements IUnbakedGeometry<ForgePackageModel> {
 	protected static final ModelProperty<BlockAndTintGetter> BATG_PROPERTY = new ModelProperty<>(); //To support getParticleIcon.
 	protected static final ModelProperty<BlockPos> BLOCKPOS_PROPERTY = new ModelProperty<>();//To support getParticleIcon.
 	
-	protected final PackageModelBakery.Factory<List<BakedQuad>> factory = new PackageModelBakery.Factory<>(Packages.id("block/package"), BakedQuadPackageModelBakery::new);
+	protected static final ResourceLocation BLOCK_MODEL_ID = Packages.id("block/package");
 	
 	@Override
 	public void resolveParents(Function<ResourceLocation, UnbakedModel> modelGetter, IGeometryBakingContext context) {
-		modelGetter.apply(factory.blockModelId()).resolveParents(modelGetter);
+		modelGetter.apply(BLOCK_MODEL_ID).resolveParents(modelGetter);
 	}
 	
 	@Override
 	public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> spriteGetter, ModelState modelState, ItemOverrides overrides, ResourceLocation modelLocation) {
-		return new Baked(factory.make(bakery, spriteGetter, modelState, modelLocation));
+		return new Baked(PackageModelBakery.finishBaking(bakery, spriteGetter, modelState, modelLocation, BLOCK_MODEL_ID, BakedQuadPackageModelBakery::new));
 	}
 	
 	private static class Baked extends BakedModelWrapper<BakedModel> {
