@@ -1,7 +1,7 @@
 Packages
 ========
 
-Worse Barrels successor for ~~Fabric~~ Fabric and also Forge ~~1.15.2~~ ~~1.16.4~~ ~~1.17.0~~ ~~1.17.1~~ ~~1.18~~ ~~1.18.2~~ ~~1.19.2~~ 1.19.4.
+Worse Barrels successor for ~~Fabric~~ Fabric and also Forge ~~1.15.2~~ ~~1.16.4~~ ~~1.17.0~~ ~~1.17.1~~ ~~1.18~~ ~~1.18.2~~ ~~1.19.2~~ ~~1.19.4~~ 1.20.1.
 
 Package Crafter model by [Kat](https://kat.blue).
 
