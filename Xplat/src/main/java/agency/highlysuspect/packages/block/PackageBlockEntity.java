@@ -18,6 +18,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -52,6 +53,9 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	private ItemStack stickyStack = ItemStack.EMPTY;
 	
 	private Component customName;
+	
+	//BLANKETCON
+	private boolean bcLocked;
 	
 	public PackageStyle getStyle() {
 		return style;
@@ -109,6 +113,12 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	
 	//<editor-fold desc="Interactions">
 	public boolean performAction(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+		if(bcLocked) { //BLANKETCON
+			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
+			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+			return false;
+		}
+		
 		boolean didAnything;
 		if(action.isInsert()) didAnything = playerInsert(player, hand, action, simulate);
 		else {
@@ -138,7 +148,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	 * @param simulate If "true", a dry-run is performed.
 	 * @return "true" if any items changed.
 	 */
-	public boolean playerInsert(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+	private boolean playerInsert(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
 		int handSlot = handToSlotId(player, hand);
 		if(!action.isInsert()) throw new IllegalArgumentException("playerInsert only supports insertion actions, not " + action);
 		
@@ -210,7 +220,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	 * @param simulate If "true", a dry-run is performed.
 	 * @return A tuple: whether the action was successful, and all leftover itemstacks that the player wanted to take but couldn't fit in their inventory.
 	 */
-	public PlayerTakeResult playerTake(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
+	private PlayerTakeResult playerTake(Player player, InteractionHand hand, PackageAction action, boolean simulate) {
 		int maxAmountToTake = switch(action) {
 			case TAKE_ONE -> 1;
 			case TAKE_STACK -> {
@@ -344,7 +354,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 	//<editor-fold desc="Nameable">
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE.get().getDescriptionId(), new Object[]{});
+		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE.get().getDescriptionId());
 	}
 	
 	@Override
@@ -385,6 +395,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		
 		tag.put("StickyStack", stickyStack.save(new CompoundTag()));
 		
+		if(bcLocked) tag.putBoolean("bcLocked", true); //BLANKETCON
+		
 		super.saveAdditional(tag);
 	}
 	
@@ -398,6 +410,8 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		else customName = null;
 		
 		stickyStack = ItemStack.of(tag.getCompound("StickyStack"));
+		
+		bcLocked = tag.contains("bcLocked") && tag.getBoolean("bcLocked"); //BLANKETCON
 	}
 	
 	@Nullable

@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
@@ -49,6 +50,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	public static final int SIZE = OUTPUT_SLOT + 1;
 	
 	private final NonNullList<ItemStack> inv = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
+	
+	private boolean bcLocked; //BLANKETCON
 	
 	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesFrameSlot(ItemStack stack) {
@@ -260,6 +263,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public boolean stillValid(Player player) {
+		if(bcLocked) return false; //BLANKETCON
 		return player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64;
 	}
 	
@@ -277,6 +281,11 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	//region MenuProvider
 	@Override
 	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
+		if(bcLocked) { //BLANKETCON
+			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
+			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+			return null;
+		}
 		return new PackageMakerMenu(syncId, inv, this);
 	}
 	
@@ -284,7 +293,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public Component getName() {
-		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE_MAKER.get().getDescriptionId(), new Object[]{});
+		return hasCustomName() ? customName : Component.translatable(PBlocks.PACKAGE_MAKER.get().getDescriptionId());
 	}
 	
 	@Override
@@ -316,6 +325,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
 		
+		if(bcLocked) tag.putBoolean("bcLocked", true); //BLANKETCON
+		
 		ContainerHelper.saveAllItems(tag, inv);
 	}
 	
@@ -336,6 +347,8 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			inv.set(4, inv.get(3));
 			inv.set(3, ItemStack.EMPTY);
 		}
+		
+		bcLocked = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
 		
 		//Force a chunk rerender when the contents of the container change.
 		//Or, yknow, really when any nbt changes. It's a bit sloppy.
