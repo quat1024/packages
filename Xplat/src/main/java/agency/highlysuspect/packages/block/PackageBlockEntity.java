@@ -116,7 +116,7 @@ public class PackageBlockEntity extends BlockEntity implements Container, Nameab
 		if(bcLocked) { //BLANKETCON
 			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
 			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
-			return false;
+			return true; //consume the click anyway
 		}
 		
 		boolean didAnything;
