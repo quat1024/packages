@@ -47,8 +47,8 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		TwelveDirection packageTwelveDir = packageState.getValue(PackageBlock.FACING);
 		
 		//The block is solid, so has no light inside; use the light of whatever's in front instead.
-		//TODO: This seems to cause issues with Create contraptions, maybe have some fallback to the provided "light"
-		light = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
+		int newlight = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
+		if(newlight != 0) light = newlight; //Workaround for Create
 		
 		/// Prepare
 		matrices.pushPose();
