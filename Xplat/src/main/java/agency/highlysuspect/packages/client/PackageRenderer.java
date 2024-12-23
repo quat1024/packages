@@ -25,8 +25,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
-import java.util.EnumMap;
-
 public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> {
 	public PackageRenderer(BlockEntityRendererProvider.Context context) {
 		textRenderer = context.getFont();
@@ -66,8 +64,8 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		int detailLevel = player.isShiftKeyDown() ? 1 : 0;
 		double distanceSq = player.getEyePosition(1).distanceToSqr(Vec3.atCenterOf(blockEntity.getBlockPos()));
 		
-		//First check if you're near the block and only then perform the raycast; raycasts are expensive, even with limited range.
-		// (BLANKETCON) Important because Portal Cubed, for obvious reasons, seems to increase the cost of raycasts.
+		//First check if you're near the block and only then perform the raycast; raycasts are expensive
+		//(This was more important at Blanketcon)
 		if(distanceSq <= 64 &&
 			player.pick(8, 0, false) instanceof BlockHitResult blockHit && 
 			blockEntity.getBlockPos().equals(blockHit.getBlockPos()))

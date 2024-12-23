@@ -51,7 +51,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	private final NonNullList<ItemStack> inv = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
 	
-	private boolean bcLocked; //BLANKETCON
+	private boolean locked;
 	
 	@SuppressWarnings("RedundantIfStatement")
 	public static boolean matchesFrameSlot(ItemStack stack) {
@@ -263,7 +263,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	
 	@Override
 	public boolean stillValid(Player player) {
-		if(bcLocked) return false; //BLANKETCON
+		if(locked) return false;
 		return player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64;
 	}
 	
@@ -281,7 +281,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 	//region MenuProvider
 	@Override
 	public AbstractContainerMenu createMenu(int syncId, Inventory inv, Player player) {
-		if(bcLocked) { //BLANKETCON
+		if(locked) {
 			player.displayClientMessage(Component.translatable("container.isLocked", getDisplayName()), true);
 			player.playNotifySound(SoundEvents.CHEST_LOCKED, SoundSource.BLOCKS, 1f, 1f);
 			return null;
@@ -325,7 +325,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			tag.putString("CustomName", Component.Serializer.toJson(customName));
 		}
 		
-		if(bcLocked) tag.putBoolean("bcLocked", true); //BLANKETCON
+		if(locked) tag.putBoolean("bcLocked", true);
 		
 		ContainerHelper.saveAllItems(tag, inv);
 	}
@@ -348,7 +348,7 @@ public class PackageMakerBlockEntity extends BlockEntity implements Nameable, Wo
 			inv.set(3, ItemStack.EMPTY);
 		}
 		
-		bcLocked = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
+		locked = tag.contains("bcLocked") && tag.getBoolean("bcLocked");
 		
 		//Force a chunk rerender when the contents of the container change.
 		//Or, yknow, really when any nbt changes. It's a bit sloppy.
