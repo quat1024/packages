@@ -58,11 +58,11 @@ public class PropsClient {
 		"on your modloader. If you need to reset this to 'false', I'd be interested in hearing what mods you're using."
 	);
 	
-	public static final ConfigProperty<Boolean> FABRIC_FREX_SUPPORT = ConfigProperty.boolOpt(
-		"frexSupport", true,
-		"If 'true' and FREX is loaded, FREX materials will be forwarded through into Packages's custom block models.",
-		"Use this if you have funky Canvas shaders. Requires a game restart to activate and deactivate."
-	);
+//	public static final ConfigProperty<Boolean> FABRIC_FREX_SUPPORT = ConfigProperty.boolOpt(
+//		"frexSupport", true,
+//		"If 'true' and FREX is loaded, FREX materials will be forwarded through into Packages's custom block models.",
+//		"Use this if you have funky Canvas shaders. Requires a game restart to activate and deactivate."
+//	);
 	
 	public static ConfigSchema visit(ConfigSchema in) {
 		in.section("Keys", INSERT_ONE_BINDING_UNPARSED, INSERT_STACK_BINDING_UNPARSED, INSERT_ALL_BINDING_UNPARSED,
@@ -73,7 +73,7 @@ public class PropsClient {
 		
 		in.section("Model", CACHE_MESHES, LIGHTING_CORRECTION);
 		if(Packages.instance.isForge()) in.option(FORGE_SWAP_RED_AND_BLUE);
-		if(Packages.instance.isFabric()) in.option(FABRIC_FREX_SUPPORT);
+//		if(Packages.instance.isFabric()) in.option(FABRIC_FREX_SUPPORT);
 		
 		return in;
 	}
