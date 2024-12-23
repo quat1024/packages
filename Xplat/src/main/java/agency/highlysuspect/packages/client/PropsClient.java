@@ -38,9 +38,18 @@ public class PropsClient {
 	public static final ConfigProperty<Boolean> CACHE_MESHES = ConfigProperty.boolOpt(
 		"cacheMeshes", true,
 		"If 'true', Package and Package Crafter 3d models will be cached in-memory, instead of rebaked from scratch every time.",
-		"The model bakery is quite fast, and this probably helps chunk-bake performance less than it sounds like it would.",
-		"It also consumes more memory. An F3+T will discard all caches.",
-		"However, I'm pretty sure it slightly improves the efficiency of item rendering. All's tradeoffs in love and perf."
+		"This probably helps chunk-bake performance less than it sounds like it would - Packages is pretty fast.",
+		"It also consumes more memory. But I think it makes item rendering more efficient?",
+		"Everything's a tradeoff. (Pressing F3+T will dump the caches, either way.)"
+	);
+	
+	public static final ConfigProperty<Integer> LIGHTING_CORRECTION = ConfigProperty.intOpt(
+		"lightingCorrection", 2,
+		"When rendering a package block, what method should I use to determine how much light falls on the block?",
+		"0: The light level inside the package. (Might make items turn black.)",
+		"1: The light level of the block in front of the package.",
+		"2: The light level inside the package if it is nonzero, otherwise the light level in front.",
+		"   ^ Has best results on Create contraptions."
 	);
 	
 	public static final ConfigProperty<Boolean> FORGE_SWAP_RED_AND_BLUE = ConfigProperty.boolOpt(
@@ -62,7 +71,7 @@ public class PropsClient {
 		
 		in.section("Pedantry", RED_BAR_WHEN_FULL);
 		
-		in.section("Model", CACHE_MESHES);
+		in.section("Model", CACHE_MESHES, LIGHTING_CORRECTION);
 		if(Packages.instance.isForge()) in.option(FORGE_SWAP_RED_AND_BLUE);
 		if(Packages.instance.isFabric()) in.option(FABRIC_FREX_SUPPORT);
 		

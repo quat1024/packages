@@ -44,9 +44,16 @@ public class PackageRenderer implements BlockEntityRenderer<PackageBlockEntity> 
 		if(!(packageState.getBlock() instanceof PackageBlock)) return;
 		TwelveDirection packageTwelveDir = packageState.getValue(PackageBlock.FACING);
 		
-		//The block is solid, so has no light inside; use the light of whatever's in front instead.
-		int newlight = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
-		if(newlight != 0) light = newlight; //Workaround for Create
+		//Correct light value.
+		//0: No correction.
+		//1: Use the light level in front.
+		//2: Use the light level in front if the current light level is nonzero.
+		switch(PackagesClient.instance.config.get(PropsClient.LIGHTING_CORRECTION)) {
+			case 2:
+				if(light != 0) break;
+			case 1:
+				light = LevelRenderer.getLightColor(world, blockEntity.getBlockPos().relative(packageTwelveDir.primaryDirection));
+		}
 		
 		/// Prepare
 		matrices.pushPose();
