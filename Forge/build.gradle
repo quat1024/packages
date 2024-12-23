@@ -8,7 +8,7 @@ buildscript {
 		mavenCentral()
 	}
 	dependencies {
-		classpath "net.minecraftforge.gradle:ForgeGradle:5.1.71"
+		classpath "net.minecraftforge.gradle:ForgeGradle:6.0.29"
 		classpath "org.spongepowered:mixingradle:0.7-SNAPSHOT"
 	}
 }
@@ -50,15 +50,15 @@ repositories {
 }
 
 dependencies {
-	minecraft "net.minecraftforge:forge:1.20.1-47.1.0"
+	minecraft "net.minecraftforge:forge:1.20.1-47.1.3"
 	annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 	compileOnly "org.jetbrains:annotations:24.0.1"
 	
 	compileOnly project(":Xplat")
 
-	compileOnly fg.deobf("dev.emi:emi-forge:1.0.11+1.20.1:api")
-	testCompileOnly fg.deobf("dev.emi:emi-forge:1.0.11+1.20.1:api") //forgegradle is Weird episode 500
-	runtimeOnly fg.deobf("dev.emi:emi-forge:1.0.11+1.20.1")
+	compileOnly fg.deobf("dev.emi:emi-forge:1.1.18+1.20.1:api")
+	testCompileOnly fg.deobf("dev.emi:emi-forge:1.1.18+1.20.1:api") //forgegradle is Weird episode 500
+	runtimeOnly fg.deobf("dev.emi:emi-forge:1.1.18+1.20.1")
 }
 
 //fold in xplat resources and sources

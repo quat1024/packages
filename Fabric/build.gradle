@@ -10,7 +10,7 @@ buildscript {
 		mavenCentral()
 	}
 	dependencies {
-		classpath "fabric-loom:fabric-loom.gradle.plugin:1.1.14"
+		classpath "fabric-loom:fabric-loom.gradle.plugin:1.9.2"
 	}
 }
 
@@ -50,8 +50,8 @@ repositories {
 dependencies {
 	minecraft "com.mojang:minecraft:1.20.1"
 	mappings loom.officialMojangMappings()
-	modImplementation "net.fabricmc:fabric-loader:0.14.21"
-	modImplementation "net.fabricmc.fabric-api:fabric-api:0.85.0+1.20.1"
+	modImplementation "net.fabricmc:fabric-loader:0.16.9"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:0.92.2+1.20.1"
 	compileOnly "org.jetbrains:annotations:24.0.1"
 	
 	implementation project(":Xplat") //funny xplat
@@ -72,9 +72,9 @@ dependencies {
 		//modLocalRuntime "maven.modrinth:sodium:mc1.18.2-0.4.1"
 	}
 
-	modCompileOnly "dev.emi:emi-fabric:1.0.11+1.20.1:api"
+	modCompileOnly "dev.emi:emi-fabric:1.1.18+1.20.1:api"
 	if(runWithEmi) {
-		modLocalRuntime "dev.emi:emi-fabric:1.0.11+1.20.1"
+		modLocalRuntime "dev.emi:emi-fabric:1.1.18+1.20.1"
 	}
 }
 
